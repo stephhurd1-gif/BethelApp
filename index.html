@@ -153,11 +153,11 @@
       flex-shrink: 0;
     }
 
-    .content {
-      padding: 18px 18px 110px;
-      display: grid;
-      gap: 18px;
-    }
+.content {
+  padding: 18px 18px 140px;
+  display: grid;
+  gap: 18px;
+}
 
     .view {
       display: none;
@@ -389,21 +389,23 @@
       margin-top: 10px;
     }
 
-    .bottom-nav {
-      position: sticky;
-      bottom: calc(16px + env(safe-area-inset-bottom));
-      z-index: 30;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      padding: 8px;
-      margin: 12px 16px 0;
-      background: rgba(10, 14, 20, 0.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 26px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 0.5px rgba(247,191,91,0.08);
+   .bottom-nav {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 9999;
+    width: min(calc(100% - 32px), 1068px);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    padding: 8px;
+    background: rgba(10, 14, 20, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 26px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 0.5px rgba(247,191,91,0.08);
     }
 
     .nav-item {
@@ -445,15 +447,15 @@
       border-top: 1px solid rgba(255,255,255,0.06);
     }
 
-    @media (max-width: 900px) {
-      .quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 560px) {
+  .bottom-nav {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: calc(100% - 16px);
+    border-radius: 22px;
+    gap: 4px;
+    padding: 6px;
+  }
+}
 
     @media (max-width: 560px) {
       #bethel-app {

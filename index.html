@@ -21,19 +21,12 @@
       --border: rgba(247,191,91,0.22);
     }
     * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      background: #01060b;
-      color: var(--white);
-      font-family: Arial, sans-serif;
-    }
+    html, body { margin: 0; padding: 0; background: #01060b; color: var(--white); font-family: Arial, sans-serif; }
     body { min-height: 100vh; }
     .mt-8 { margin-top: 8px; }
-    #bethel-app {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 18px;
-    }
+
+    #bethel-app { max-width: 1100px; margin: 0 auto; padding: 18px; }
+
     .app-shell {
       background:
         radial-gradient(circle at top right, rgba(134,35,156,0.28), transparent 30%),
@@ -44,77 +37,78 @@
       overflow: hidden;
       box-shadow: 0 18px 50px rgba(0,0,0,0.3);
     }
-    .hero {
-      padding: 28px 20px 24px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
-    }
+
+    .hero { padding: 28px 20px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%); }
     .logo-wrap { margin: 0 auto 14px; width: 120px; max-width: 40vw; }
     .logo-wrap img { display: block; width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
     .hero h1 { margin: 0; font-size: 30px; line-height: 1.15; color: var(--gold); letter-spacing: 0.2px; }
     .hero p { margin: 10px auto 0; max-width: 700px; font-size: 15px; line-height: 1.6; color: #f4f4f4; }
     .hero-meta { margin-top: 14px; font-size: 14px; color: #e8e8e8; }
-    .install-box {
-      margin-top: 16px; display: inline-block; text-align: left;
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(247,191,91,0.2);
-      border-radius: 16px; padding: 12px 14px; max-width: 520px;
-    }
+    .install-box { margin-top: 16px; display: inline-block; text-align: left; background: rgba(255,255,255,0.08); border: 1px solid rgba(247,191,91,0.2); border-radius: 16px; padding: 12px 14px; max-width: 520px; }
     .install-box strong { color: var(--gold); display: block; margin-bottom: 6px; }
+
     .push-banner { display: none; align-items: center; gap: 12px; padding: 12px 18px; background: rgba(247,191,91,0.10); border-bottom: 1px solid rgba(247,191,91,0.18); }
     .push-banner.visible { display: flex; }
     .push-banner p { margin: 0; flex: 1; font-size: 14px; color: #f4f4f4; }
     .push-banner strong { color: var(--gold); }
     .push-banner .push-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
     .content { padding: 18px 18px 120px; display: grid; gap: 18px; }
     .view { display: none; gap: 18px; }
     .view.active { display: grid; }
+
     .card { background: var(--soft); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 18px; }
     .section-title { margin: 0 0 14px; font-size: 20px; color: var(--gold); }
     .section-sub { margin: -4px 0 14px; font-size: 14px; color: #dddddd; line-height: 1.5; }
+
     .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
     button.action-btn, a.action-btn {
       appearance: none; border: 0; cursor: pointer; width: 100%; text-decoration: none;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 98px; border-radius: 18px; padding: 14px 10px; font-weight: bold;
-      text-align: center; transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
-      color: var(--black); background: var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-      font-family: inherit; font-size: 15px;
+      text-align: center; transition: transform 0.2s ease, opacity 0.2s ease;
+      color: var(--black); background: var(--gold);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18); font-family: inherit; font-size: 15px;
     }
     .action-btn.secondary { background: var(--white); color: var(--black); }
     .action-btn.green { background: var(--green); color: var(--white); }
     .action-btn.purple { background: var(--purple); color: var(--white); }
     .action-btn:hover { transform: translateY(-2px); opacity: 0.96; }
     .action-icon { font-size: 24px; line-height: 1; margin-bottom: 8px; }
+
     .feature-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: stretch; }
-    .live-box {
-      background: linear-gradient(135deg, rgba(134,35,156,0.24), rgba(255,255,255,0.04));
-      border: 1px solid rgba(247,191,91,0.2); border-radius: 20px; padding: 18px; min-height: 100%;
-    }
+
+    .live-box { background: linear-gradient(135deg, rgba(134,35,156,0.24), rgba(255,255,255,0.04)); border: 1px solid rgba(247,191,91,0.2); border-radius: 20px; padding: 18px; min-height: 100%; }
     .status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 13px; font-weight: bold; margin-bottom: 12px; }
     .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff4d4f; box-shadow: 0 0 0 6px rgba(255,77,79,0.12); animation: bethelPulse 1.8s infinite; }
     @keyframes bethelPulse { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
     .live-box h3, .info-box h3 { margin: 0 0 10px; font-size: 22px; color: var(--white); }
     .live-box p, .info-box p, .announcement-list li, .contact-list div { font-size: 14px; line-height: 1.6; color: #ebebeb; }
+
     .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
     button.pill-btn, a.pill-btn {
       appearance: none; border: 0; cursor: pointer; display: inline-block; text-decoration: none;
       padding: 11px 16px; border-radius: 999px; font-weight: bold; font-size: 14px;
       background: var(--gold); color: var(--black); font-family: inherit;
     }
     .pill-btn.alt { background: rgba(255,255,255,0.12); color: var(--white); border: 1px solid rgba(255,255,255,0.12); }
+
     .info-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 18px; }
     .service-times div { margin-bottom: 8px; }
     .announcement-list { margin: 0; padding-left: 18px; }
     .announcement-list li { margin-bottom: 10px; }
     .contact-list { display: grid; gap: 10px; }
     .contact-list strong { color: var(--gold); }
+
     .calendar-wrap { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
     .calendar-wrap iframe { display: block; width: 100%; min-height: 700px; border: 0; }
     .embed-frame { width: 100%; min-height: 72vh; border: 0; border-radius: 18px; background: rgba(255,255,255,0.03); }
     .small-note { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin-top: 10px; }
 
-    /* ── Floating pill nav ── */
+    /* Floating pill nav */
     .bottom-nav {
       position: sticky;
       bottom: calc(16px + env(safe-area-inset-bottom));
@@ -140,7 +134,10 @@
     }
     .nav-item:hover, .nav-item.is-active { background: rgba(247,191,91,0.14); }
     .nav-item .nav-icon { font-size: 18px; line-height: 1; color: var(--gold); }
+
     .footer { text-align: center; padding: 18px 20px 24px; font-size: 13px; color: #d7d7d7; border-top: 1px solid rgba(255,255,255,0.06); }
+    .debug-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #777; font-size: 11px; padding: 6px 12px; border-radius: 99px; cursor: pointer; font-family: inherit; margin-top: 14px; }
+    .debug-msg { font-size: 11px; color: #888; margin-top: 6px; min-height: 16px; }
 
     @media (max-width: 900px) {
       .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -182,7 +179,7 @@
         </div>
         <h1>Bethel AME Lancaster</h1>
         <p>Welcome to your church hub for worship, connection, prayer, events, and staying informed throughout the week.</p>
-        <div class="hero-meta">450 E Strawberry St, Lancaster, PA • Sunday Worship 10:00 AM</div>
+        <div class="hero-meta">450 E Strawberry St, Lancaster, PA &bull; Sunday Worship 10:00 AM</div>
         <div class="install-box">
           <strong>Add Bethel to Your Phone</strong>
           iPhone: Tap <b>Share</b> then <b>Add to Home Screen</b><br>
@@ -192,6 +189,7 @@
 
       <div class="content">
 
+        <!-- HOME -->
         <div class="view active" id="view-home">
           <div class="card">
             <h2 class="section-title">Quick Access</h2>
@@ -294,6 +292,7 @@
           </div>
         </div>
 
+        <!-- WATCH -->
         <div class="view" id="view-watch">
           <div class="card">
             <h2 class="section-title">Watch</h2>
@@ -306,6 +305,7 @@
           </div>
         </div>
 
+        <!-- EVENTS -->
         <div class="view" id="view-events">
           <div class="card">
             <h2 class="section-title">Events Calendar</h2>
@@ -316,10 +316,11 @@
           </div>
         </div>
 
+        <!-- GIVE -->
         <div class="view" id="view-give">
           <div class="card">
             <h2 class="section-title">Give</h2>
-            <p class="section-sub">Your generosity supports the mission of Bethel AME Lancaster. Choose how you would like to give below.</p>
+            <p class="section-sub">Your generosity supports the mission of Bethel AME Lancaster. Choose how you would like to give.</p>
             <div class="quick-grid">
               <a class="action-btn" href="https://square.link/u/cGm3gcCe" rel="noopener" aria-label="Give Online">
                 <span class="action-icon" aria-hidden="true">&#128179;</span>
@@ -333,17 +334,16 @@
                 <span class="action-icon" aria-hidden="true">&#8962;</span>
                 <span>In Person</span>
               </a>
-              <a class="action-btn purple" href="mailto:web@bethelamelancaster.com?subject=Giving%20Question" rel="noopener" aria-label="Questions">
+              <a class="action-btn purple" href="mailto:web@bethelamelancaster.com?subject=Giving%20Question" aria-label="Questions">
                 <span class="action-icon" aria-hidden="true">&#9993;</span>
                 <span>Questions</span>
               </a>
             </div>
           </div>
-
           <div class="feature-grid">
             <div class="card">
               <h2 class="section-title">Online Giving</h2>
-              <p class="section-sub">Secure giving via Square — accepts Credit/Debit, Apple Pay, Google Pay, and Cash App Pay.</p>
+              <p class="section-sub">Secure giving via Square &mdash; accepts Credit/Debit, Apple Pay, Google Pay, and Cash App Pay.</p>
               <div class="button-row">
                 <a class="pill-btn" href="https://square.link/u/cGm3gcCe" rel="noopener">Give Now via Square</a>
               </div>
@@ -357,7 +357,6 @@
               </div>
             </div>
           </div>
-
           <div class="card">
             <h2 class="section-title">Give by Mail</h2>
             <p class="section-sub">Send a check payable to <strong>Bethel AME Church</strong> to:</p>
@@ -366,13 +365,13 @@
               <div><strong>Questions:</strong> web@bethelamelancaster.com</div>
             </div>
           </div>
-
           <div class="card" style="text-align:center;padding:24px 18px;">
             <p style="font-size:15px;color:#ebebeb;font-style:italic;margin:0 0 6px;">&ldquo;The reward for humility and fear of the LORD is riches and honor and life.&rdquo;</p>
             <p style="font-size:13px;color:var(--gold);margin:0;">Proverbs 22:4</p>
           </div>
         </div>
 
+        <!-- CONNECT -->
         <div class="view" id="view-connect">
           <div class="card">
             <h2 class="section-title">Connect</h2>
@@ -434,13 +433,19 @@
         </button>
       </nav>
 
-      <footer class="footer">Bethel AME Lancaster &bull; Connect &bull; Worship &bull; Grow</footer>
+      <footer class="footer">
+        Bethel AME Lancaster &bull; Connect &bull; Worship &bull; Grow
+        <div>
+          <button class="debug-btn" onclick="copyPushSub()">Copy push token (debug)</button>
+          <div class="debug-msg" id="debug-msg"></div>
+        </div>
+      </footer>
 
     </div>
   </div>
 
   <script>
-    // ── Navigation ────────────────────────────────────────────────────
+    // Navigation
     const navButtons = document.querySelectorAll('[data-view]');
     const views = document.querySelectorAll('.view');
     const lazyLoaded = new Set();
@@ -467,7 +472,7 @@
       btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
     });
 
-    // ── Push notifications ────────────────────────────────────────────
+    // Push notifications
     const VAPID_PUBLIC_KEY = 'BGSxnQMUeTpAk7xHTZNMrrNrbqV-PTftZcgtaDXcEM5EAXw0V2-c1AQSAdtTc4gakeCIy1MgpXtmyHQgfjr59VA';
 
     function urlBase64ToUint8Array(base64String) {
@@ -483,7 +488,6 @@
         const existing = await reg.pushManager.getSubscription();
         if (existing) {
           localStorage.setItem('bethel_push_sub', JSON.stringify(existing));
-          console.log('Already subscribed to push.');
           return;
         }
         const subscription = await reg.pushManager.subscribe({
@@ -491,23 +495,41 @@
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
         localStorage.setItem('bethel_push_sub', JSON.stringify(subscription));
-        console.log('Subscribed! Retrieve with: localStorage.getItem("bethel_push_sub")');
       } catch (err) {
         console.warn('Push subscription failed:', err);
       }
     }
 
-    const pushBanner = document.getElementById('push-banner');
-    const pushAllow  = document.getElementById('push-allow');
-    const pushDismiss = document.getElementById('push-dismiss');
+    function copyPushSub() {
+      const sub = localStorage.getItem('bethel_push_sub');
+      const msg = document.getElementById('debug-msg');
+      if (!sub) {
+        msg.textContent = 'No token yet — make sure you allowed notifications.';
+        return;
+      }
+      const write = () => {
+        msg.textContent = 'Copied! Paste it into an email and send to yourself.';
+        setTimeout(() => { msg.textContent = ''; }, 5000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sub).then(write).catch(fallback);
+      } else { fallback(); }
+      function fallback() {
+        const ta = document.createElement('textarea');
+        ta.value = sub; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        write();
+      }
+    }
+
+    const pushBanner   = document.getElementById('push-banner');
+    const pushAllow    = document.getElementById('push-allow');
+    const pushDismiss  = document.getElementById('push-dismiss');
 
     function maybeShowPushBanner() {
-      if (
-        'Notification' in window &&
-        'serviceWorker' in navigator &&
-        Notification.permission === 'default' &&
-        !sessionStorage.getItem('pushDismissed')
-      ) {
+      if ('Notification' in window && 'serviceWorker' in navigator &&
+          Notification.permission === 'default' && !sessionStorage.getItem('pushDismissed')) {
         pushBanner.classList.add('visible');
       }
     }
@@ -517,9 +539,7 @@
       try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') await subscribeToPush();
-      } catch (err) {
-        console.warn('Push permission error:', err);
-      }
+      } catch (err) { console.warn('Push permission error:', err); }
     });
 
     pushDismiss.addEventListener('click', () => {
@@ -527,23 +547,21 @@
       sessionStorage.setItem('pushDismissed', '1');
     });
 
-    // Show banner on first interaction (not on cold load)
     document.addEventListener('click', function onFirstClick() {
       maybeShowPushBanner();
       document.removeEventListener('click', onFirstClick);
     }, { once: true });
 
-    // If already granted on a previous visit, re-subscribe silently
     if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(() => subscribeToPush());
     }
 
-    // ── Service worker registration ───────────────────────────────────
+    // Service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/BethelApp/sw.js', { scope: '/BethelApp/' })
           .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.warn('SW registration failed:', err));
+          .catch(err => console.warn('SW failed:', err));
       });
     }
   </script>

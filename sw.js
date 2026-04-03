@@ -86,36 +86,40 @@ self.addEventListener('fetch', event => {
 
 // ── Push: display notification when a message arrives ────────────────
 self.addEventListener('push', event => {
-  let data = {
-    title: 'Bethel AME Lancaster',
+  let title = 'Bethel AME Lancaster';
+  let options = {
     body: 'You have a new message from Bethel.',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon: '/BethelApp/icons/192.png',
+    badge: '/BethelApp/icons/192.png',
     tag: 'bethel-notification',
-    url: '/'
+    renotify: true,
+    data: { url: '/BethelApp/' }
   };
 
-  // The push payload is expected to be JSON with title, body, and optionally url.
-  // Example payload: { "title": "Service reminder", "body": "Sunday worship at 10 AM", "url": "/" }
   if (event.data) {
     try {
-      Object.assign(data, event.data.json());
+      const payload = event.data.json();
+      // Support both Firebase FCM format and plain JSON
+      if (payload.notification) {
+        // Firebase FCM format: { notification: { title, body }, data: { url } }
+        title = payload.notification.title || title;
+        options.body = payload.notification.body || options.body;
+        options.icon = payload.notification.icon || options.icon;
+        if (payload.data && payload.data.url) options.data.url = payload.data.url;
+      } else {
+        // Plain format: { title, body, url }
+        title = payload.title || title;
+        options.body = payload.body || options.body;
+        if (payload.url) options.data.url = payload.url;
+        if (payload.icon) options.icon = payload.icon;
+      }
     } catch {
-      data.body = event.data.text();
+      options.body = event.data.text();
     }
   }
 
-  const options = {
-    body: data.body,
-    icon: data.icon,
-    badge: data.badge,
-    tag: data.tag,
-    renotify: true,
-    data: { url: data.url }
-  };
-
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(title, options)
   );
 });
 

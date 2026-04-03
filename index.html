@@ -1,6 +1,12 @@
-<div id="bethel-app">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bethel App</title>
+  <meta name="theme-color" content="#01060b">
   <style>
-    #bethel-app {
+    :root {
       --black: #01060b;
       --gold: #f7bf5b;
       --purple: #86239c;
@@ -8,17 +14,31 @@
       --white: #fffefe;
       --soft: rgba(255,255,255,0.08);
       --border: rgba(247,191,91,0.22);
-      font-family: Arial, sans-serif;
-      color: var(--white);
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 18px;
+    }
+
+    * {
       box-sizing: border-box;
     }
 
-    #bethel-app * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #01060b;
+      color: var(--white);
+      font-family: Arial, sans-serif;
+    }
 
-    #bethel-app .app-shell {
+    body {
+      min-height: 100vh;
+    }
+
+    #bethel-app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .app-shell {
       background:
         radial-gradient(circle at top right, rgba(134,35,156,0.28), transparent 30%),
         radial-gradient(circle at top left, rgba(66,158,64,0.16), transparent 26%),
@@ -29,33 +49,28 @@
       box-shadow: 0 18px 50px rgba(0,0,0,0.3);
     }
 
-    #bethel-app .hero {
+    .hero {
       padding: 28px 20px 24px;
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
     }
 
-    #bethel-app .logo-wrap {
+    .logo-wrap {
       margin: 0 auto 14px;
       width: 120px;
       max-width: 40vw;
     }
 
-    #bethel-app .logo-wrap img {
+    .logo-wrap img {
       display: block;
       width: 100%;
       height: auto;
       border-radius: 20px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.28);
     }
-      padding: 28px 20px 24px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
-    }
 
-    #bethel-app .hero h1 {
+    .hero h1 {
       margin: 0;
       font-size: 30px;
       line-height: 1.15;
@@ -63,7 +78,7 @@
       letter-spacing: 0.2px;
     }
 
-    #bethel-app .hero p {
+    .hero p {
       margin: 10px auto 0;
       max-width: 700px;
       font-size: 15px;
@@ -71,13 +86,13 @@
       color: #f4f4f4;
     }
 
-    #bethel-app .hero-meta {
+    .hero-meta {
       margin-top: 14px;
       font-size: 14px;
       color: #e8e8e8;
     }
 
-    #bethel-app .install-box {
+    .install-box {
       margin-top: 16px;
       display: inline-block;
       text-align: left;
@@ -88,88 +103,59 @@
       max-width: 520px;
     }
 
-    #bethel-app .install-box strong {
+    .install-box strong {
       color: var(--gold);
       display: block;
       margin-bottom: 6px;
     }
 
-    #bethel-app .content {
+    .content {
       padding: 18px 18px 88px;
       display: grid;
       gap: 18px;
     }
 
-    #bethel-app .bottom-nav {
-      position: sticky;
-      bottom: 0;
-      z-index: 30;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(1,6,11,0.92);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.08);
-    }
-
-    #bethel-app .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      min-height: 54px;
-      text-decoration: none;
-      color: var(--white);
-      border-radius: 14px;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 6px 4px;
-      background: rgba(255,255,255,0.04);
-    }
-
-    #bethel-app .nav-item:hover {
-      background: rgba(247,191,91,0.14);
-    }
-
-    #bethel-app .nav-item .nav-icon {
-      font-size: 18px;
-      line-height: 1;
-      color: var(--gold);
-    }
-      padding: 18px;
-      display: grid;
+    .view {
+      display: none;
       gap: 18px;
     }
 
-    #bethel-app .card {
+    .view.active {
+      display: grid;
+    }
+
+    .card {
       background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       padding: 18px;
     }
 
-    #bethel-app .section-title {
+    .section-title {
       margin: 0 0 14px;
       font-size: 20px;
       color: var(--gold);
     }
 
-    #bethel-app .section-sub {
+    .section-sub {
       margin: -4px 0 14px;
       font-size: 14px;
       color: #dddddd;
       line-height: 1.5;
     }
 
-    #bethel-app .quick-grid {
+    .quick-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
     }
 
-    #bethel-app .action-btn {
+    button.action-btn,
+    a.action-btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      width: 100%;
       text-decoration: none;
       display: flex;
       flex-direction: column;
@@ -180,31 +166,48 @@
       padding: 14px 10px;
       font-weight: bold;
       text-align: center;
-      transition: transform 0.2s ease, opacity 0.2s ease;
+      transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
       color: var(--black);
       background: var(--gold);
       box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      font-family: inherit;
+      font-size: 15px;
     }
 
-    #bethel-app .action-btn.secondary { background: var(--white); color: var(--black); }
-    #bethel-app .action-btn.green { background: var(--green); color: var(--white); }
-    #bethel-app .action-btn.purple { background: var(--purple); color: var(--white); }
-    #bethel-app .action-btn:hover { transform: translateY(-2px); opacity: 0.96; }
+    .action-btn.secondary {
+      background: var(--white);
+      color: var(--black);
+    }
 
-    #bethel-app .action-icon {
+    .action-btn.green {
+      background: var(--green);
+      color: var(--white);
+    }
+
+    .action-btn.purple {
+      background: var(--purple);
+      color: var(--white);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.96;
+    }
+
+    .action-icon {
       font-size: 24px;
       line-height: 1;
       margin-bottom: 8px;
     }
 
-    #bethel-app .feature-grid {
+    .feature-grid {
       display: grid;
       grid-template-columns: 1.4fr 1fr;
       gap: 18px;
       align-items: stretch;
     }
 
-    #bethel-app .live-box {
+    .live-box {
       background: linear-gradient(135deg, rgba(134,35,156,0.24), rgba(255,255,255,0.04));
       border: 1px solid rgba(247,191,91,0.2);
       border-radius: 20px;
@@ -212,7 +215,7 @@
       min-height: 100%;
     }
 
-    #bethel-app .status {
+    .status {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -224,7 +227,7 @@
       margin-bottom: 12px;
     }
 
-    #bethel-app .status-dot {
+    .status-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
@@ -239,31 +242,34 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
-    #bethel-app .live-box h3,
-    #bethel-app .info-box h3 {
+    .live-box h3,
+    .info-box h3 {
       margin: 0 0 10px;
       font-size: 22px;
       color: var(--white);
     }
 
-    #bethel-app .live-box p,
-    #bethel-app .info-box p,
-    #bethel-app .announcement-list li,
-    #bethel-app .ministry-item p,
-    #bethel-app .contact-list div {
+    .live-box p,
+    .info-box p,
+    .announcement-list li,
+    .contact-list div {
       font-size: 14px;
       line-height: 1.6;
       color: #ebebeb;
     }
 
-    #bethel-app .button-row {
+    .button-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 14px;
     }
 
-    #bethel-app .pill-btn {
+    button.pill-btn,
+    a.pill-btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
       display: inline-block;
       text-decoration: none;
       padding: 11px 16px;
@@ -272,62 +278,118 @@
       font-size: 14px;
       background: var(--gold);
       color: var(--black);
+      font-family: inherit;
     }
 
-    #bethel-app .pill-btn.alt {
+    .pill-btn.alt {
       background: rgba(255,255,255,0.12);
       color: var(--white);
       border: 1px solid rgba(255,255,255,0.12);
     }
 
-    #bethel-app .info-box {
+    .info-box {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       padding: 18px;
     }
 
-    #bethel-app .service-times div { margin-bottom: 8px; }
+    .service-times div {
+      margin-bottom: 8px;
+    }
 
-    #bethel-app .ministry-grid {
+    .announcement-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .announcement-list li {
+      margin-bottom: 10px;
+    }
+
+    .contact-list {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
 
-    #bethel-app .ministry-item {
-      background: rgba(255,255,255,0.04);
-      border-radius: 16px;
-      padding: 15px;
-      border-left: 4px solid var(--gold);
+    .contact-list strong {
+      color: var(--gold);
     }
 
-    #bethel-app .ministry-item h4 {
-      margin: 0 0 6px;
-      font-size: 17px;
-      color: var(--white);
-    }
-
-    #bethel-app .announcement-list { margin: 0; padding-left: 18px; }
-    #bethel-app .announcement-list li { margin-bottom: 10px; }
-    #bethel-app .contact-list { display: grid; gap: 10px; }
-    #bethel-app .contact-list strong { color: var(--gold); }
-
-    #bethel-app .calendar-wrap {
+    .calendar-wrap {
       border-radius: 18px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.03);
     }
 
-    #bethel-app .calendar-wrap iframe {
+    .calendar-wrap iframe {
       display: block;
       width: 100%;
       min-height: 700px;
       border: 0;
     }
 
-    #bethel-app .footer {
+    .embed-frame {
+      width: 100%;
+      min-height: 72vh;
+      border: 0;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .small-note {
+      font-size: 13px;
+      color: #cfcfcf;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(1,6,11,0.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav-item {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 54px;
+      text-decoration: none;
+      color: var(--white);
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 4px;
+      background: rgba(255,255,255,0.04);
+      font-family: inherit;
+    }
+
+    .nav-item:hover,
+    .nav-item.is-active {
+      background: rgba(247,191,91,0.14);
+    }
+
+    .nav-item .nav-icon {
+      font-size: 18px;
+      line-height: 1;
+      color: var(--gold);
+    }
+
+    .footer {
       text-align: center;
       padding: 18px 20px 24px;
       font-size: 13px;
@@ -336,185 +398,290 @@
     }
 
     @media (max-width: 900px) {
-      #bethel-app .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      #bethel-app .feature-grid { grid-template-columns: 1fr; }
-      #bethel-app .ministry-grid { grid-template-columns: 1fr; }
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 560px) {
-      #bethel-app { padding: 10px; }
-      #bethel-app .hero h1 { font-size: 25px; }
-      #bethel-app .hero p { font-size: 14px; }
-      #bethel-app .quick-grid { grid-template-columns: 1fr; }
-      #bethel-app .action-btn { min-height: 82px; }
-      #bethel-app .button-row { flex-direction: column; }
-      #bethel-app .pill-btn { text-align: center; }
+      #bethel-app {
+        padding: 10px;
+      }
+
+      .hero h1 {
+        font-size: 25px;
+      }
+
+      .hero p {
+        font-size: 14px;
+      }
+
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-btn {
+        min-height: 82px;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+
+      .pill-btn {
+        text-align: center;
+      }
+
+      .bottom-nav {
+        gap: 6px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
     }
   </style>
+</head>
+<body>
+  <div id="bethel-app">
+    <div class="app-shell">
+      <div class="hero">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="Bethel African Methodist Episcopal Church Lancaster logo">
+        </div>
+        <h1>Bethel AME Lancaster</h1>
+        <p>Welcome to your church hub for worship, connection, prayer, events, and staying informed throughout the week.</p>
+        <div class="hero-meta">450 E Strawberry St, Lancaster, PA • Sunday Worship 10:00 AM</div>
+        <div class="install-box">
+          <strong>Add Bethel to Your Phone</strong>
+          iPhone: Tap <b>Share</b> then <b>Add to Home Screen</b><br>
+          Android: Tap the <b>menu</b> then <b>Add to Home screen</b>
+        </div>
+      </div>
 
-  <div class="app-shell">
-    <div class="hero">
-      <div class="logo-wrap">
-        <img src="logo.png" alt="Bethel African Methodist Episcopal Church Lancaster logo">
+      <div class="content">
+        <div class="view active" id="view-home">
+          <div class="card">
+            <h2 class="section-title">Quick Access</h2>
+            <div class="quick-grid">
+              <button class="action-btn" type="button" data-view="watch">
+                <span class="action-icon">▶</span>
+                <span>Watch Live</span>
+              </button>
+              <button class="action-btn secondary" type="button" data-view="watch">
+                <span class="action-icon">⟲</span>
+                <span>Replay</span>
+              </button>
+              <button class="action-btn green" type="button" data-view="give">
+                <span class="action-icon">❤</span>
+                <span>Give</span>
+              </button>
+              <button class="action-btn purple" type="button" data-view="connect">
+                <span class="action-icon">✉</span>
+                <span>Prayer & Blessings</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="feature-grid">
+            <div class="live-box">
+              <div class="status">
+                <span class="status-dot"></span>
+                <span>Worship Online</span>
+              </div>
+              <h3>Join Us Live or Watch the Latest Service</h3>
+              <p>Worship with us online and stay connected whether you are joining from home or away. Use the buttons below to stay inside the app experience.</p>
+              <div class="button-row">
+                <button class="pill-btn" type="button" data-view="watch">Open Watch Tab</button>
+                <button class="pill-btn alt" type="button" data-view="events">Open Events Tab</button>
+              </div>
+            </div>
+
+            <div class="info-box">
+              <h3>Service Times</h3>
+              <div class="service-times">
+                <div><strong>Sunday Worship:</strong> 10:00 AM</div>
+                <div><strong>Bible Study:</strong> Wednesday 7:00 PM</div>
+                <div><strong>Prayer Line:</strong> Add prayer line number and access code</div>
+                <div><strong>Location:</strong> 450 E Strawberry St, Lancaster, PA</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Church Life</h2>
+            <p class="section-sub">Keep members and visitors connected with the life of the church.</p>
+            <div class="quick-grid">
+              <button class="action-btn secondary" type="button" data-view="events">
+                <span class="action-icon">📅</span>
+                <span>Events</span>
+              </button>
+              <button class="action-btn" type="button" data-view="connect">
+                <span class="action-icon">☎</span>
+                <span>Contact</span>
+              </button>
+              <a class="action-btn purple" href="https://www.facebook.com/bethelamelancaster/" rel="noopener">
+                <span class="action-icon">f</span>
+                <span>Facebook</span>
+              </a>
+              <button class="action-btn green" type="button" data-view="watch">
+                <span class="action-icon">▣</span>
+                <span>YouTube</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="feature-grid">
+            <div class="card">
+              <h2 class="section-title">Announcements</h2>
+              <ul class="announcement-list">
+                <li>Welcome to Bethel AME Lancaster.</li>
+                <li>Check back here for upcoming events and special services.</li>
+                <li>Use the tabs below to watch, give, and stay connected.</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h2 class="section-title">Contact & Visit</h2>
+              <div class="contact-list">
+                <div><strong>Address:</strong> 450 E Strawberry St, Lancaster, PA</div>
+                <div><strong>Phone:</strong> 717-393-8379</div>
+                <div><strong>Email:</strong> web@bethelamelancaster.com</div>
+                <div><strong>Website:</strong> bethelamelancaster.com</div>
+              </div>
+              <div class="button-row">
+                <a class="pill-btn" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" rel="noopener">Get Directions</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-watch">
+          <div class="card">
+            <h2 class="section-title">Watch</h2>
+            <p class="section-sub">Live stream and replay, all in one place.</p>
+            <div class="button-row">
+              <a class="pill-btn" href="https://bethelamelancaster.com/watch-live" rel="noopener">Open Live Page</a>
+              <a class="pill-btn alt" href="https://www.youtube.com/channel/UCvFyu7ybvACGGblAZxuE93g" rel="noopener">Open YouTube</a>
+            </div>
+            <p class="small-note">This section stays inside the app shell, but the actual video pages may still open outside the shell if those sites do not allow embedding.</p>
+          </div>
+        </div>
+
+        <div class="view" id="view-events">
+          <div class="card">
+            <h2 class="section-title">Events Calendar</h2>
+            <p class="section-sub">View upcoming church events right here on the page.</p>
+            <div class="calendar-wrap">
+              <iframe
+                src="https://calendar.google.com/calendar/embed?height=800&amp;wkst=1&amp;ctz=America%2FNew_York&amp;title=Bethel%20Events&amp;mode=MONTH&amp;showCalendars=0&amp;src=YmV0aGVsYW1lbGFuY2FzdGVyQGdtYWlsLmNvbQ&amp;src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&amp;color=%23E4C441&amp;color=%230B8043"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Bethel Events Calendar"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-give">
+          <div class="card">
+            <h2 class="section-title">Give</h2>
+            <p class="section-sub">Support the ministry of Bethel AME Lancaster.</p>
+            <iframe class="embed-frame" src="https://bethelamelancaster.com/donate" title="Donate to Bethel"></iframe>
+            <p class="small-note">If the donate page does not load here on your device, use the button below.</p>
+            <div class="button-row">
+              <a class="pill-btn" href="https://bethelamelancaster.com/donate" rel="noopener">Open Donate Page</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-connect">
+          <div class="card">
+            <h2 class="section-title">Connect</h2>
+            <p class="section-sub">Prayer, praise reports, contact, and church information.</p>
+            <div class="quick-grid">
+              <a class="action-btn" href="mailto:web@bethelamelancaster.com">
+                <span class="action-icon">@</span>
+                <span>Email Us</span>
+              </a>
+              <a class="action-btn secondary" href="tel:7173938379">
+                <span class="action-icon">☎</span>
+                <span>Call Church</span>
+              </a>
+              <a class="action-btn green" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" rel="noopener">
+                <span class="action-icon">⌖</span>
+                <span>Directions</span>
+              </a>
+              <a class="action-btn purple" href="https://www.facebook.com/bethelamelancaster/" rel="noopener">
+                <span class="action-icon">f</span>
+                <span>Facebook</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Prayer & Blessings</h2>
+            <p class="section-sub">Share a prayer request or blessing received using the secure form below.</p>
+            <div class="calendar-wrap">
+              <iframe class="embed-frame" src="https://form.jotform.com/260878588475075" title="Prayer and Blessings Form" loading="lazy"></iframe>
+            </div>
+            <p class="small-note">If the form does not load well on your device, use the button below.</p>
+            <div class="button-row">
+              <a class="pill-btn" href="https://form.jotform.com/260878588475075" rel="noopener">Open Full Form</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <h1>Bethel AME Lancaster</h1>
-      <p>Welcome to your church hub for worship, connection, prayer, events, and staying informed throughout the week.</p>
-      <div class="hero-meta">450 E Strawberry St, Lancaster, PA • Sunday Worship 10:00 AM</div>
-      <div class="install-box">
-        <strong>Add Bethel to Your Phone</strong>
-        iPhone: Tap <b>Share</b> then <b>Add to Home Screen</b><br>
-        Android: Tap the <b>menu</b> then <b>Add to Home screen</b>
+
+      <div class="bottom-nav">
+        <button class="nav-item is-active" type="button" data-view="home">
+          <span class="nav-icon">⌂</span>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" type="button" data-view="watch">
+          <span class="nav-icon">▶</span>
+          <span>Watch</span>
+        </button>
+        <button class="nav-item" type="button" data-view="events">
+          <span class="nav-icon">📅</span>
+          <span>Events</span>
+        </button>
+        <button class="nav-item" type="button" data-view="give">
+          <span class="nav-icon">❤</span>
+          <span>Give</span>
+        </button>
+        <button class="nav-item" type="button" data-view="connect">
+          <span class="nav-icon">☰</span>
+          <span>Connect</span>
+        </button>
       </div>
+
+      <div class="footer">Bethel AME Lancaster • Connect • Worship • Grow</div>
     </div>
-
-    <div class="content">
-      <div class="card" id="bethel-home">
-        <h2 class="section-title">Quick Access</h2>
-        <div class="quick-grid">
-          <a class="action-btn" href="https://bethelamelancaster.com/watch-live" target="_blank">
-            <span class="action-icon">▶</span>
-            <span>Watch Live</span>
-          </a>
-          <a class="action-btn secondary" href="https://www.youtube.com/channel/UCvFyu7ybvACGGblAZxuE93g" target="_blank">
-            <span class="action-icon">⟲</span>
-            <span>Replay</span>
-          </a>
-          <a class="action-btn green" href="https://bethelamelancaster.com/donate" target="_blank">
-            <span class="action-icon">❤</span>
-            <span>Give</span>
-          </a>
-          <a class="action-btn purple" href="https://bethelamelancaster.com/prayers" target="_blank">
-            <span class="action-icon">✉</span>
-            <span>Submit a Prayer Request</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="feature-grid" id="bethel-watch">
-        <div class="live-box">
-          <div class="status">
-            <span class="status-dot"></span>
-            <span>Worship Online</span>
-          </div>
-          <h3>Join Us Live or Watch the Latest Service</h3>
-          <p>Worship with us online and stay connected whether you are joining from home or away. Use the links below to watch live or catch the most recent message.</p>
-          <div class="button-row">
-            <a class="pill-btn" href="https://bethelamelancaster.com/watch-live" target="_blank">Open Live Stream</a>
-            <a class="pill-btn alt" href="https://www.youtube.com/channel/UCvFyu7ybvACGGblAZxuE93g" target="_blank">Open Replay</a>
-          </div>
-        </div>
-
-        <div class="info-box">
-          <h3>Service Times</h3>
-          <div class="service-times">
-            <div><strong>Sunday Worship:</strong> 10:00 AM</div>
-            <div><strong>Bible Study:</strong> Wednesday 7:00 PM</div>
-            <div><strong>Location:</strong> 450 E Strawberry St, Lancaster, PA</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="bethel-connect">
-        <h2 class="section-title">Church Life</h2>
-        <p class="section-sub">Keep members and visitors connected with the life of the church.</p>
-        <div class="quick-grid">
-          <a class="action-btn secondary" href="#bethel-calendar">
-            <span class="action-icon">📅</span>
-            <span>Events</span>
-          </a>
-          <a class="action-btn" href="https://bethelamelancaster.com/contact" target="_blank">
-            <span class="action-icon">☎</span>
-            <span>Contact</span>
-          </a>
-          <a class="action-btn purple" href="https://www.facebook.com/bethelamelancaster/" target="_blank">
-            <span class="action-icon">f</span>
-            <span>Facebook</span>
-          </a>
-          <a class="action-btn green" href="https://www.youtube.com/channel/UCvFyu7ybvACGGblAZxuE93g" target="_blank">
-            <span class="action-icon">▣</span>
-            <span>YouTube</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2 class="section-title">Ministries</h2>
-        <div class="ministry-grid">
-          <div class="ministry-item">
-            <h4>Women’s Ministry</h4>
-            <p>Encouraging fellowship, service, and spiritual growth among women of all ages.</p>
-          </div>
-          <div class="ministry-item">
-            <h4>Men’s Ministry</h4>
-            <p>Building strong faith, connection, accountability, and leadership in Christ.</p>
-          </div>
-          <div class="ministry-item">
-            <h4>Youth Ministry</h4>
-            <p>Helping youth grow in faith, confidence, and community through worship and learning.</p>
-          </div>
-          <div class="ministry-item">
-            <h4>Outreach Ministry</h4>
-            <p>Serving the local community with compassion, generosity, and the love of Christ.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="feature-grid">
-        <div class="card">
-          <h2 class="section-title">Announcements</h2>
-          <ul class="announcement-list">
-            <li>Welcome to Bethel AME Lancaster.</li>
-            <li>Check back here for upcoming events and special services.</li>
-            <li>Use the buttons above to watch, give, and stay connected.</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <h2 class="section-title">Contact & Visit</h2>
-          <div class="contact-list">
-            <div><strong>Address:</strong> 450 E Strawberry St, Lancaster, PA</div>
-            <div><strong>Phone:</strong> 717-393-8379</div>
-            <div><strong>Email:</strong> web@bethelamelancaster.com</div>
-            <div><strong>Website:</strong> bethelamelancaster.com</div>
-          </div>
-          <div class="button-row">
-            <a class="pill-btn" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" target="_blank">Get Directions</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="bethel-calendar">
-        <h2 class="section-title">Events Calendar</h2>
-        <p class="section-sub">View upcoming church events right here on the page.</p>
-        <div class="calendar-wrap">
-          <iframe src="https://calendar.google.com/calendar/embed?height=800&amp;wkst=1&amp;ctz=America%2FNew_York&amp;title=Bethel%20Events&amp;mode=MONTH&amp;showCalendars=0&amp;src=YmV0aGVsYW1lbGFuY2FzdGVyQGdtYWlsLmNvbQ&amp;src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&amp;color=%23E4C441&amp;color=%230B8043" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Bethel Events Calendar"></iframe>
-        </div>
-      </div>
-
-    <div class="bottom-nav">
-      <a class="nav-item" href="#bethel-home">
-        <span class="nav-icon">⌂</span>
-        <span>Home</span>
-      </a>
-      <a class="nav-item" href="#bethel-watch">
-        <span class="nav-icon">▶</span>
-        <span>Watch</span>
-      </a>
-      <a class="nav-item" href="#bethel-calendar">
-        <span class="nav-icon">📅</span>
-        <span>Events</span>
-      </a>
-      <a class="nav-item" href="https://bethelamelancaster.com/donate" target="_blank">
-        <span class="nav-icon">❤</span>
-        <span>Give</span>
-      </a>
-      <a class="nav-item" href="#bethel-connect">
-        <span class="nav-icon">☰</span>
-        <span>Connect</span>
-      </a>
-    </div>
-
-    <div class="footer">Bethel AME Lancaster • Connect • Worship • Grow</div>
   </div>
-</div>
+
+  <script>
+    (function () {
+      const buttons = document.querySelectorAll('[data-view]');
+      const views = document.querySelectorAll('.view');
+
+      function showView(name) {
+        views.forEach(v => {
+          v.classList.toggle('active', v.id === 'view-' + name);
+        });
+
+        buttons.forEach(b => {
+          b.classList.toggle('is-active', b.getAttribute('data-view') === name);
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -473,8 +473,42 @@
       btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
     });
 
-    // Push notifications
+    // Firebase + Push notifications
     const VAPID_PUBLIC_KEY = 'BGSxnQMUeTpAk7xHTZNMrrNrbqV-PTftZcgtaDXcEM5EAXw0V2-c1AQSAdtTc4gakeCIy1MgpXtmyHQgfjr59VA';
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
+      authDomain: "bethelapp-f2d4e.firebaseapp.com",
+      projectId: "bethelapp-f2d4e",
+      storageBucket: "bethelapp-f2d4e.firebasestorage.app",
+      messagingSenderId: "512787123423",
+      appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
+    };
+
+    // Load Firebase SDKs dynamically (no bundler needed)
+    async function loadFirebase() {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const app = initializeApp(FIREBASE_CONFIG);
+      const db = getFirestore(app);
+      return { db, doc, setDoc };
+    }
+
+    async function saveSubscriptionToFirestore(subscription) {
+      try {
+        const { db, doc, setDoc } = await loadFirebase();
+        // Use the endpoint as a unique ID (hashed to a safe key)
+        const key = btoa(subscription.endpoint).replace(/[^a-zA-Z0-9]/g, '').slice(0, 40);
+        await setDoc(doc(db, 'push_subscriptions', key), {
+          subscription: JSON.stringify(subscription),
+          endpoint: subscription.endpoint,
+          savedAt: new Date().toISOString(),
+          platform: navigator.platform || 'unknown'
+        });
+        console.log('Subscription saved to Firestore.');
+      } catch (err) {
+        console.warn('Firestore save failed:', err);
+      }
+    }
 
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -489,6 +523,7 @@
         const existing = await reg.pushManager.getSubscription();
         if (existing) {
           localStorage.setItem('bethel_push_sub', JSON.stringify(existing));
+          await saveSubscriptionToFirestore(existing);
           return;
         }
         const subscription = await reg.pushManager.subscribe({
@@ -496,6 +531,7 @@
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
         localStorage.setItem('bethel_push_sub', JSON.stringify(subscription));
+        await saveSubscriptionToFirestore(subscription);
       } catch (err) {
         console.warn('Push subscription failed:', err);
       }

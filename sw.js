@@ -5,12 +5,12 @@ const CACHE_NAME = 'bethel-v1';
 
 // Files that make up the app shell — cached immediately on install.
 const SHELL_FILES = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/logo.png',
-  '/icons/192.png',
-  '/icons/512.png'
+  '/BethelApp/',
+  '/BethelApp/index.html',
+  '/BethelApp/manifest.json',
+  '/BethelApp/logo.png',
+  '/BethelApp/icons/192.png',
+  '/BethelApp/icons/512.png'
 ];
 
 // ── Install: pre-cache the app shell ─────────────────────────────────

@@ -10,10 +10,10 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- Touch icons -->
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="icons/152.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/192.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/BethelApp/icons/180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/BethelApp/icons/152.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/BethelApp/icons/192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/BethelApp/icons/16.png">
 
   <style>
     :root {
@@ -818,7 +818,7 @@
     // ── Service worker registration ───────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
+        navigator.serviceWorker.register('/BethelApp/sw.js', { scope: '/BethelApp/' })
           .then(reg => console.log('Service worker registered:', reg.scope))
           .catch(err => console.warn('Service worker registration failed:', err));
       });

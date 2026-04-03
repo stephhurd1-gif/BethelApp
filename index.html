@@ -42,25 +42,25 @@
       min-height: 100vh;
     }
 
-    /* ── Utility ── */
     .mt-8 { margin-top: 8px; }
 
     #bethel-app {
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px;
+      position: relative;
     }
 
     .app-shell {
-  background:
-    radial-gradient(circle at top right, rgba(134,35,156,0.28), transparent 30%),
-    radial-gradient(circle at top left, rgba(66,158,64,0.16), transparent 26%),
-    linear-gradient(180deg, #0a0f16 0%, #01060b 100%);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  overflow: visible;
-  box-shadow: 0 18px 50px rgba(0,0,0,0.3);
-}
+      background:
+        radial-gradient(circle at top right, rgba(134,35,156,0.28), transparent 30%),
+        radial-gradient(circle at top left, rgba(66,158,64,0.16), transparent 26%),
+        linear-gradient(180deg, #0a0f16 0%, #01060b 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: visible;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+    }
 
     .hero {
       padding: 28px 20px 24px;
@@ -122,7 +122,6 @@
       margin-bottom: 6px;
     }
 
-    /* Push notification banner */
     .push-banner {
       display: none;
       align-items: center;
@@ -153,11 +152,11 @@
       flex-shrink: 0;
     }
 
-.content {
-  padding: 18px 18px 140px;
-  display: grid;
-  gap: 18px;
-}
+    .content {
+      padding: 18px 18px 170px;
+      display: grid;
+      gap: 18px;
+    }
 
     .view {
       display: none;
@@ -389,70 +388,23 @@
       margin-top: 10px;
     }
 
-  .content {
-  padding: 18px 18px 140px;
-  display: grid;
-  gap: 18px;
-}
-
-.bottom-nav {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  z-index: 9999;
-  width: min(calc(100% - 32px), 1068px);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  padding: 8px;
-  margin: 0;
-  background: rgba(10, 14, 20, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 26px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 0.5px rgba(247,191,91,0.08);
-}
-
-@media (max-width: 560px) {
-  #bethel-app {
-    padding: 10px;
-  }
-
-  .hero h1 {
-    font-size: 25px;
-  }
-
-  .hero p {
-    font-size: 14px;
-  }
-
-  .quick-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .action-btn {
-    min-height: 82px;
-  }
-
-  .button-row {
-    flex-direction: column;
-  }
-
-  .pill-btn {
-    text-align: center;
-  }
-
-  .bottom-nav {
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    width: calc(100% - 16px);
-    margin: 0;
-    border-radius: 22px;
-    gap: 4px;
-    padding: 6px;
-  }
-}
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      z-index: 9999;
+      width: min(calc(100% - 36px), 1064px);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 8px;
+      margin: 0;
+      background: #0a0f16;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 26px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    }
 
     .nav-item {
       appearance: none;
@@ -487,10 +439,59 @@
 
     .footer {
       text-align: center;
-      padding: 18px 20px 24px;
+      padding: 18px 20px 120px;
       font-size: 13px;
       color: #d7d7d7;
       border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    @media (max-width: 900px) {
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      #bethel-app {
+        padding: 10px;
+      }
+
+      .hero h1 {
+        font-size: 25px;
+      }
+
+      .hero p {
+        font-size: 14px;
+      }
+
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-btn {
+        min-height: 82px;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+
+      .pill-btn {
+        text-align: center;
+      }
+
+      .bottom-nav {
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        width: calc(100% - 20px);
+        margin: 0;
+        border-radius: 22px;
+        gap: 4px;
+        padding: 6px;
+      }
     }
   </style>
 </head>
@@ -498,7 +499,6 @@
   <div id="bethel-app">
     <div class="app-shell">
 
-      <!-- Push notification opt-in banner (shown after first interaction) -->
       <div class="push-banner" id="push-banner" role="alert">
         <p><strong>Stay connected.</strong> Get notified about services, events, and announcements.</p>
         <div class="push-actions">
@@ -523,7 +523,6 @@
 
       <div class="content">
 
-        <!-- ── HOME VIEW ── -->
         <div class="view active" id="view-home">
           <div class="card">
             <h2 class="section-title">Quick Access</h2>
@@ -583,8 +582,8 @@
                 </div>
                 <div><strong>Location:</strong> 450 E Strawberry St, Lancaster, PA</div>
               </div>
-            </div><!-- /.info-box -->
-          </div><!-- /.feature-grid -->
+            </div>
+          </div>
 
           <div class="card">
             <h2 class="section-title">Church Life</h2>
@@ -632,9 +631,8 @@
               </div>
             </div>
           </div>
-        </div><!-- /#view-home -->
+        </div>
 
-        <!-- ── WATCH VIEW ── -->
         <div class="view" id="view-watch">
           <div class="card">
             <h2 class="section-title">Watch</h2>
@@ -645,9 +643,8 @@
             </div>
             <p class="small-note">This section stays inside the app shell, but the actual video pages may still open outside the shell if those sites do not allow embedding.</p>
           </div>
-        </div><!-- /#view-watch -->
+        </div>
 
-        <!-- ── EVENTS VIEW ── -->
         <div class="view" id="view-events">
           <div class="card">
             <h2 class="section-title">Events Calendar</h2>
@@ -660,9 +657,8 @@
                 title="Bethel Events Calendar"></iframe>
             </div>
           </div>
-        </div><!-- /#view-events -->
+        </div>
 
-        <!-- ── GIVE VIEW ── -->
         <div class="view" id="view-give">
           <div class="card">
             <h2 class="section-title">Give</h2>
@@ -673,9 +669,8 @@
               <a class="pill-btn" href="https://bethelamelancaster.com/donate" rel="noopener">Open Donate Page</a>
             </div>
           </div>
-        </div><!-- /#view-give -->
+        </div>
 
-        <!-- ── CONNECT VIEW ── -->
         <div class="view" id="view-connect">
           <div class="card">
             <h2 class="section-title">Connect</h2>
@@ -711,40 +706,39 @@
               <a class="pill-btn" href="https://form.jotform.com/260878588475075" rel="noopener">Open Full Form</a>
             </div>
           </div>
-        </div><!-- /#view-connect -->
+        </div>
 
-      </div><!-- /.content -->
-
-      <nav class="bottom-nav" aria-label="Main navigation">
-        <button class="nav-item is-active" type="button" data-view="home" aria-label="Home">
-          <span class="nav-icon" aria-hidden="true">⌂</span>
-          <span>Home</span>
-        </button>
-        <button class="nav-item" type="button" data-view="watch" aria-label="Watch">
-          <span class="nav-icon" aria-hidden="true">▶</span>
-          <span>Watch</span>
-        </button>
-        <button class="nav-item" type="button" data-view="events" aria-label="Events">
-          <span class="nav-icon" aria-hidden="true">📅</span>
-          <span>Events</span>
-        </button>
-        <button class="nav-item" type="button" data-view="give" aria-label="Give">
-          <span class="nav-icon" aria-hidden="true">❤</span>
-          <span>Give</span>
-        </button>
-        <button class="nav-item" type="button" data-view="connect" aria-label="Connect">
-          <span class="nav-icon" aria-hidden="true">☰</span>
-          <span>Connect</span>
-        </button>
-      </nav>
+      </div>
 
       <footer class="footer">Bethel AME Lancaster • Connect • Worship • Grow</footer>
 
-    </div><!-- /.app-shell -->
-  </div><!-- /#bethel-app -->
+    </div>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item is-active" type="button" data-view="home" aria-label="Home">
+        <span class="nav-icon" aria-hidden="true">⌂</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" type="button" data-view="watch" aria-label="Watch">
+        <span class="nav-icon" aria-hidden="true">▶</span>
+        <span>Watch</span>
+      </button>
+      <button class="nav-item" type="button" data-view="events" aria-label="Events">
+        <span class="nav-icon" aria-hidden="true">📅</span>
+        <span>Events</span>
+      </button>
+      <button class="nav-item" type="button" data-view="give" aria-label="Give">
+        <span class="nav-icon" aria-hidden="true">❤</span>
+        <span>Give</span>
+      </button>
+      <button class="nav-item" type="button" data-view="connect" aria-label="Connect">
+        <span class="nav-icon" aria-hidden="true">☰</span>
+        <span>Connect</span>
+      </button>
+    </nav>
+  </div>
 
   <script>
-    // ── View navigation ──────────────────────────────────────────────
     const navButtons = document.querySelectorAll('[data-view]');
     const views = document.querySelectorAll('.view');
     const lazyLoaded = new Set();
@@ -754,11 +748,10 @@
         v.classList.toggle('active', v.id === 'view-' + name);
       });
 
-      navButtons.forEach(b => {
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(b => {
         b.classList.toggle('is-active', b.getAttribute('data-view') === name);
       });
 
-      // Lazy-load iframes only when their view is first activated
       if (!lazyLoaded.has(name)) {
         const view = document.getElementById('view-' + name);
         if (view) {
@@ -777,9 +770,6 @@
       btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
     });
 
-    // ── Push notification opt-in ──────────────────────────────────────
-    // Show the banner after a user has interacted with the app (not on cold load)
-    // and only if the browser supports push and permission hasn't been decided yet.
     const pushBanner = document.getElementById('push-banner');
     const pushAllow = document.getElementById('push-allow');
     const pushDismiss = document.getElementById('push-dismiss');
@@ -800,9 +790,6 @@
       try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          // TODO: subscribe to your push backend here using
-          // navigator.serviceWorker.ready then reg.pushManager.subscribe(...)
-          // and send the subscription object to your server / Firebase.
           console.log('Push permission granted — ready to subscribe.');
         }
       } catch (err) {
@@ -815,13 +802,11 @@
       sessionStorage.setItem('pushDismissed', '1');
     });
 
-    // Trigger banner on first meaningful click (not immediately on load)
     document.addEventListener('click', function onFirstClick() {
       maybeShowPushBanner();
       document.removeEventListener('click', onFirstClick);
     }, { once: true });
 
-    // ── Service worker registration ───────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/BethelApp/sw.js', { scope: '/BethelApp/' })

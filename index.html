@@ -5,16 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Bethel App</title>
   <meta name="theme-color" content="#01060b">
-
-  <!-- PWA manifest -->
   <link rel="manifest" href="manifest.json">
-
-  <!-- Touch icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="/BethelApp/icons/180.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/BethelApp/icons/152.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/BethelApp/icons/192.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/BethelApp/icons/16.png">
-
   <style>
     :root {
       --black: #01060b;
@@ -25,32 +20,20 @@
       --soft: rgba(255,255,255,0.08);
       --border: rgba(247,191,91,0.22);
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: #01060b;
       color: var(--white);
       font-family: Arial, sans-serif;
     }
-
-    body {
-      min-height: 100vh;
-    }
-
+    body { min-height: 100vh; }
     .mt-8 { margin-top: 8px; }
-
     #bethel-app {
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px;
-      position: relative;
     }
-
     .app-shell {
       background:
         radial-gradient(circle at top right, rgba(134,35,156,0.28), transparent 30%),
@@ -58,436 +41,122 @@
         linear-gradient(180deg, #0a0f16 0%, #01060b 100%);
       border: 1px solid var(--border);
       border-radius: 24px;
-      overflow: visible;
+      overflow: hidden;
       box-shadow: 0 18px 50px rgba(0,0,0,0.3);
     }
-
     .hero {
       padding: 28px 20px 24px;
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
     }
-
-    .logo-wrap {
-      margin: 0 auto 14px;
-      width: 120px;
-      max-width: 40vw;
-    }
-
-    .logo-wrap img {
-      display: block;
-      width: 100%;
-      height: auto;
-      border-radius: 20px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-    }
-
-    .hero h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.15;
-      color: var(--gold);
-      letter-spacing: 0.2px;
-    }
-
-    .hero p {
-      margin: 10px auto 0;
-      max-width: 700px;
-      font-size: 15px;
-      line-height: 1.6;
-      color: #f4f4f4;
-    }
-
-    .hero-meta {
-      margin-top: 14px;
-      font-size: 14px;
-      color: #e8e8e8;
-    }
-
+    .logo-wrap { margin: 0 auto 14px; width: 120px; max-width: 40vw; }
+    .logo-wrap img { display: block; width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+    .hero h1 { margin: 0; font-size: 30px; line-height: 1.15; color: var(--gold); letter-spacing: 0.2px; }
+    .hero p { margin: 10px auto 0; max-width: 700px; font-size: 15px; line-height: 1.6; color: #f4f4f4; }
+    .hero-meta { margin-top: 14px; font-size: 14px; color: #e8e8e8; }
     .install-box {
-      margin-top: 16px;
-      display: inline-block;
-      text-align: left;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(247,191,91,0.2);
-      border-radius: 16px;
-      padding: 12px 14px;
-      max-width: 520px;
+      margin-top: 16px; display: inline-block; text-align: left;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(247,191,91,0.2);
+      border-radius: 16px; padding: 12px 14px; max-width: 520px;
     }
-
-    .install-box strong {
-      color: var(--gold);
-      display: block;
-      margin-bottom: 6px;
+    .install-box strong { color: var(--gold); display: block; margin-bottom: 6px; }
+    .push-banner { display: none; align-items: center; gap: 12px; padding: 12px 18px; background: rgba(247,191,91,0.10); border-bottom: 1px solid rgba(247,191,91,0.18); }
+    .push-banner.visible { display: flex; }
+    .push-banner p { margin: 0; flex: 1; font-size: 14px; color: #f4f4f4; }
+    .push-banner strong { color: var(--gold); }
+    .push-banner .push-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .content { padding: 18px 18px 120px; display: grid; gap: 18px; }
+    .view { display: none; gap: 18px; }
+    .view.active { display: grid; }
+    .card { background: var(--soft); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 18px; }
+    .section-title { margin: 0 0 14px; font-size: 20px; color: var(--gold); }
+    .section-sub { margin: -4px 0 14px; font-size: 14px; color: #dddddd; line-height: 1.5; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    button.action-btn, a.action-btn {
+      appearance: none; border: 0; cursor: pointer; width: 100%; text-decoration: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 98px; border-radius: 18px; padding: 14px 10px; font-weight: bold;
+      text-align: center; transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+      color: var(--black); background: var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      font-family: inherit; font-size: 15px;
     }
-
-    .push-banner {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 18px;
-      background: rgba(247,191,91,0.10);
-      border-bottom: 1px solid rgba(247,191,91,0.18);
-    }
-
-    .push-banner.visible {
-      display: flex;
-    }
-
-    .push-banner p {
-      margin: 0;
-      flex: 1;
-      font-size: 14px;
-      color: #f4f4f4;
-    }
-
-    .push-banner strong {
-      color: var(--gold);
-    }
-
-    .push-banner .push-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .content {
-      padding: 18px 18px 170px;
-      display: grid;
-      gap: 18px;
-    }
-
-    .view {
-      display: none;
-      gap: 18px;
-    }
-
-    .view.active {
-      display: grid;
-    }
-
-    .card {
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 18px;
-    }
-
-    .section-title {
-      margin: 0 0 14px;
-      font-size: 20px;
-      color: var(--gold);
-    }
-
-    .section-sub {
-      margin: -4px 0 14px;
-      font-size: 14px;
-      color: #dddddd;
-      line-height: 1.5;
-    }
-
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    button.action-btn,
-    a.action-btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      width: 100%;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 98px;
-      border-radius: 18px;
-      padding: 14px 10px;
-      font-weight: bold;
-      text-align: center;
-      transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
-      color: var(--black);
-      background: var(--gold);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-      font-family: inherit;
-      font-size: 15px;
-    }
-
-    .action-btn.secondary {
-      background: var(--white);
-      color: var(--black);
-    }
-
-    .action-btn.green {
-      background: var(--green);
-      color: var(--white);
-    }
-
-    .action-btn.purple {
-      background: var(--purple);
-      color: var(--white);
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px);
-      opacity: 0.96;
-    }
-
-    .action-icon {
-      font-size: 24px;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 18px;
-      align-items: stretch;
-    }
-
+    .action-btn.secondary { background: var(--white); color: var(--black); }
+    .action-btn.green { background: var(--green); color: var(--white); }
+    .action-btn.purple { background: var(--purple); color: var(--white); }
+    .action-btn:hover { transform: translateY(-2px); opacity: 0.96; }
+    .action-icon { font-size: 24px; line-height: 1; margin-bottom: 8px; }
+    .feature-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: stretch; }
     .live-box {
       background: linear-gradient(135deg, rgba(134,35,156,0.24), rgba(255,255,255,0.04));
-      border: 1px solid rgba(247,191,91,0.2);
-      border-radius: 20px;
-      padding: 18px;
-      min-height: 100%;
+      border: 1px solid rgba(247,191,91,0.2); border-radius: 20px; padding: 18px; min-height: 100%;
     }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      font-size: 13px;
-      font-weight: bold;
-      margin-bottom: 12px;
+    .status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 13px; font-weight: bold; margin-bottom: 12px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff4d4f; box-shadow: 0 0 0 6px rgba(255,77,79,0.12); animation: bethelPulse 1.8s infinite; }
+    @keyframes bethelPulse { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+    .live-box h3, .info-box h3 { margin: 0 0 10px; font-size: 22px; color: var(--white); }
+    .live-box p, .info-box p, .announcement-list li, .contact-list div { font-size: 14px; line-height: 1.6; color: #ebebeb; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button.pill-btn, a.pill-btn {
+      appearance: none; border: 0; cursor: pointer; display: inline-block; text-decoration: none;
+      padding: 11px 16px; border-radius: 999px; font-weight: bold; font-size: 14px;
+      background: var(--gold); color: var(--black); font-family: inherit;
     }
+    .pill-btn.alt { background: rgba(255,255,255,0.12); color: var(--white); border: 1px solid rgba(255,255,255,0.12); }
+    .info-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 18px; }
+    .service-times div { margin-bottom: 8px; }
+    .announcement-list { margin: 0; padding-left: 18px; }
+    .announcement-list li { margin-bottom: 10px; }
+    .contact-list { display: grid; gap: 10px; }
+    .contact-list strong { color: var(--gold); }
+    .calendar-wrap { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
+    .calendar-wrap iframe { display: block; width: 100%; min-height: 700px; border: 0; }
+    .embed-frame { width: 100%; min-height: 72vh; border: 0; border-radius: 18px; background: rgba(255,255,255,0.03); }
+    .small-note { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin-top: 10px; }
 
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #ff4d4f;
-      box-shadow: 0 0 0 6px rgba(255,77,79,0.12);
-      animation: bethelPulse 1.8s infinite;
-    }
-
-    @keyframes bethelPulse {
-      0% { transform: scale(1); opacity: 1; }
-      70% { transform: scale(1.2); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .live-box h3,
-    .info-box h3 {
-      margin: 0 0 10px;
-      font-size: 22px;
-      color: var(--white);
-    }
-
-    .live-box p,
-    .info-box p,
-    .announcement-list li,
-    .contact-list div {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #ebebeb;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button.pill-btn,
-    a.pill-btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      display: inline-block;
-      text-decoration: none;
-      padding: 11px 16px;
-      border-radius: 999px;
-      font-weight: bold;
-      font-size: 14px;
-      background: var(--gold);
-      color: var(--black);
-      font-family: inherit;
-    }
-
-    .pill-btn.alt {
-      background: rgba(255,255,255,0.12);
-      color: var(--white);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .info-box {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 18px;
-    }
-
-    .service-times div {
-      margin-bottom: 8px;
-    }
-
-    .announcement-list {
-      margin: 0;
-      padding-left: 18px;
-    }
-
-    .announcement-list li {
-      margin-bottom: 10px;
-    }
-
-    .contact-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .contact-list strong {
-      color: var(--gold);
-    }
-
-    .calendar-wrap {
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .calendar-wrap iframe {
-      display: block;
-      width: 100%;
-      min-height: 700px;
-      border: 0;
-    }
-
-    .embed-frame {
-      width: 100%;
-      min-height: 72vh;
-      border: 0;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .small-note {
-      font-size: 13px;
-      color: #cfcfcf;
-      line-height: 1.5;
-      margin-top: 10px;
-    }
-
+    /* ── Floating pill nav ── */
     .bottom-nav {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
+      position: sticky;
       bottom: calc(16px + env(safe-area-inset-bottom));
-      z-index: 9999;
-      width: min(calc(100% - 36px), 1064px);
+      z-index: 30;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 6px;
       padding: 8px;
-      margin: 0;
-      background: #0a0f16;
+      margin: 12px 16px 0;
+      background: rgba(10, 14, 20, 0.92);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: 26px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(247,191,91,0.10);
     }
-
     .nav-item {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      min-height: 54px;
-      text-decoration: none;
-      color: var(--white);
-      border-radius: 14px;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 6px 4px;
-      background: rgba(255,255,255,0.04);
-      font-family: inherit;
+      appearance: none; border: 0; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; min-height: 54px; text-decoration: none; color: var(--white);
+      border-radius: 18px; font-size: 11px; font-weight: bold; padding: 6px 4px;
+      background: transparent; font-family: inherit; transition: background 0.2s;
     }
-
-    .nav-item:hover,
-    .nav-item.is-active {
-      background: rgba(247,191,91,0.14);
-    }
-
-    .nav-item .nav-icon {
-      font-size: 18px;
-      line-height: 1;
-      color: var(--gold);
-    }
-
-    .footer {
-      text-align: center;
-      padding: 18px 20px 120px;
-      font-size: 13px;
-      color: #d7d7d7;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
+    .nav-item:hover, .nav-item.is-active { background: rgba(247,191,91,0.14); }
+    .nav-item .nav-icon { font-size: 18px; line-height: 1; color: var(--gold); }
+    .footer { text-align: center; padding: 18px 20px 24px; font-size: 13px; color: #d7d7d7; border-top: 1px solid rgba(255,255,255,0.06); }
 
     @media (max-width: 900px) {
-      .quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
+      .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .feature-grid { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 560px) {
-      #bethel-app {
-        padding: 10px;
-      }
-
-      .hero h1 {
-        font-size: 25px;
-      }
-
-      .hero p {
-        font-size: 14px;
-      }
-
-      .quick-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .action-btn {
-        min-height: 82px;
-      }
-
-      .button-row {
-        flex-direction: column;
-      }
-
-      .pill-btn {
-        text-align: center;
-      }
-
+      #bethel-app { padding: 10px; }
+      .hero h1 { font-size: 25px; }
+      .hero p { font-size: 14px; }
+      .quick-grid { grid-template-columns: 1fr; }
+      .action-btn { min-height: 82px; }
+      .button-row { flex-direction: column; }
+      .pill-btn { text-align: center; }
       .bottom-nav {
         bottom: calc(10px + env(safe-area-inset-bottom));
-        width: calc(100% - 20px);
-        margin: 0;
+        margin: 8px 8px 0;
         border-radius: 22px;
         gap: 4px;
         padding: 6px;
@@ -528,20 +197,20 @@
             <h2 class="section-title">Quick Access</h2>
             <div class="quick-grid">
               <button class="action-btn" type="button" data-view="watch" aria-label="Watch Live">
-                <span class="action-icon" aria-hidden="true">▶</span>
+                <span class="action-icon" aria-hidden="true">&#9658;</span>
                 <span>Watch Live</span>
               </button>
               <button class="action-btn secondary" type="button" data-view="watch" aria-label="Replay">
-                <span class="action-icon" aria-hidden="true">⟲</span>
+                <span class="action-icon" aria-hidden="true">&#10226;</span>
                 <span>Replay</span>
               </button>
               <button class="action-btn green" type="button" data-view="give" aria-label="Give">
-                <span class="action-icon" aria-hidden="true">❤</span>
+                <span class="action-icon" aria-hidden="true">&#10084;</span>
                 <span>Give</span>
               </button>
               <button class="action-btn purple" type="button" data-view="connect" aria-label="Prayer and Blessings">
-                <span class="action-icon" aria-hidden="true">✉</span>
-                <span>Prayer & Blessings</span>
+                <span class="action-icon" aria-hidden="true">&#9993;</span>
+                <span>Prayer &amp; Blessings</span>
               </button>
             </div>
           </div>
@@ -553,32 +222,25 @@
                 <span>Worship Online</span>
               </div>
               <h3>Join Us Live or Watch the Latest Service</h3>
-              <p>Worship with us online and stay connected whether you are joining from home or away. Use the buttons below to stay inside the app experience.</p>
+              <p>Worship with us online and stay connected whether you are joining from home or away.</p>
               <div class="button-row">
                 <button class="pill-btn" type="button" data-view="watch">Open Watch Tab</button>
                 <button class="pill-btn alt" type="button" data-view="events">Open Events Tab</button>
               </div>
             </div>
-
             <div class="info-box">
               <h3>Service Times</h3>
               <div class="service-times">
                 <div><strong>Sunday Worship:</strong> 10:00 AM</div>
+                <div><strong>Bible Study:</strong> Wednesday 12:00 PM in person, Cultural Center</div>
                 <div>
-                  <strong>Bible Study:</strong> Wednesday at 12:00 PM in person, Cultural Center
-                </div>
-                <div>
-                  <strong>Bible Study:</strong> Wednesday at 6:30 PM via Zoom
-                  <div class="mt-8">
-                    <a href="https://us02web.zoom.us/j/81302823193" rel="noopener" class="pill-btn">Join Bible Study</a>
-                  </div>
+                  <strong>Bible Study:</strong> Wednesday 6:30 PM via Zoom
+                  <div class="mt-8"><a href="https://us02web.zoom.us/j/81302823193" rel="noopener" class="pill-btn">Join Bible Study</a></div>
                   <div class="small-note">Passcode: 358480</div>
                 </div>
                 <div>
-                  <strong>Prayer Line:</strong> Weekdays at 7:30 AM
-                  <div class="mt-8">
-                    <a href="https://hello.freeconference.com/conf/call/7595734" rel="noopener" class="pill-btn">Join Prayer Line</a>
-                  </div>
+                  <strong>Prayer Line:</strong> Weekdays 7:30 AM
+                  <div class="mt-8"><a href="https://hello.freeconference.com/conf/call/7595734" rel="noopener" class="pill-btn">Join Prayer Line</a></div>
                 </div>
                 <div><strong>Location:</strong> 450 E Strawberry St, Lancaster, PA</div>
               </div>
@@ -590,11 +252,11 @@
             <p class="section-sub">Keep members and visitors connected with the life of the church.</p>
             <div class="quick-grid">
               <button class="action-btn secondary" type="button" data-view="events" aria-label="Events">
-                <span class="action-icon" aria-hidden="true">📅</span>
+                <span class="action-icon" aria-hidden="true">&#128197;</span>
                 <span>Events</span>
               </button>
               <button class="action-btn" type="button" data-view="connect" aria-label="Contact">
-                <span class="action-icon" aria-hidden="true">☎</span>
+                <span class="action-icon" aria-hidden="true">&#9742;</span>
                 <span>Contact</span>
               </button>
               <a class="action-btn purple" href="https://www.facebook.com/bethelamelancaster/" rel="noopener" aria-label="Facebook">
@@ -602,7 +264,7 @@
                 <span>Facebook</span>
               </a>
               <button class="action-btn green" type="button" data-view="watch" aria-label="YouTube">
-                <span class="action-icon" aria-hidden="true">▣</span>
+                <span class="action-icon" aria-hidden="true">&#9635;</span>
                 <span>YouTube</span>
               </button>
             </div>
@@ -617,9 +279,8 @@
                 <li>Use the tabs below to watch, give, and stay connected.</li>
               </ul>
             </div>
-
             <div class="card">
-              <h2 class="section-title">Contact & Visit</h2>
+              <h2 class="section-title">Contact &amp; Visit</h2>
               <div class="contact-list">
                 <div><strong>Address:</strong> 450 E Strawberry St, Lancaster, PA</div>
                 <div><strong>Phone:</strong> 717-393-8379</div>
@@ -641,7 +302,7 @@
               <a class="pill-btn" href="https://bethelamelancaster.com/watch-live" rel="noopener">Open Live Page</a>
               <a class="pill-btn alt" href="https://www.youtube.com/channel/UCvFyu7ybvACGGblAZxuE93g" rel="noopener">Open YouTube</a>
             </div>
-            <p class="small-note">This section stays inside the app shell, but the actual video pages may still open outside the shell if those sites do not allow embedding.</p>
+            <p class="small-note">Video pages may open outside the app shell if those sites do not allow embedding.</p>
           </div>
         </div>
 
@@ -650,11 +311,7 @@
             <h2 class="section-title">Events Calendar</h2>
             <p class="section-sub">View upcoming church events right here on the page.</p>
             <div class="calendar-wrap">
-              <iframe
-                data-src="https://calendar.google.com/calendar/embed?height=800&wkst=1&ctz=America%2FNew_York&title=Bethel%20Events&mode=MONTH&showCalendars=0&src=YmV0aGVsYW1lbGFuY2FzdGVyQGdtYWlsLmNvbQ&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23E4C441&color=%230B8043"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                title="Bethel Events Calendar"></iframe>
+              <iframe data-src="https://calendar.google.com/calendar/embed?height=800&wkst=1&ctz=America%2FNew_York&title=Bethel%20Events&mode=MONTH&showCalendars=0&src=YmV0aGVsYW1lbGFuY2FzdGVyQGdtYWlsLmNvbQ&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23E4C441&color=%230B8043" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Bethel Events Calendar"></iframe>
             </div>
           </div>
         </div>
@@ -662,12 +319,57 @@
         <div class="view" id="view-give">
           <div class="card">
             <h2 class="section-title">Give</h2>
-            <p class="section-sub">Support the ministry of Bethel AME Lancaster.</p>
-            <iframe class="embed-frame" data-src="https://bethelamelancaster.com/donate" title="Donate to Bethel"></iframe>
-            <p class="small-note">If the donate page does not load here on your device, use the button below.</p>
-            <div class="button-row">
-              <a class="pill-btn" href="https://bethelamelancaster.com/donate" rel="noopener">Open Donate Page</a>
+            <p class="section-sub">Your generosity supports the mission of Bethel AME Lancaster. Choose how you would like to give below.</p>
+            <div class="quick-grid">
+              <a class="action-btn" href="https://square.link/u/cGm3gcCe" rel="noopener" aria-label="Give Online">
+                <span class="action-icon" aria-hidden="true">&#128179;</span>
+                <span>Give Online</span>
+              </a>
+              <a class="action-btn secondary" href="https://cash.app/$BethelAMELancaster" rel="noopener" aria-label="Cash App">
+                <span class="action-icon" aria-hidden="true">&#36;</span>
+                <span>Cash App</span>
+              </a>
+              <a class="action-btn green" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" rel="noopener" aria-label="Give in Person">
+                <span class="action-icon" aria-hidden="true">&#8962;</span>
+                <span>In Person</span>
+              </a>
+              <a class="action-btn purple" href="mailto:web@bethelamelancaster.com?subject=Giving%20Question" rel="noopener" aria-label="Questions">
+                <span class="action-icon" aria-hidden="true">&#9993;</span>
+                <span>Questions</span>
+              </a>
             </div>
+          </div>
+
+          <div class="feature-grid">
+            <div class="card">
+              <h2 class="section-title">Online Giving</h2>
+              <p class="section-sub">Secure giving via Square — accepts Credit/Debit, Apple Pay, Google Pay, and Cash App Pay.</p>
+              <div class="button-row">
+                <a class="pill-btn" href="https://square.link/u/cGm3gcCe" rel="noopener">Give Now via Square</a>
+              </div>
+            </div>
+            <div class="card">
+              <h2 class="section-title">Cash App</h2>
+              <p class="section-sub">Send directly to our Cash Tag:</p>
+              <div style="font-size:22px;font-weight:bold;color:var(--gold);margin:10px 0;">$BethelAMELancaster</div>
+              <div class="button-row">
+                <a class="pill-btn" href="https://cash.app/$BethelAMELancaster" rel="noopener">Open Cash App</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Give by Mail</h2>
+            <p class="section-sub">Send a check payable to <strong>Bethel AME Church</strong> to:</p>
+            <div class="contact-list">
+              <div><strong>Address:</strong> 512 E. Strawberry Street, Lancaster, PA 17602</div>
+              <div><strong>Questions:</strong> web@bethelamelancaster.com</div>
+            </div>
+          </div>
+
+          <div class="card" style="text-align:center;padding:24px 18px;">
+            <p style="font-size:15px;color:#ebebeb;font-style:italic;margin:0 0 6px;">&ldquo;The reward for humility and fear of the LORD is riches and honor and life.&rdquo;</p>
+            <p style="font-size:13px;color:var(--gold);margin:0;">Proverbs 22:4</p>
           </div>
         </div>
 
@@ -681,11 +383,11 @@
                 <span>Email Us</span>
               </a>
               <a class="action-btn secondary" href="tel:7173938379" aria-label="Call Church">
-                <span class="action-icon" aria-hidden="true">☎</span>
+                <span class="action-icon" aria-hidden="true">&#9742;</span>
                 <span>Call Church</span>
               </a>
               <a class="action-btn green" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" rel="noopener" aria-label="Get Directions">
-                <span class="action-icon" aria-hidden="true">⌖</span>
+                <span class="action-icon" aria-hidden="true">&#8982;</span>
                 <span>Directions</span>
               </a>
               <a class="action-btn purple" href="https://www.facebook.com/bethelamelancaster/" rel="noopener" aria-label="Facebook">
@@ -694,14 +396,13 @@
               </a>
             </div>
           </div>
-
           <div class="card">
-            <h2 class="section-title">Prayer & Blessings</h2>
+            <h2 class="section-title">Prayer &amp; Blessings</h2>
             <p class="section-sub">Share a prayer request or blessing received using the secure form below.</p>
             <div class="calendar-wrap">
               <iframe class="embed-frame" data-src="https://form.jotform.com/260878588475075" title="Prayer and Blessings Form" loading="lazy"></iframe>
             </div>
-            <p class="small-note">If the form does not load well on your device, use the button below.</p>
+            <p class="small-note">If the form does not load, use the button below.</p>
             <div class="button-row">
               <a class="pill-btn" href="https://form.jotform.com/260878588475075" rel="noopener">Open Full Form</a>
             </div>
@@ -710,48 +411,45 @@
 
       </div>
 
-      <footer class="footer">Bethel AME Lancaster • Connect • Worship • Grow</footer>
+      <nav class="bottom-nav" aria-label="Main navigation">
+        <button class="nav-item is-active" type="button" data-view="home" aria-label="Home">
+          <span class="nav-icon" aria-hidden="true">&#8962;</span>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" type="button" data-view="watch" aria-label="Watch">
+          <span class="nav-icon" aria-hidden="true">&#9658;</span>
+          <span>Watch</span>
+        </button>
+        <button class="nav-item" type="button" data-view="events" aria-label="Events">
+          <span class="nav-icon" aria-hidden="true">&#128197;</span>
+          <span>Events</span>
+        </button>
+        <button class="nav-item" type="button" data-view="give" aria-label="Give">
+          <span class="nav-icon" aria-hidden="true">&#10084;</span>
+          <span>Give</span>
+        </button>
+        <button class="nav-item" type="button" data-view="connect" aria-label="Connect">
+          <span class="nav-icon" aria-hidden="true">&#9776;</span>
+          <span>Connect</span>
+        </button>
+      </nav>
+
+      <footer class="footer">Bethel AME Lancaster &bull; Connect &bull; Worship &bull; Grow</footer>
 
     </div>
-
-    <nav class="bottom-nav" aria-label="Main navigation">
-      <button class="nav-item is-active" type="button" data-view="home" aria-label="Home">
-        <span class="nav-icon" aria-hidden="true">⌂</span>
-        <span>Home</span>
-      </button>
-      <button class="nav-item" type="button" data-view="watch" aria-label="Watch">
-        <span class="nav-icon" aria-hidden="true">▶</span>
-        <span>Watch</span>
-      </button>
-      <button class="nav-item" type="button" data-view="events" aria-label="Events">
-        <span class="nav-icon" aria-hidden="true">📅</span>
-        <span>Events</span>
-      </button>
-      <button class="nav-item" type="button" data-view="give" aria-label="Give">
-        <span class="nav-icon" aria-hidden="true">❤</span>
-        <span>Give</span>
-      </button>
-      <button class="nav-item" type="button" data-view="connect" aria-label="Connect">
-        <span class="nav-icon" aria-hidden="true">☰</span>
-        <span>Connect</span>
-      </button>
-    </nav>
   </div>
 
   <script>
+    // ── Navigation ────────────────────────────────────────────────────
     const navButtons = document.querySelectorAll('[data-view]');
     const views = document.querySelectorAll('.view');
     const lazyLoaded = new Set();
 
     function showView(name) {
-      views.forEach(v => {
-        v.classList.toggle('active', v.id === 'view-' + name);
-      });
-
-      document.querySelectorAll('.bottom-nav .nav-item').forEach(b => {
+      views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+      document.querySelectorAll('.nav-item[data-view]').forEach(b => {
         b.classList.toggle('is-active', b.getAttribute('data-view') === name);
       });
-
       if (!lazyLoaded.has(name)) {
         const view = document.getElementById('view-' + name);
         if (view) {
@@ -762,7 +460,6 @@
         }
         lazyLoaded.add(name);
       }
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -770,8 +467,38 @@
       btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
     });
 
+    // ── Push notifications ────────────────────────────────────────────
+    const VAPID_PUBLIC_KEY = 'BGSxnQMUeTpAk7xHTZNMrrNrbqV-PTftZcgtaDXcEM5EAXw0V2-c1AQSAdtTc4gakeCIy1MgpXtmyHQgfjr59VA';
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = atob(base64);
+      return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+    }
+
+    async function subscribeToPush() {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) {
+          localStorage.setItem('bethel_push_sub', JSON.stringify(existing));
+          console.log('Already subscribed to push.');
+          return;
+        }
+        const subscription = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        localStorage.setItem('bethel_push_sub', JSON.stringify(subscription));
+        console.log('Subscribed! Retrieve with: localStorage.getItem("bethel_push_sub")');
+      } catch (err) {
+        console.warn('Push subscription failed:', err);
+      }
+    }
+
     const pushBanner = document.getElementById('push-banner');
-    const pushAllow = document.getElementById('push-allow');
+    const pushAllow  = document.getElementById('push-allow');
     const pushDismiss = document.getElementById('push-dismiss');
 
     function maybeShowPushBanner() {
@@ -789,9 +516,7 @@
       pushBanner.classList.remove('visible');
       try {
         const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          console.log('Push permission granted — ready to subscribe.');
-        }
+        if (permission === 'granted') await subscribeToPush();
       } catch (err) {
         console.warn('Push permission error:', err);
       }
@@ -802,16 +527,23 @@
       sessionStorage.setItem('pushDismissed', '1');
     });
 
+    // Show banner on first interaction (not on cold load)
     document.addEventListener('click', function onFirstClick() {
       maybeShowPushBanner();
       document.removeEventListener('click', onFirstClick);
     }, { once: true });
 
+    // If already granted on a previous visit, re-subscribe silently
+    if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(() => subscribeToPush());
+    }
+
+    // ── Service worker registration ───────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/BethelApp/sw.js', { scope: '/BethelApp/' })
-          .then(reg => console.log('Service worker registered:', reg.scope))
-          .catch(err => console.warn('Service worker registration failed:', err));
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.warn('SW registration failed:', err));
       });
     }
   </script>

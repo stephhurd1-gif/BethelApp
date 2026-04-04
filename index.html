@@ -136,8 +136,7 @@
     .nav-item .nav-icon { font-size: 18px; line-height: 1; color: var(--gold); }
 
     .footer { text-align: center; padding: 18px 20px 24px; font-size: 13px; color: #d7d7d7; border-top: 1px solid rgba(255,255,255,0.06); }
-    .debug-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #777; font-size: 11px; padding: 6px 12px; border-radius: 99px; cursor: pointer; font-family: inherit; margin-top: 14px; }
-    .debug-msg { font-size: 11px; color: #888; margin-top: 6px; min-height: 16px; }
+
 
     @media (max-width: 900px) {
       .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -271,11 +270,12 @@
           <div class="feature-grid">
             <div class="card">
               <h2 class="section-title">Announcements</h2>
-              <ul class="announcement-list">
-                <li>Welcome to Bethel AME Lancaster.</li>
-                <li>Check back here for upcoming events and special services.</li>
-                <li>Use the tabs below to watch, give, and stay connected.</li>
-              </ul>
+              <p class="section-sub">Stay tuned — announcements and updates will appear here.</p>
+              <div class="contact-list">
+                <div>&#127897; <strong>Sunday Worship</strong> every week at 10:00 AM</div>
+                <div>&#128214; <strong>Bible Study</strong> Wednesdays at 12:00 PM &amp; 6:30 PM</div>
+                <div>&#128591; <strong>Prayer Line</strong> weekdays at 7:30 AM</div>
+              </div>
             </div>
             <div class="card">
               <h2 class="section-title">Contact &amp; Visit</h2>
@@ -412,10 +412,6 @@
 
       <footer class="footer">
         Bethel AME Lancaster &bull; Connect &bull; Worship &bull; Grow
-        <div>
-          <button class="debug-btn" onclick="copyPushSub()">Copy push token (debug)</button>
-          <div class="debug-msg" id="debug-msg"></div>
-        </div>
       </footer>
 
     </div><!-- /.app-shell -->
@@ -537,28 +533,7 @@
       }
     }
 
-    function copyPushSub() {
-      const sub = localStorage.getItem('bethel_push_sub');
-      const msg = document.getElementById('debug-msg');
-      if (!sub) {
-        msg.textContent = 'No token yet — make sure you allowed notifications.';
-        return;
-      }
-      const write = () => {
-        msg.textContent = 'Copied! Paste it into an email and send to yourself.';
-        setTimeout(() => { msg.textContent = ''; }, 5000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(sub).then(write).catch(fallback);
-      } else { fallback(); }
-      function fallback() {
-        const ta = document.createElement('textarea');
-        ta.value = sub; ta.style.cssText = 'position:fixed;opacity:0';
-        document.body.appendChild(ta); ta.focus(); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta);
-        write();
-      }
-    }
+
 
     const pushBanner   = document.getElementById('push-banner');
     const pushAllow    = document.getElementById('push-allow');

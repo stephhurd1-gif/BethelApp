@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bethel Admin — Push Notifications</title>
+  <style>
+    :root {
+      --black: #01060b;
+      --gold: #f7bf5b;
+      --purple: #86239c;
+      --green: #429e40;
+      --white: #fffefe;
+      --red: #e53e3e;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #01060b; color: var(--white); font-family: Arial, sans-serif; min-height: 100vh; }
+
+    .login-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .login-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(247,191,91,0.2);
+      border-radius: 24px; padding: 36px 28px; width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-card h1 { margin: 0 0 6px; font-size: 22px; color: var(--gold); }
+    .login-card p { margin: 0 0 24px; font-size: 14px; color: #aaa; }
+
+    .admin-wrap { max-width: 680px; margin: 0 auto; padding: 24px 18px 60px; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .admin-header h1 { margin: 0; font-size: 22px; color: var(--gold); }
+
+    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 22px; margin-bottom: 18px; }
+    .card h2 { margin: 0 0 18px; font-size: 16px; color: var(--gold); }
+
+    label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; margin-top: 14px; }
+    label:first-of-type { margin-top: 0; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="datetime-local"],
+    textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--white); font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: rgba(247,191,91,0.5); }
+    textarea { resize: vertical; min-height: 90px; }
+
+    .btn {
+      appearance: none; border: 0; cursor: pointer; font-family: inherit;
+      padding: 13px 20px; border-radius: 999px; font-weight: bold; font-size: 15px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: scale(0.98); }
+    .btn-gold { background: var(--gold); color: var(--black); }
+    .btn-outline { background: rgba(255,255,255,0.08); color: var(--white); border: 1px solid rgba(255,255,255,0.15); }
+    .btn-red { background: rgba(229,62,62,0.15); color: #fc8181; border: 1px solid rgba(229,62,62,0.3); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+    .status-msg { margin-top: 12px; font-size: 13px; padding: 10px 14px; border-radius: 10px; display: none; }
+    .status-msg.success { background: rgba(66,158,64,0.15); color: #68d391; border: 1px solid rgba(66,158,64,0.3); display: block; }
+    .status-msg.error { background: rgba(229,62,62,0.15); color: #fc8181; border: 1px solid rgba(229,62,62,0.3); display: block; }
+    .status-msg.info { background: rgba(247,191,91,0.10); color: var(--gold); border: 1px solid rgba(247,191,91,0.2); display: block; }
+
+    .scheduled-list { display: grid; gap: 10px; margin-top: 4px; }
+    .scheduled-item {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 14px;
+    }
+    .scheduled-item .item-info { flex: 1; }
+    .scheduled-item .item-title { font-size: 14px; font-weight: bold; color: var(--white); }
+    .scheduled-item .item-body { font-size: 13px; color: #aaa; margin-top: 3px; }
+    .scheduled-item .item-time { font-size: 12px; color: var(--gold); margin-top: 5px; }
+    .empty-note { font-size: 13px; color: #666; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: bold; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #aaa; font-family: inherit; transition: all 0.2s; }
+    .tab.active { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+    .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; text-align: center; }
+    .stat-num { font-size: 28px; font-weight: bold; color: var(--gold); }
+    .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+    @media (max-width: 480px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <h1>Bethel Admin</h1>
+    <p>Push Notification Dashboard</p>
+    <label for="pwd">Password</label>
+    <input type="password" id="pwd" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
+    <div class="btn-row" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-gold" onclick="login()">Sign In</button>
+    </div>
+    <div class="status-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div class="admin-wrap" id="admin-screen" style="display:none;">
+  <div class="admin-header">
+    <h1>&#128276; Bethel Push Admin</h1>
+    <button class="btn btn-outline" onclick="logout()" style="font-size:13px;padding:8px 14px;">Sign out</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-subscribers">—</div>
+      <div class="stat-label">Subscribers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-scheduled">—</div>
+      <div class="stat-label">Scheduled</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-sent">—</div>
+      <div class="stat-label">Sent today</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('send')">Send Now</button>
+    <button class="tab" onclick="switchTab('schedule')">Schedule</button>
+    <button class="tab" onclick="switchTab('queue')">Scheduled Queue</button>
+  </div>
+
+  <!-- Send Now -->
+  <div class="tab-panel active" id="tab-send">
+    <div class="card">
+      <h2>Send Notification Now</h2>
+      <label>Title</label>
+      <input type="text" id="send-title" placeholder="e.g. Sunday Service Reminder" maxlength="60">
+      <label>Message</label>
+      <textarea id="send-body" placeholder="e.g. Worship begins at 10:00 AM. We look forward to seeing you!" maxlength="200"></textarea>
+      <label>Link (optional)</label>
+      <input type="text" id="send-url" placeholder="/BethelApp/" value="/BethelApp/">
+      <div class="btn-row">
+        <button class="btn btn-gold" id="send-btn" onclick="sendNow()">Send to All Subscribers</button>
+      </div>
+      <div class="status-msg" id="send-msg"></div>
+    </div>
+  </div>
+
+  <!-- Schedule -->
+  <div class="tab-panel" id="tab-schedule">
+    <div class="card">
+      <h2>Schedule a Notification</h2>
+      <label>Title</label>
+      <input type="text" id="sched-title" placeholder="e.g. Easter Sunday Service" maxlength="60">
+      <label>Message</label>
+      <textarea id="sched-body" placeholder="e.g. Worship begins at 9:30 AM. See you there!" maxlength="200"></textarea>
+      <label>Link (optional)</label>
+      <input type="text" id="sched-url" placeholder="/BethelApp/" value="/BethelApp/">
+      <label>Send at (your local time)</label>
+      <input type="datetime-local" id="sched-time">
+      <div class="btn-row">
+        <button class="btn btn-gold" id="sched-btn" onclick="scheduleNotification()">Schedule</button>
+      </div>
+      <div class="status-msg" id="sched-msg"></div>
+    </div>
+  </div>
+
+  <!-- Queue -->
+  <div class="tab-panel" id="tab-queue">
+    <div class="card">
+      <h2>Scheduled Queue</h2>
+      <div class="scheduled-list" id="queue-list">
+        <p class="empty-note">Loading...</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="loadQueue()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, where, orderBy, Timestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
+    authDomain: "bethelapp-f2d4e.firebaseapp.com",
+    projectId: "bethelapp-f2d4e",
+    storageBucket: "bethelapp-f2d4e.firebasestorage.app",
+    messagingSenderId: "512787123423",
+    appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
+  };
+
+  // Simple password — change this to something secure
+  const ADMIN_PASSWORD = 'BethelAME2024!';
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db  = getFirestore(app);
+
+  // ── Auth ──────────────────────────────────────────────────────────
+  window.login = function() {
+    const pwd = document.getElementById('pwd').value;
+    const msg = document.getElementById('login-msg');
+    if (pwd === ADMIN_PASSWORD) {
+      sessionStorage.setItem('bethel_admin', '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadStats();
+      loadQueue();
+    } else {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Incorrect password. Please try again.';
+    }
+  };
+
+  window.logout = function() {
+    sessionStorage.removeItem('bethel_admin');
+    location.reload();
+  };
+
+  if (sessionStorage.getItem('bethel_admin')) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadStats();
+    loadQueue();
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────────────
+  window.switchTab = function(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['send','schedule','queue'][i] === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'queue') loadQueue();
+  };
+
+  // ── Stats ─────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const subSnap = await getDocs(collection(db, 'push_subscriptions'));
+      document.getElementById('stat-subscribers').textContent = subSnap.size;
+
+      const schedSnap = await getDocs(collection(db, 'scheduled_notifications'));
+      const pending = schedSnap.docs.filter(d => !d.data().sent);
+      document.getElementById('stat-scheduled').textContent = pending.length;
+
+      const today = new Date(); today.setHours(0,0,0,0);
+      const sentSnap = await getDocs(query(
+        collection(db, 'scheduled_notifications'),
+        where('sent', '==', true),
+        where('sentAt', '>=', Timestamp.fromDate(today))
+      ));
+      document.getElementById('stat-sent').textContent = sentSnap.size;
+    } catch(e) {
+      console.warn('Stats error:', e);
+    }
+  }
+
+  // ── Send Now ──────────────────────────────────────────────────────
+  window.sendNow = async function() {
+    const title = document.getElementById('send-title').value.trim();
+    const body  = document.getElementById('send-body').value.trim();
+    const url   = document.getElementById('send-url').value.trim() || '/BethelApp/';
+    const msg   = document.getElementById('send-msg');
+    const btn   = document.getElementById('send-btn');
+
+    if (!title || !body) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Please fill in both title and message.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    msg.className = 'status-msg info';
+    msg.textContent = 'Saving to queue — your broadcast script will send this shortly...';
+
+    try {
+      // Save to Firestore as an immediate notification (sendAt = now)
+      await addDoc(collection(db, 'scheduled_notifications'), {
+        title, body, url,
+        sendAt: Timestamp.now(),
+        sent: false,
+        createdAt: Timestamp.now(),
+        immediate: true
+      });
+
+      msg.className = 'status-msg success';
+      msg.textContent = '✓ Queued! Run broadcast-push.js to send, or it will auto-send if you have the Cloud Function set up.';
+      document.getElementById('send-title').value = '';
+      document.getElementById('send-body').value = '';
+      loadStats();
+    } catch(e) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Send to All Subscribers';
+  };
+
+  // ── Schedule ──────────────────────────────────────────────────────
+  window.scheduleNotification = async function() {
+    const title = document.getElementById('sched-title').value.trim();
+    const body  = document.getElementById('sched-body').value.trim();
+    const url   = document.getElementById('sched-url').value.trim() || '/BethelApp/';
+    const time  = document.getElementById('sched-time').value;
+    const msg   = document.getElementById('sched-msg');
+    const btn   = document.getElementById('sched-btn');
+
+    if (!title || !body || !time) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Please fill in title, message, and send time.';
+      return;
+    }
+
+    const sendAt = new Date(time);
+    if (sendAt <= new Date()) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Please choose a future date and time.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Scheduling...';
+
+    try {
+      await addDoc(collection(db, 'scheduled_notifications'), {
+        title, body, url,
+        sendAt: Timestamp.fromDate(sendAt),
+        sent: false,
+        createdAt: Timestamp.now(),
+        immediate: false
+      });
+
+      msg.className = 'status-msg success';
+      msg.textContent = `✓ Scheduled for ${sendAt.toLocaleString()}`;
+      document.getElementById('sched-title').value = '';
+      document.getElementById('sched-body').value = '';
+      document.getElementById('sched-time').value = '';
+      loadStats();
+      loadQueue();
+    } catch(e) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Schedule';
+  };
+
+  // ── Queue ─────────────────────────────────────────────────────────
+  window.loadQueue = async function() {
+    const list = document.getElementById('queue-list');
+    list.innerHTML = '<p class="empty-note">Loading...</p>';
+
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'scheduled_notifications'),
+        where('sent', '==', false),
+        orderBy('sendAt', 'asc')
+      ));
+
+      if (snap.empty) {
+        list.innerHTML = '<p class="empty-note">No scheduled notifications.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const sendAt = d.sendAt.toDate();
+        const div = document.createElement('div');
+        div.className = 'scheduled-item';
+        div.innerHTML = `
+          <div class="item-info">
+            <div class="item-title">${escHtml(d.title)}</div>
+            <div class="item-body">${escHtml(d.body)}</div>
+            <div class="item-time">&#128337; ${sendAt.toLocaleString()}</div>
+          </div>
+          <button class="btn btn-red" style="font-size:12px;padding:7px 12px;flex-shrink:0;"
+            onclick="deleteScheduled('${docSnap.id}')">Cancel</button>`;
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error loading queue: ' + e.message + '</p>';
+    }
+  };
+
+  window.deleteScheduled = async function(id) {
+    if (!confirm('Cancel this scheduled notification?')) return;
+    await deleteDoc(doc(db, 'scheduled_notifications', id));
+    loadQueue();
+    loadStats();
+  };
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Set min datetime to now
+  const dt = document.getElementById('sched-time');
+  const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+  dt.min = now.toISOString().slice(0,16);
+</script>
+</body>
+</html>

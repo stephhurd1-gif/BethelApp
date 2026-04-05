@@ -142,6 +142,7 @@
     <button class="tab" onclick="switchTab('schedule')">Schedule</button>
     <button class="tab" onclick="switchTab('queue')">Scheduled Queue</button>
     <button class="tab" onclick="switchTab('announcements')">Announcements</button>
+    <button class="tab" onclick="switchTab('visitors')">Visitors</button>
   </div>
 
   <!-- Send Now -->
@@ -198,6 +199,17 @@
       <div id="ann-list"><p class="empty-note">Loading...</p></div>
       <div class="btn-row" style="margin-top:12px;">
         <button class="btn btn-outline" onclick="loadAnnouncementsList()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visitors -->
+  <div class="tab-panel" id="tab-visitors">
+    <div class="card">
+      <h2>Visitor Submissions</h2>
+      <div id="visitors-list"><p class="empty-note">Loading...</p></div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-outline" onclick="loadVisitors()">Refresh</button>
       </div>
     </div>
   </div>
@@ -270,12 +282,13 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'queue') loadQueue();
     if (name === 'announcements') loadAnnouncementsList();
+    if (name === 'visitors') loadVisitors();
   }
   window.switchTab = switchTab;
 
@@ -527,6 +540,55 @@
     loadAnnouncementsList();
   }
   window.deleteAnnouncement = deleteAnnouncement;
+
+  // ── Visitors ──────────────────────────────────────────────────────
+  async function loadVisitors() {
+    const list = document.getElementById('visitors-list');
+    if (!list) return;
+    list.innerHTML = '<p class="empty-note">Loading...</p>';
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'visitors'),
+        orderBy('submittedAt', 'desc')
+      ));
+      if (snap.empty) {
+        list.innerHTML = '<p class="empty-note">No visitor submissions yet.</p>';
+        return;
+      }
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const time = d.submittedAt.toDate().toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'scheduled-item';
+        div.style.flexDirection = 'column';
+        div.style.gap = '6px';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div class="item-title" style="font-size:16px;">${escHtml(d.name)}</div>
+            <button class="btn btn-red" style="font-size:12px;padding:6px 10px;flex-shrink:0;"
+              onclick="deleteVisitor('${docSnap.id}')">Delete</button>
+          </div>
+          ${d.phone ? `<div class="item-body">&#9742; <a href="tel:${escHtml(d.phone)}" style="color:var(--color-text-info);">${escHtml(d.phone)}</a></div>` : ''}
+          ${d.email ? `<div class="item-body">&#9993; <a href="mailto:${escHtml(d.email)}" style="color:var(--color-text-info);">${escHtml(d.email)}</a></div>` : ''}
+          ${d.source ? `<div class="item-body">&#128270; Heard about us via: ${escHtml(d.source)}</div>` : ''}
+          ${d.followup ? `<div class="item-body">&#128222; Follow up: <strong>${escHtml(d.followup)}</strong></div>` : ''}
+          ${d.notes ? `<div class="item-body">&#128591; ${escHtml(d.notes)}</div>` : ''}
+          <div class="item-time">&#128337; ${time}</div>`;
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error: ' + e.message + '</p>';
+    }
+  }
+  window.loadVisitors = loadVisitors;
+
+  async function deleteVisitor(id) {
+    if (!confirm('Delete this visitor record?')) return;
+    await deleteDoc(doc(db, 'visitors', id));
+    loadVisitors();
+  }
+  window.deleteVisitor = deleteVisitor;
 
   // Set min datetime to now
   const dt = document.getElementById('sched-time');

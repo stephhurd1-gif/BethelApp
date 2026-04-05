@@ -253,10 +253,14 @@
   };
 
   // ── Stats ─────────────────────────────────────────────────────────
+  const COUNT_FN_URL = 'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getSubscriberCount';
+
   async function loadStats() {
     try {
-      const subSnap = await getDocs(collection(db, 'push_subscriptions'));
-      document.getElementById('stat-subscribers').textContent = subSnap.size;
+      // Get subscriber count from secure Cloud Function
+      const countRes = await fetch(COUNT_FN_URL);
+      const countData = await countRes.json();
+      document.getElementById('stat-subscribers').textContent = countData.count ?? '—';
 
       const schedSnap = await getDocs(collection(db, 'scheduled_notifications'));
       const pending = schedSnap.docs.filter(d => !d.data().sent);
@@ -271,6 +275,7 @@
       document.getElementById('stat-sent').textContent = sentSnap.size;
     } catch(e) {
       console.warn('Stats error:', e);
+      document.getElementById('stat-subscribers').textContent = '—';
     }
   }
 
@@ -304,7 +309,7 @@
       });
 
       msg.className = 'status-msg success';
-      msg.textContent = '✓ Queued! Run broadcast-push.js to send, or it will auto-send if you have the Cloud Function set up.';
+      msg.textContent = '✓ Sent! Your notification is on its way to all subscribers.';
       document.getElementById('send-title').value = '';
       document.getElementById('send-body').value = '';
       loadStats();

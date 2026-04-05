@@ -53,6 +53,37 @@
     .push-banner strong { color: var(--gold); }
     .push-banner .push-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+    /* In-app notification banner */
+    .notif-banner {
+      display: none;
+      position: relative;
+      margin: 12px 18px 0;
+      padding: 14px 44px 14px 16px;
+      background: linear-gradient(135deg, rgba(134,35,156,0.3), rgba(247,191,91,0.12));
+      border: 1px solid rgba(247,191,91,0.35);
+      border-radius: 16px;
+      animation: slideDown 0.3s ease;
+    }
+    .notif-banner.visible { display: block; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .notif-banner-title {
+      font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 4px;
+    }
+    .notif-banner-body {
+      font-size: 13px; color: #ebebeb; line-height: 1.5;
+    }
+    .notif-banner-close {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; color: #aaa;
+      font-size: 18px; cursor: pointer; padding: 0; line-height: 1;
+    }
+    .notif-banner-time {
+      font-size: 11px; color: #888; margin-top: 6px;
+    }
+
     .content { padding: 18px 18px 120px; display: grid; gap: 18px; }
     .view { display: none; gap: 18px; }
     .view.active { display: grid; }
@@ -170,6 +201,14 @@
           <button class="pill-btn" type="button" id="push-allow">Allow</button>
           <button class="pill-btn alt" type="button" id="push-dismiss">Not now</button>
         </div>
+      </div>
+
+      <!-- In-app notification banner -->
+      <div class="notif-banner" id="notif-banner">
+        <button class="notif-banner-close" onclick="dismissNotifBanner()" aria-label="Dismiss">&#10005;</button>
+        <div class="notif-banner-title" id="notif-banner-title"></div>
+        <div class="notif-banner-body" id="notif-banner-body"></div>
+        <div class="notif-banner-time" id="notif-banner-time"></div>
       </div>
 
       <div class="hero">
@@ -566,6 +605,58 @@
 
     if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(() => subscribeToPush());
+    }
+
+    // ── In-app notification banner ───────────────────────────────────
+    function showNotifBanner(title, body, time) {
+      const banner = document.getElementById('notif-banner');
+      document.getElementById('notif-banner-title').textContent = title;
+      document.getElementById('notif-banner-body').textContent = body;
+      document.getElementById('notif-banner-time').textContent =
+        time ? 'Received ' + new Date(time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      banner.classList.add('visible');
+      setTimeout(() => banner.classList.remove('visible'), 30000);
+    }
+
+    function dismissNotifBanner() {
+      document.getElementById('notif-banner').classList.remove('visible');
+      localStorage.removeItem('bethel_last_notif');
+    }
+    window.dismissNotifBanner = dismissNotifBanner;
+
+    function checkForPendingNotification() {
+      const raw = localStorage.getItem('bethel_last_notif');
+      if (!raw) return;
+      try {
+        const notif = JSON.parse(raw);
+        const age = Date.now() - notif.receivedAt;
+        if (age < 10 * 60 * 1000) {
+          showNotifBanner(notif.title, notif.body, notif.receivedAt);
+        } else {
+          localStorage.removeItem('bethel_last_notif');
+        }
+      } catch(e) {
+        localStorage.removeItem('bethel_last_notif');
+      }
+    }
+
+    checkForPendingNotification();
+
+    // Listen for messages from service worker
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (!event.data) return;
+      if (event.data.type === 'NOTIF_RECEIVED' || event.data.type === 'NOTIF_CLICKED') {
+        const { title, body, receivedAt } = event.data;
+        localStorage.setItem('bethel_last_notif', JSON.stringify({ title, body, receivedAt }));
+        showNotifBanner(title, body, receivedAt);
+      }
+    });
+
+    // Also save when app is opened via notification click (from URL param)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('notif')) {
+      const raw = localStorage.getItem('bethel_last_notif');
+      if (raw) checkForPendingNotification();
     }
 
     // Service worker

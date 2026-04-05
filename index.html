@@ -953,7 +953,7 @@
                 <input class="form-input" type="text" id="v-name" placeholder="Your full name">
               </div>
               <div class="form-group">
-                <label class="form-label">Phone Number</label>
+                <label class="form-label">Phone Number *</label>
                 <input class="form-input" type="tel" id="v-phone" placeholder="(555) 555-5555">
               </div>
               <div class="form-group">
@@ -961,8 +961,17 @@
                 <input class="form-input" type="email" id="v-email" placeholder="your@email.com">
               </div>
               <div class="form-group">
+                <label class="form-label">Home Address</label>
+                <input class="form-input" type="text" id="v-address" placeholder="Street address">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                  <input class="form-input" type="text" id="v-city" placeholder="City">
+                  <input class="form-input" type="text" id="v-state" placeholder="State">
+                </div>
+                <input class="form-input" type="text" id="v-zip" placeholder="ZIP code" style="margin-top:8px;">
+              </div>
+              <div class="form-group">
                 <label class="form-label">How did you hear about Bethel?</label>
-                <select class="form-select" id="v-source">
+                <select class="form-select" id="v-source" onchange="handleSourceChange(this.value)">
                   <option value="">Select one...</option>
                   <option>A friend or family member</option>
                   <option>Facebook</option>
@@ -972,6 +981,14 @@
                   <option>Walked by the church</option>
                   <option>Other</option>
                 </select>
+              </div>
+              <div class="form-group" id="v-referral-group" style="display:none;">
+                <label class="form-label">Who referred you? *</label>
+                <input class="form-input" type="text" id="v-referral" placeholder="Name of friend or family member">
+              </div>
+              <div class="form-group" id="v-other-group" style="display:none;">
+                <label class="form-label">Please tell us how you heard about us *</label>
+                <input class="form-input" type="text" id="v-other" placeholder="How did you hear about Bethel?">
               </div>
               <div class="form-group">
                 <label class="form-label">Would you like someone to follow up with you?</label>
@@ -1060,18 +1077,49 @@
     window.goToVisitorForm = goToVisitorForm;
 
     // ── Visitor form ──────────────────────────────────────────────────
+    function handleSourceChange(val) {
+      const referralGroup = document.getElementById('v-referral-group');
+      const otherGroup = document.getElementById('v-other-group');
+      referralGroup.style.display = val === 'A friend or family member' ? 'flex' : 'none';
+      otherGroup.style.display = val === 'Other' ? 'flex' : 'none';
+      if (val !== 'A friend or family member') document.getElementById('v-referral').value = '';
+      if (val !== 'Other') document.getElementById('v-other').value = '';
+    }
+    window.handleSourceChange = handleSourceChange;
+
     async function submitVisitorForm() {
-      const name    = document.getElementById('v-name').value.trim();
-      const phone   = document.getElementById('v-phone').value.trim();
-      const email   = document.getElementById('v-email').value.trim();
-      const source  = document.getElementById('v-source').value;
-      const notes   = document.getElementById('v-notes').value.trim();
+      const name     = document.getElementById('v-name').value.trim();
+      const phone    = document.getElementById('v-phone').value.trim();
+      const email    = document.getElementById('v-email').value.trim();
+      const address  = document.getElementById('v-address').value.trim();
+      const city     = document.getElementById('v-city').value.trim();
+      const state    = document.getElementById('v-state').value.trim();
+      const zip      = document.getElementById('v-zip').value.trim();
+      const source   = document.getElementById('v-source').value;
+      const referral = document.getElementById('v-referral').value.trim();
+      const notes    = document.getElementById('v-notes').value.trim();
       const followup = document.querySelector('input[name="followup"]:checked');
-      const msg     = document.getElementById('visitor-form-msg');
-      const btn     = document.getElementById('visitor-submit-btn');
+      const msg      = document.getElementById('visitor-form-msg');
+      const btn      = document.getElementById('visitor-submit-btn');
 
       if (!name) {
         msg.textContent = 'Please enter your name.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+      if (!phone) {
+        msg.textContent = 'Please enter your phone number.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+      if (source === 'A friend or family member' && !referral) {
+        msg.textContent = 'Please enter the name of the person who referred you.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+      const other = document.getElementById('v-other').value.trim();
+      if (source === 'Other' && !other) {
+        msg.textContent = 'Please tell us how you heard about Bethel.';
         msg.style.color = '#fc8181';
         return;
       }
@@ -1083,11 +1131,14 @@
       try {
         const { db, doc, setDoc } = await loadFirebase();
         const { collection, addDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ') || null;
         await addDoc(collection(db, 'visitors'), {
           name,
-          phone: phone || null,
+          phone,
           email: email || null,
-          source: source || null,
+          address: fullAddress,
+          source: source === 'Other' ? ('Other: ' + other) : (source || null),
+          referral: referral || null,
           followup: followup ? followup.value : null,
           notes: notes || null,
           submittedAt: Timestamp.now()

@@ -140,6 +140,110 @@
     .embed-frame { width: 100%; min-height: 72vh; border: 0; border-radius: 18px; background: rgba(255,255,255,0.03); }
     .small-note { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin-top: 10px; }
 
+    /* Welcome onboarding overlay */
+    .welcome-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(1,6,11,0.97);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      text-align: center;
+      overflow-y: auto;
+    }
+    .welcome-overlay.open { display: flex; }
+    .welcome-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .welcome-title {
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--gold);
+      margin: 0 0 8px;
+    }
+    .welcome-subtitle {
+      font-size: 16px;
+      color: #ccc;
+      margin: 0 0 28px;
+      line-height: 1.5;
+    }
+    .welcome-step {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      width: 100%;
+      max-width: 420px;
+      text-align: left;
+    }
+    .welcome-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--gold);
+      color: var(--black);
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .welcome-step h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: var(--white);
+    }
+    .welcome-step p {
+      margin: 0;
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.6;
+    }
+    .welcome-step p strong {
+      color: var(--gold);
+    }
+    .welcome-step-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .welcome-notif-btn {
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 999px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+    .welcome-skip {
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 8px;
+      margin-top: 4px;
+    }
+    .welcome-skip:hover { color: #999; }
+    .ios-steps, .android-steps { display: none; }
+
     /* Notification bell */
     .notif-bell-wrap {
       position: absolute;
@@ -335,6 +439,50 @@
   </style>
 </head>
 <body>
+  <!-- Welcome onboarding overlay -->
+  <div class="welcome-overlay" id="welcome-overlay">
+    <img src="logo.png" alt="Bethel AME" class="welcome-logo">
+    <h1 class="welcome-title">Welcome to the Bethel App!</h1>
+    <p class="welcome-subtitle">Follow these two easy steps to get the full experience — including service updates sent straight to your phone.</p>
+
+    <div class="welcome-step">
+      <span class="welcome-step-icon">&#128247;</span>
+      <div class="welcome-step-num">1</div>
+      <h3>Add this app to your Home Screen</h3>
+      <div id="install-instructions">
+        <div class="ios-steps">
+          <p>&#8226; Tap the <strong>Share button</strong> at the bottom of your screen (the box with an arrow)<br><br>
+          &#8226; Scroll down and tap <strong>"Add to Home Screen"</strong><br><br>
+          &#8226; Tap <strong>"Add"</strong> in the top right corner<br><br>
+          &#8226; The Bethel app icon will appear on your home screen!</p>
+        </div>
+        <div class="android-steps">
+          <p>&#8226; Tap the <strong>three dots menu</strong> at the top right of your browser<br><br>
+          &#8226; Tap <strong>"Add to Home screen"</strong><br><br>
+          &#8226; Tap <strong>"Add"</strong> to confirm<br><br>
+          &#8226; The Bethel app icon will appear on your home screen!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="welcome-step">
+      <span class="welcome-step-icon">&#128276;</span>
+      <div class="welcome-step-num">2</div>
+      <h3>Turn on Notifications</h3>
+      <p>Get notified about Sunday services, special events, and church announcements — straight to your phone.</p>
+      <div style="margin-top:14px;">
+        <button class="welcome-notif-btn" id="welcome-notif-btn" onclick="welcomeAllowNotifs()">
+          &#128276; Turn On Notifications
+        </button>
+      </div>
+    </div>
+
+    <button class="welcome-notif-btn" style="background:var(--green);color:#fff;margin-top:8px;" onclick="dismissWelcome()">
+      &#10003; I'm All Set — Open the App
+    </button>
+    <button class="welcome-skip" onclick="dismissWelcome()">Skip for now</button>
+  </div>
+
   <div id="bethel-app">
     <div class="app-shell">
 
@@ -785,6 +933,87 @@
   </div><!-- /#bethel-app -->
 
   <script>
+    // ── Welcome onboarding ───────────────────────────────────────────
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+      if (/android/i.test(ua)) return 'android';
+      return 'other';
+    }
+
+    function isInstalled() {
+      return window.navigator.standalone === true ||
+             window.matchMedia('(display-mode: standalone)').matches;
+    }
+
+    function showWelcome() {
+      const device = detectDevice();
+      // Show device-specific install instructions
+      const iosSteps = document.querySelectorAll('.ios-steps');
+      const androidSteps = document.querySelectorAll('.android-steps');
+      if (device === 'ios') {
+        iosSteps.forEach(el => el.style.display = 'block');
+      } else if (device === 'android') {
+        androidSteps.forEach(el => el.style.display = 'block');
+      } else {
+        // Desktop — simplify message
+        iosSteps.forEach(el => el.style.display = 'none');
+        androidSteps.forEach(el => el.style.display = 'none');
+        document.getElementById('install-instructions').innerHTML =
+          '<p>Open this page on your phone in Safari (iPhone) or Chrome (Android) to add it to your home screen.</p>';
+      }
+
+      // If already installed, update step 1
+      if (isInstalled()) {
+        document.querySelector('.welcome-step:first-of-type h3').textContent = '✓ App is installed!';
+        document.getElementById('install-instructions').innerHTML =
+          '<p style="color:#68d391;">Great — the app is already on your home screen.</p>';
+      }
+
+      // If notifications already granted, update step 2
+      if ('Notification' in window && Notification.permission === 'granted') {
+        document.getElementById('welcome-notif-btn').textContent = '✓ Notifications are on!';
+        document.getElementById('welcome-notif-btn').style.background = 'var(--green)';
+        document.getElementById('welcome-notif-btn').style.color = '#fff';
+        document.getElementById('welcome-notif-btn').disabled = true;
+      }
+
+      document.getElementById('welcome-overlay').classList.add('open');
+    }
+
+    async function welcomeAllowNotifs() {
+      const btn = document.getElementById('welcome-notif-btn');
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          btn.textContent = '✓ Notifications are on!';
+          btn.style.background = 'var(--green)';
+          btn.style.color = '#fff';
+          btn.disabled = true;
+          await subscribeToPush();
+        } else {
+          btn.textContent = 'Notifications blocked — check your phone settings';
+          btn.style.background = 'rgba(255,77,79,0.3)';
+          btn.style.color = '#fc8181';
+        }
+      } catch(e) {
+        console.warn('Notification error:', e);
+      }
+    }
+    window.welcomeAllowNotifs = welcomeAllowNotifs;
+
+    function dismissWelcome() {
+      document.getElementById('welcome-overlay').classList.remove('open');
+      localStorage.setItem('bethel_welcomed', '1');
+    }
+    window.dismissWelcome = dismissWelcome;
+
+    // Show welcome screen only on first visit
+    if (!localStorage.getItem('bethel_welcomed')) {
+      // Small delay so the app renders first
+      setTimeout(showWelcome, 600);
+    }
+
     // Navigation
     const navButtons = document.querySelectorAll('[data-view]');
     const views = document.querySelectorAll('.view');

@@ -141,6 +141,7 @@
     <button class="tab active" onclick="switchTab('send')">Send Now</button>
     <button class="tab" onclick="switchTab('schedule')">Schedule</button>
     <button class="tab" onclick="switchTab('queue')">Scheduled Queue</button>
+    <button class="tab" onclick="switchTab('announcements')">Announcements</button>
   </div>
 
   <!-- Send Now -->
@@ -176,6 +177,28 @@
         <button class="btn btn-gold" id="sched-btn" onclick="scheduleNotification()">Schedule</button>
       </div>
       <div class="status-msg" id="sched-msg"></div>
+    </div>
+  </div>
+
+  <!-- Announcements -->
+  <div class="tab-panel" id="tab-announcements">
+    <div class="card">
+      <h2>Post Announcement</h2>
+      <label>Title</label>
+      <input type="text" id="ann-title" placeholder="e.g. Easter Sunday Service" maxlength="80">
+      <label>Message</label>
+      <textarea id="ann-body" placeholder="e.g. Join us for a special Easter celebration this Sunday at 9:30 AM." maxlength="400"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="ann-btn" onclick="postAnnouncement()">Post Announcement</button>
+      </div>
+      <div class="status-msg" id="ann-msg"></div>
+    </div>
+    <div class="card">
+      <h2>Current Announcements</h2>
+      <div id="ann-list"><p class="empty-note">Loading...</p></div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-outline" onclick="loadAnnouncementsList()">Refresh</button>
+      </div>
     </div>
   </div>
 
@@ -247,11 +270,12 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'queue') loadQueue();
+    if (name === 'announcements') loadAnnouncementsList();
   }
   window.switchTab = switchTab;
 
@@ -428,6 +452,81 @@
   function escHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+
+  // ── Announcements ─────────────────────────────────────────────────
+  async function postAnnouncement() {
+    const title = document.getElementById('ann-title').value.trim();
+    const body  = document.getElementById('ann-body').value.trim();
+    const msg   = document.getElementById('ann-msg');
+    const btn   = document.getElementById('ann-btn');
+
+    if (!title || !body) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Please fill in both title and message.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        title,
+        body,
+        createdAt: Timestamp.now()
+      });
+      msg.className = 'status-msg success';
+      msg.textContent = '✓ Announcement posted — visible in the app immediately.';
+      document.getElementById('ann-title').value = '';
+      document.getElementById('ann-body').value = '';
+      loadAnnouncementsList();
+    } catch(e) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Post Announcement';
+  }
+  window.postAnnouncement = postAnnouncement;
+
+  async function loadAnnouncementsList() {
+    const list = document.getElementById('ann-list');
+    if (!list) return;
+    list.innerHTML = '<p class="empty-note">Loading...</p>';
+    try {
+      const snap = await getDocs(query(collection(db, 'announcements'), orderBy('createdAt', 'desc')));
+      if (snap.empty) {
+        list.innerHTML = '<p class="empty-note">No announcements posted yet.</p>';
+        return;
+      }
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'scheduled-item';
+        div.innerHTML = `
+          <div class="item-info">
+            <div class="item-title">${escHtml(d.title)}</div>
+            <div class="item-body">${escHtml(d.body)}</div>
+            <div class="item-time">&#128337; ${d.createdAt.toDate().toLocaleString()}</div>
+          </div>
+          <button class="btn btn-red" style="font-size:12px;padding:7px 12px;flex-shrink:0;"
+            onclick="deleteAnnouncement('${docSnap.id}')">Delete</button>`;
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error: ' + e.message + '</p>';
+    }
+  }
+  window.loadAnnouncementsList = loadAnnouncementsList;
+
+  async function deleteAnnouncement(id) {
+    if (!confirm('Delete this announcement?')) return;
+    await deleteDoc(doc(db, 'announcements', id));
+    loadAnnouncementsList();
+  }
+  window.deleteAnnouncement = deleteAnnouncement;
 
   // Set min datetime to now
   const dt = document.getElementById('sched-time');

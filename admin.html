@@ -208,14 +208,14 @@
     appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
   };
 
-  // Simple password — change this to something secure
   const ADMIN_PASSWORD = 'BethelAME2024!';
+  const COUNT_FN_URL = 'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getSubscriberCount';
 
   const app = initializeApp(FIREBASE_CONFIG);
   const db  = getFirestore(app);
 
   // ── Auth ──────────────────────────────────────────────────────────
-  window.login = function() {
+  function login() {
     const pwd = document.getElementById('pwd').value;
     const msg = document.getElementById('login-msg');
     if (pwd === ADMIN_PASSWORD) {
@@ -228,12 +228,14 @@
       msg.className = 'status-msg error';
       msg.textContent = 'Incorrect password. Please try again.';
     }
-  };
+  }
+  window.login = login;
 
-  window.logout = function() {
+  function logout() {
     sessionStorage.removeItem('bethel_admin');
     location.reload();
-  };
+  }
+  window.logout = logout;
 
   if (sessionStorage.getItem('bethel_admin')) {
     document.getElementById('login-screen').style.display = 'none';
@@ -243,25 +245,28 @@
   }
 
   // ── Tabs ──────────────────────────────────────────────────────────
-  window.switchTab = function(name) {
+  function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
       t.classList.toggle('active', ['send','schedule','queue'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'queue') loadQueue();
-  };
+  }
+  window.switchTab = switchTab;
 
   // ── Stats ─────────────────────────────────────────────────────────
-  const COUNT_FN_URL = 'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getSubscriberCount';
-
   async function loadStats() {
     try {
-      // Get subscriber count from secure Cloud Function
       const countRes = await fetch(COUNT_FN_URL);
       const countData = await countRes.json();
       document.getElementById('stat-subscribers').textContent = countData.count ?? '—';
+    } catch(e) {
+      document.getElementById('stat-subscribers').textContent = '—';
+      console.warn('Count error:', e);
+    }
 
+    try {
       const schedSnap = await getDocs(collection(db, 'scheduled_notifications'));
       const pending = schedSnap.docs.filter(d => !d.data().sent);
       document.getElementById('stat-scheduled').textContent = pending.length;
@@ -275,12 +280,11 @@
       document.getElementById('stat-sent').textContent = sentSnap.size;
     } catch(e) {
       console.warn('Stats error:', e);
-      document.getElementById('stat-subscribers').textContent = '—';
     }
   }
 
   // ── Send Now ──────────────────────────────────────────────────────
-  window.sendNow = async function() {
+  async function sendNow() {
     const title = document.getElementById('send-title').value.trim();
     const body  = document.getElementById('send-body').value.trim();
     const url   = document.getElementById('send-url').value.trim() || '/BethelApp/';
@@ -296,10 +300,9 @@
     btn.disabled = true;
     btn.textContent = 'Sending...';
     msg.className = 'status-msg info';
-    msg.textContent = 'Saving to queue — your broadcast script will send this shortly...';
+    msg.textContent = 'Sending...';
 
     try {
-      // Save to Firestore as an immediate notification (sendAt = now)
       await addDoc(collection(db, 'scheduled_notifications'), {
         title, body, url,
         sendAt: Timestamp.now(),
@@ -320,10 +323,11 @@
 
     btn.disabled = false;
     btn.textContent = 'Send to All Subscribers';
-  };
+  }
+  window.sendNow = sendNow;
 
   // ── Schedule ──────────────────────────────────────────────────────
-  window.scheduleNotification = async function() {
+  async function scheduleNotification() {
     const title = document.getElementById('sched-title').value.trim();
     const body  = document.getElementById('sched-body').value.trim();
     const url   = document.getElementById('sched-url').value.trim() || '/BethelApp/';
@@ -370,11 +374,13 @@
 
     btn.disabled = false;
     btn.textContent = 'Schedule';
-  };
+  }
+  window.scheduleNotification = scheduleNotification;
 
   // ── Queue ─────────────────────────────────────────────────────────
-  window.loadQueue = async function() {
+  async function loadQueue() {
     const list = document.getElementById('queue-list');
+    if (!list) return;
     list.innerHTML = '<p class="empty-note">Loading...</p>';
 
     try {
@@ -406,16 +412,18 @@
         list.appendChild(div);
       });
     } catch(e) {
-      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error loading queue: ' + e.message + '</p>';
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error: ' + e.message + '</p>';
     }
-  };
+  }
+  window.loadQueue = loadQueue;
 
-  window.deleteScheduled = async function(id) {
+  async function deleteScheduled(id) {
     if (!confirm('Cancel this scheduled notification?')) return;
     await deleteDoc(doc(db, 'scheduled_notifications', id));
     loadQueue();
     loadStats();
-  };
+  }
+  window.deleteScheduled = deleteScheduled;
 
   function escHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -427,4 +435,3 @@
   dt.min = now.toISOString().slice(0,16);
 </script>
 </body>
-</html>

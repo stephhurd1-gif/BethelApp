@@ -140,6 +140,54 @@
     .embed-frame { width: 100%; min-height: 72vh; border: 0; border-radius: 18px; background: rgba(255,255,255,0.03); }
     .small-note { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin-top: 10px; }
 
+    /* Visitor form */
+    .visitor-form { display: grid; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 13px; color: #aaa; font-weight: bold; }
+    .form-input, .form-select, .form-textarea {
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: var(--white);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: rgba(247,191,91,0.5);
+    }
+    .form-select option { background: #0a0f16; color: var(--white); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+    .form-radio-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: #ccc; cursor: pointer;
+    }
+    .form-radio-label input { accent-color: var(--gold); width: 18px; height: 18px; }
+    .form-submit {
+      width: 100%; padding: 15px;
+      background: var(--gold); color: var(--black);
+      border: none; border-radius: 999px;
+      font-size: 16px; font-weight: bold;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.2s;
+    }
+    .form-submit:hover { opacity: 0.88; }
+    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-success {
+      text-align: center; padding: 24px;
+      background: rgba(66,158,64,0.12);
+      border: 1px solid rgba(66,158,64,0.3);
+      border-radius: 16px; display: none;
+    }
+    .form-success.visible { display: block; }
+    .form-success-icon { font-size: 48px; margin-bottom: 12px; }
+    .form-success h3 { color: #68d391; margin: 0 0 8px; font-size: 20px; }
+    .form-success p { color: #ccc; font-size: 14px; margin: 0; }
+
     /* Welcome onboarding overlay */
     .welcome-overlay {
       display: none;
@@ -531,11 +579,7 @@
         <h1>Bethel AME Lancaster</h1>
         <p>Welcome to your church hub for worship, connection, prayer, events, and staying informed throughout the week.</p>
         <div class="hero-meta">450 E Strawberry St, Lancaster, PA &bull; Sunday Worship 9:30 AM</div>
-        <div class="install-box">
-          <strong>Add Bethel to Your Phone</strong>
-          iPhone: Tap <b>Share</b> then <b>Add to Home Screen</b><br>
-          Android: Tap the <b>menu</b> then <b>Add to Home screen</b>
-        </div>
+
       </div>
 
       <div class="content">
@@ -561,6 +605,20 @@
                 <span class="action-icon" aria-hidden="true">&#9993;</span>
                 <span>Prayer &amp; Blessings</span>
               </button>
+            </div>
+          </div>
+
+          <div class="card" style="background:linear-gradient(135deg,rgba(66,158,64,0.2),rgba(247,191,91,0.08));border-color:rgba(66,158,64,0.3);">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <span style="font-size:44px;">&#128075;</span>
+              <div style="flex:1;">
+                <h2 class="section-title" style="margin-bottom:4px;">First Time Visiting?</h2>
+                <p style="margin:0;font-size:14px;color:#ccc;line-height:1.4;">Welcome! We are so glad you are here. Let us know you stopped by.</p>
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="pill-btn" type="button" onclick="goToVisitorForm()">&#10003; Fill Out Visitor Form</button>
+              <button class="pill-btn alt" type="button" data-view="connect">Learn More</button>
             </div>
           </div>
 
@@ -880,6 +938,64 @@
             </div>
           </div>
           <div class="card">
+            <h2 class="section-title">&#128075; New Visitor? Welcome!</h2>
+            <p class="section-sub">We are so glad you joined us. Fill out this short form and someone from our team will reach out to you personally.</p>
+
+            <div class="form-success" id="visitor-success">
+              <div class="form-success-icon">&#127979;</div>
+              <h3>Welcome to Bethel!</h3>
+              <p>Thank you for filling out this form. A member of our team will be in touch with you soon. We are so glad you are here!</p>
+            </div>
+
+            <div class="visitor-form" id="visitor-form">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input class="form-input" type="text" id="v-name" placeholder="Your full name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input class="form-input" type="tel" id="v-phone" placeholder="(555) 555-5555">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input class="form-input" type="email" id="v-email" placeholder="your@email.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">How did you hear about Bethel?</label>
+                <select class="form-select" id="v-source">
+                  <option value="">Select one...</option>
+                  <option>A friend or family member</option>
+                  <option>Facebook</option>
+                  <option>Instagram</option>
+                  <option>TikTok</option>
+                  <option>Google search</option>
+                  <option>Walked by the church</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Would you like someone to follow up with you?</label>
+                <div class="form-radio-group">
+                  <label class="form-radio-label">
+                    <input type="radio" name="followup" value="Yes" id="v-followup-yes"> Yes please!
+                  </label>
+                  <label class="form-radio-label">
+                    <input type="radio" name="followup" value="No" id="v-followup-no"> No thank you
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Any questions or prayer requests?</label>
+                <textarea class="form-textarea" id="v-notes" placeholder="Optional — share anything on your heart..."></textarea>
+              </div>
+              <div class="small-note" id="visitor-form-msg"></div>
+              <button class="form-submit" id="visitor-submit-btn" onclick="submitVisitorForm()">
+                &#10003; Submit
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
             <h2 class="section-title">Prayer &amp; Blessings</h2>
             <p class="section-sub">Share a prayer request or blessing received using the secure form below.</p>
             <div class="calendar-wrap">
@@ -933,6 +1049,64 @@
   </div><!-- /#bethel-app -->
 
   <script>
+    // Navigate to visitor form in connect tab
+    function goToVisitorForm() {
+      showView('connect');
+      setTimeout(() => {
+        const el = document.getElementById('visitor-form');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    window.goToVisitorForm = goToVisitorForm;
+
+    // ── Visitor form ──────────────────────────────────────────────────
+    async function submitVisitorForm() {
+      const name    = document.getElementById('v-name').value.trim();
+      const phone   = document.getElementById('v-phone').value.trim();
+      const email   = document.getElementById('v-email').value.trim();
+      const source  = document.getElementById('v-source').value;
+      const notes   = document.getElementById('v-notes').value.trim();
+      const followup = document.querySelector('input[name="followup"]:checked');
+      const msg     = document.getElementById('visitor-form-msg');
+      const btn     = document.getElementById('visitor-submit-btn');
+
+      if (!name) {
+        msg.textContent = 'Please enter your name.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      msg.textContent = '';
+
+      try {
+        const { db, doc, setDoc } = await loadFirebase();
+        const { collection, addDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        await addDoc(collection(db, 'visitors'), {
+          name,
+          phone: phone || null,
+          email: email || null,
+          source: source || null,
+          followup: followup ? followup.value : null,
+          notes: notes || null,
+          submittedAt: Timestamp.now()
+        });
+
+        // Show success message
+        document.getElementById('visitor-form').style.display = 'none';
+        document.getElementById('visitor-success').classList.add('visible');
+
+      } catch(e) {
+        msg.textContent = 'Something went wrong. Please try again.';
+        msg.style.color = '#fc8181';
+        btn.disabled = false;
+        btn.textContent = '✓ Submit';
+        console.warn('Visitor form error:', e);
+      }
+    }
+    window.submitVisitorForm = submitVisitorForm;
+
     // ── Welcome onboarding ───────────────────────────────────────────
     function detectDevice() {
       const ua = navigator.userAgent;

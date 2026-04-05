@@ -1,7 +1,7 @@
 // sw.js — Bethel AME Lancaster Service Worker
 // Strategy: cache-first for the app shell, network-first for everything else.
 
-const CACHE_NAME = 'bethel-v1';
+const CACHE_NAME = 'bethel-v6';
 
 // Files that make up the app shell — cached immediately on install.
 const SHELL_FILES = [
@@ -93,7 +93,12 @@ self.addEventListener('push', event => {
     badge: '/BethelApp/icons/192.png',
     tag: 'bethel-notification',
     renotify: true,
-    data: { url: '/BethelApp/' }
+    requireInteraction: true,
+    data: { url: '/BethelApp/' },
+    actions: [
+      { action: 'open', title: '&#127937; Open App' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
   };
 
   if (event.data) {
@@ -118,27 +123,59 @@ self.addEventListener('push', event => {
     }
   }
 
+  // Save notification to localStorage so app can show it as an in-app banner
+  const notifData = JSON.stringify({
+    title,
+    body: options.body,
+    url: options.data.url,
+    receivedAt: Date.now()
+  });
+
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    self.clients.matchAll({ type: 'window' }).then(clients => {
+      // Save to all open windows
+      clients.forEach(client => {
+        client.postMessage({ type: 'NOTIF_RECEIVED', title, body: options.body, receivedAt: Date.now() });
+      });
+    }).then(() => self.registration.showNotification(title, options))
   );
 });
 
-// ── Notification click: open or focus the app ─────────────────────────
+// ── Notification click: handle actions and open the app ─────────────
 self.addEventListener('notificationclick', event => {
+  // If user tapped Dismiss, just close it
+  if (event.action === 'dismiss') {
+    event.notification.close();
+    return;
+  }
+
+  // For 'open' action or tapping the notification body — open the app
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || '/';
+
+  const target = (event.notification.data && event.notification.data.url)
+    ? new URL(event.notification.data.url, self.location.origin).href
+    : 'https://stephhurd1-gif.github.io/BethelApp/';
+
+  // Save notification data so app can show it as an in-app banner
+  const notifPayload = event.notification.data || {};
+  const notifRecord = JSON.stringify({
+    title: event.notification.title,
+    body: event.notification.body,
+    receivedAt: Date.now()
+  });
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      // If the app is already open, focus it.
+      // If the app is already open, send it the notification data and focus
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
+        if (client.url.includes('stephhurd1-gif.github.io/BethelApp') && 'navigate' in client) {
+          client.postMessage({ type: 'NOTIF_CLICKED', title: event.notification.title, body: event.notification.body, receivedAt: Date.now() });
+          return client.navigate(target).then(c => c && c.focus());
         }
       }
-      // Otherwise open a new window.
+      // Otherwise open a new window — app will read from localStorage on load
       if (clients.openWindow) {
-        return clients.openWindow(target);
+        return clients.openWindow(target + '?notif=1');
       }
     })
   );

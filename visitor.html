@@ -212,6 +212,19 @@
 
   </div>
 
+  <script>
+    // Report page height to parent for iframe auto-resize
+    function reportHeight() {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ frameHeight: height }, '*');
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+    // Also report after any DOM changes
+    const observer = new MutationObserver(reportHeight);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  </script>
+
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc, Timestamp }

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visitor Registration — Bethel AME Lancaster</title>
+  <meta name="description" content="Welcome to Bethel AME Lancaster! Fill out this form and our team will reach out to you personally.">
+  <style>
+    :root {
+      --black: #01060b;
+      --gold: #f7bf5b;
+      --purple: #86239c;
+      --green: #429e40;
+      --white: #fffefe;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #01060b;
+      color: var(--white);
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 18px 60px;
+    }
+    .header {
+      text-align: center;
+      padding: 28px 20px 24px;
+      background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .header h1 { margin: 0 0 6px; font-size: 24px; color: var(--gold); }
+    .header p { margin: 0; font-size: 15px; color: #ccc; line-height: 1.5; }
+    .wave { font-size: 40px; margin-bottom: 10px; }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .card h2 { margin: 0 0 6px; font-size: 20px; color: var(--gold); }
+    .card .sub { font-size: 14px; color: #bbb; margin: 0 0 20px; line-height: 1.5; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-label { font-size: 13px; color: #aaa; font-weight: bold; }
+    .form-input, .form-select, .form-textarea {
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: var(--white);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: rgba(247,191,91,0.5);
+    }
+    .form-select option { background: #0a0f16; color: var(--white); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .addr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .form-radio-group { display: flex; gap: 16px; flex-wrap: wrap; }
+    .form-radio-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: #ccc; cursor: pointer;
+    }
+    .form-radio-label input { accent-color: var(--gold); width: 18px; height: 18px; }
+    .submit-btn {
+      width: 100%; padding: 16px;
+      background: var(--gold); color: var(--black);
+      border: none; border-radius: 999px;
+      font-size: 17px; font-weight: bold;
+      cursor: pointer; font-family: inherit;
+      margin-top: 8px; transition: opacity 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-msg { font-size: 13px; color: #fc8181; margin-top: 6px; min-height: 18px; }
+
+    .success {
+      text-align: center; padding: 32px 24px;
+      background: rgba(66,158,64,0.12);
+      border: 1px solid rgba(66,158,64,0.3);
+      border-radius: 20px; display: none;
+    }
+    .success.visible { display: block; }
+    .success-icon { font-size: 56px; margin-bottom: 14px; }
+    .success h2 { color: #68d391; margin: 0 0 10px; font-size: 22px; }
+    .success p { color: #ccc; font-size: 15px; margin: 0 0 20px; line-height: 1.6; }
+    .success a {
+      display: inline-block; padding: 13px 28px;
+      background: var(--gold); color: var(--black);
+      border-radius: 999px; font-weight: bold;
+      text-decoration: none; font-size: 15px;
+    }
+
+    .footer {
+      text-align: center; margin-top: 28px;
+      font-size: 12px; color: #555; line-height: 1.6;
+    }
+    .footer a { color: var(--gold); text-decoration: none; }
+
+    @media (max-width: 480px) {
+      .addr-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <img src="logo.png" alt="Bethel AME Lancaster" class="logo">
+      <div class="wave">&#128075;</div>
+      <h1>Welcome to Bethel!</h1>
+      <p>We are so glad you visited. Fill out this short form and someone from our team will reach out to you personally.</p>
+    </div>
+
+    <div class="success" id="success">
+      <div class="success-icon">&#127979;</div>
+      <h2>Thank you for visiting!</h2>
+      <p>We are so glad you stopped by Bethel AME Lancaster. A member of our team will be in touch with you soon. You are always welcome here!</p>
+      <a href="https://bethelamelancaster.com">Visit Our Website</a>
+    </div>
+
+    <div class="card" id="form-card">
+      <h2>Visitor Registration</h2>
+      <p class="sub">All fields marked * are required.</p>
+
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input class="form-input" type="text" id="v-name" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number *</label>
+        <input class="form-input" type="tel" id="v-phone" placeholder="(555) 555-5555">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" id="v-email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Home Address</label>
+        <input class="form-input" type="text" id="v-address" placeholder="Street address">
+        <div class="addr-row">
+          <input class="form-input" type="text" id="v-city" placeholder="City">
+          <input class="form-input" type="text" id="v-state" placeholder="State">
+        </div>
+        <input class="form-input" type="text" id="v-zip" placeholder="ZIP code" style="margin-top:8px;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">How did you hear about Bethel?</label>
+        <select class="form-select" id="v-source" onchange="handleSource(this.value)">
+          <option value="">Select one...</option>
+          <option>A friend or family member</option>
+          <option>Facebook</option>
+          <option>Instagram</option>
+          <option>TikTok</option>
+          <option>Google search</option>
+          <option>Walked by the church</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group" id="referral-group" style="display:none;">
+        <label class="form-label">Who referred you? *</label>
+        <input class="form-input" type="text" id="v-referral" placeholder="Name of friend or family member">
+      </div>
+      <div class="form-group" id="other-group" style="display:none;">
+        <label class="form-label">Please tell us how you heard about us *</label>
+        <input class="form-input" type="text" id="v-other" placeholder="How did you hear about Bethel?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Would you like someone to follow up with you?</label>
+        <div class="form-radio-group">
+          <label class="form-radio-label">
+            <input type="radio" name="followup" value="Yes"> Yes please!
+          </label>
+          <label class="form-radio-label">
+            <input type="radio" name="followup" value="No"> No thank you
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Any questions or prayer requests?</label>
+        <textarea class="form-textarea" id="v-notes" placeholder="Optional — share anything on your heart..."></textarea>
+      </div>
+
+      <div class="form-msg" id="form-msg"></div>
+      <button class="submit-btn" id="submit-btn" onclick="submitForm()">&#10003; Submit</button>
+    </div>
+
+    <div class="footer">
+      <strong style="color:#888;">Bethel AME Lancaster</strong><br>
+      450 E Strawberry St, Lancaster, PA &bull;
+      <a href="tel:7173938379">717-393-8379</a><br>
+      <a href="https://bethelamelancaster.com">bethelamelancaster.com</a><br><br>
+      Powered with &#10084;&#65039; by <strong style="color:#666;">Hurd &amp; Answered Studio</strong>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, Timestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const app = initializeApp({
+      apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
+      authDomain: "bethelapp-f2d4e.firebaseapp.com",
+      projectId: "bethelapp-f2d4e",
+      storageBucket: "bethelapp-f2d4e.firebasestorage.app",
+      messagingSenderId: "512787123423",
+      appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
+    });
+    const db = getFirestore(app);
+
+    window.handleSource = function(val) {
+      document.getElementById('referral-group').style.display =
+        val === 'A friend or family member' ? 'flex' : 'none';
+      document.getElementById('other-group').style.display =
+        val === 'Other' ? 'flex' : 'none';
+      if (val !== 'A friend or family member') document.getElementById('v-referral').value = '';
+      if (val !== 'Other') document.getElementById('v-other').value = '';
+    };
+
+    window.submitForm = async function() {
+      const name     = document.getElementById('v-name').value.trim();
+      const phone    = document.getElementById('v-phone').value.trim();
+      const email    = document.getElementById('v-email').value.trim();
+      const address  = document.getElementById('v-address').value.trim();
+      const city     = document.getElementById('v-city').value.trim();
+      const state    = document.getElementById('v-state').value.trim();
+      const zip      = document.getElementById('v-zip').value.trim();
+      const source   = document.getElementById('v-source').value;
+      const referral = document.getElementById('v-referral').value.trim();
+      const other    = document.getElementById('v-other').value.trim();
+      const notes    = document.getElementById('v-notes').value.trim();
+      const followup = document.querySelector('input[name="followup"]:checked');
+      const msg      = document.getElementById('form-msg');
+      const btn      = document.getElementById('submit-btn');
+
+      if (!name) { msg.textContent = 'Please enter your name.'; return; }
+      if (!phone) { msg.textContent = 'Please enter your phone number.'; return; }
+      if (source === 'A friend or family member' && !referral) {
+        msg.textContent = 'Please enter the name of the person who referred you.'; return;
+      }
+      if (source === 'Other' && !other) {
+        msg.textContent = 'Please tell us how you heard about Bethel.'; return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      msg.textContent = '';
+
+      try {
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ') || null;
+        await addDoc(collection(db, 'visitors'), {
+          name, phone,
+          email: email || null,
+          address: fullAddress,
+          source: source === 'Other' ? ('Other: ' + other) : (source || null),
+          referral: referral || null,
+          followup: followup ? followup.value : null,
+          notes: notes || null,
+          submittedAt: Timestamp.now(),
+          source_page: 'website'
+        });
+        document.getElementById('form-card').style.display = 'none';
+        document.getElementById('success').classList.add('visible');
+      } catch(e) {
+        msg.textContent = 'Something went wrong. Please try again.';
+        btn.disabled = false;
+        btn.textContent = '✓ Submit';
+      }
+    };
+  </script>
+</body>
+</html>

@@ -571,7 +571,8 @@
           </div>
           ${d.phone ? `<div class="item-body">&#9742; <a href="tel:${escHtml(d.phone)}" style="color:var(--color-text-info);">${escHtml(d.phone)}</a></div>` : ''}
           ${d.email ? `<div class="item-body">&#9993; <a href="mailto:${escHtml(d.email)}" style="color:var(--color-text-info);">${escHtml(d.email)}</a></div>` : ''}
-          ${d.source ? `<div class="item-body">&#128270; Heard about us via: ${escHtml(d.source)}</div>` : ''}
+          ${d.address ? `<div class="item-body">&#127968; ${escHtml(d.address)}</div>` : ''}
+          ${d.source ? `<div class="item-body">&#128270; Heard about us via: ${escHtml(d.source)}${d.referral ? ' (' + escHtml(d.referral) + ')' : ''}</div>` : ''}
           ${d.followup ? `<div class="item-body">&#128222; Follow up: <strong>${escHtml(d.followup)}</strong></div>` : ''}
           ${d.notes ? `<div class="item-body">&#128591; ${escHtml(d.notes)}</div>` : ''}
           <div class="item-time">&#128337; ${time}</div>`;

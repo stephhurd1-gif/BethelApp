@@ -149,11 +149,11 @@
         <input class="form-input" type="tel" id="v-phone" placeholder="(555) 555-5555">
       </div>
       <div class="form-group">
-        <label class="form-label">Email Address</label>
+        <label class="form-label">Email Address *</label>
         <input class="form-input" type="email" id="v-email" placeholder="your@email.com">
       </div>
       <div class="form-group">
-        <label class="form-label">Home Address</label>
+        <label class="form-label">Home Address *</label>
         <input class="form-input" type="text" id="v-address" placeholder="Street address">
         <div class="addr-row">
           <input class="form-input" type="text" id="v-city" placeholder="City">
@@ -267,6 +267,14 @@
 
       if (!name) { msg.textContent = 'Please enter your name.'; return; }
       if (!phone) { msg.textContent = 'Please enter your phone number.'; return; }
+      if (!email) {
+        msg.textContent = 'Please enter your email address.';
+        return;
+      }
+      if (!address) {
+        msg.textContent = 'Please enter your street address.';
+        return;
+      }
       if (source === 'A friend or family member' && !referral) {
         msg.textContent = 'Please enter the name of the person who referred you.'; return;
       }

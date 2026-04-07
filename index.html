@@ -957,11 +957,11 @@
                 <input class="form-input" type="tel" id="v-phone" placeholder="(555) 555-5555">
               </div>
               <div class="form-group">
-                <label class="form-label">Email Address</label>
+                <label class="form-label">Email Address *</label>
                 <input class="form-input" type="email" id="v-email" placeholder="your@email.com">
               </div>
               <div class="form-group">
-                <label class="form-label">Home Address</label>
+                <label class="form-label">Home Address *</label>
                 <input class="form-input" type="text" id="v-address" placeholder="Street address">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
                   <input class="form-input" type="text" id="v-city" placeholder="City">
@@ -1209,6 +1209,16 @@
       }
       if (!phone) {
         msg.textContent = 'Please enter your phone number.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+      if (!email) {
+        msg.textContent = 'Please enter your email address.';
+        msg.style.color = '#fc8181';
+        return;
+      }
+      if (!address) {
+        msg.textContent = 'Please enter your street address.';
         msg.style.color = '#fc8181';
         return;
       }

@@ -206,11 +206,25 @@
 
   <!-- Visitors -->
   <div class="tab-panel" id="tab-visitors">
-    <div class="card">
-      <h2>Visitor Submissions</h2>
-      <div id="visitors-list"><p class="empty-note">Loading...</p></div>
+    <div class="card" id="visitor-lock-card">
+      <h2>&#128274; Visitor Submissions — Restricted Access</h2>
+      <p class="empty-note" style="margin-bottom:16px;">Visitor information is confidential. Enter the visitor access password to view submissions.</p>
+      <label>Visitor Access Password</label>
+      <input type="password" id="visitor-pwd" placeholder="Enter visitor password"
+        onkeydown="if(event.key==='Enter')unlockVisitors()" style="margin-top:8px;">
       <div class="btn-row" style="margin-top:12px;">
-        <button class="btn btn-outline" onclick="loadVisitors()">Refresh</button>
+        <button class="btn btn-gold" onclick="unlockVisitors()">Unlock</button>
+      </div>
+      <div class="status-msg" id="visitor-lock-msg"></div>
+    </div>
+    <div id="visitor-content" style="display:none;">
+      <div class="card">
+        <h2>&#128075; Visitor Submissions</h2>
+        <div id="visitors-list"><p class="empty-note">Loading...</p></div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-outline" onclick="loadVisitors()">Refresh</button>
+          <button class="btn btn-red" onclick="lockVisitors()">Lock</button>
+        </div>
       </div>
     </div>
   </div>
@@ -314,7 +328,7 @@
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'queue') loadQueue();
     if (name === 'announcements') loadAnnouncementsList();
-    if (name === 'visitors') loadVisitors();
+    if (name === 'visitors') { document.getElementById('visitor-lock-card').style.display='block'; document.getElementById('visitor-content').style.display='none'; document.getElementById('visitor-pwd').value=''; }
     if (name === 'prayer') { document.getElementById('prayer-lock-card').style.display='block'; document.getElementById('prayer-content').style.display='none'; }
   }
   window.switchTab = switchTab;
@@ -617,6 +631,32 @@
     loadVisitors();
   }
   window.deleteVisitor = deleteVisitor;
+
+  // ── Visitors (password protected) ────────────────────────────────
+  const VISITOR_PASSWORD = 'BethelVisitors2024!';
+
+  function unlockVisitors() {
+    const pwd = document.getElementById('visitor-pwd').value;
+    const msg = document.getElementById('visitor-lock-msg');
+    if (pwd === VISITOR_PASSWORD) {
+      document.getElementById('visitor-lock-card').style.display = 'none';
+      document.getElementById('visitor-content').style.display = 'block';
+      loadVisitors();
+    } else {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Incorrect password.';
+    }
+  }
+  window.unlockVisitors = unlockVisitors;
+
+  function lockVisitors() {
+    document.getElementById('visitor-lock-card').style.display = 'block';
+    document.getElementById('visitor-content').style.display = 'none';
+    document.getElementById('visitor-pwd').value = '';
+    document.getElementById('visitor-lock-msg').className = 'status-msg';
+    document.getElementById('visitor-lock-msg').textContent = '';
+  }
+  window.lockVisitors = lockVisitors;
 
   // ── Prayer Requests ───────────────────────────────────────────────
   const PRAYER_PASSWORD = 'BethelPrayer2024!';

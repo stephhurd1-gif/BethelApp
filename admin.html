@@ -143,6 +143,7 @@
     <button class="tab" onclick="switchTab('queue')">Scheduled Queue</button>
     <button class="tab" onclick="switchTab('announcements')">Announcements</button>
     <button class="tab" onclick="switchTab('visitors')">Visitors</button>
+    <button class="tab" onclick="switchTab('prayer')">&#128591; Prayer</button>
   </div>
 
   <!-- Send Now -->
@@ -210,6 +211,31 @@
       <div id="visitors-list"><p class="empty-note">Loading...</p></div>
       <div class="btn-row" style="margin-top:12px;">
         <button class="btn btn-outline" onclick="loadVisitors()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prayer Requests -->
+  <div class="tab-panel" id="tab-prayer">
+    <div class="card" id="prayer-lock-card">
+      <h2>&#128274; Prayer Requests — Restricted Access</h2>
+      <p class="empty-note" style="margin-bottom:16px;">Prayer requests are confidential. Enter the prayer access password to view them.</p>
+      <label>Prayer Access Password</label>
+      <input type="password" id="prayer-pwd" placeholder="Enter prayer password"
+        onkeydown="if(event.key==='Enter')unlockPrayer()" style="margin-top:8px;">
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-gold" onclick="unlockPrayer()">Unlock</button>
+      </div>
+      <div class="status-msg" id="prayer-lock-msg"></div>
+    </div>
+    <div id="prayer-content" style="display:none;">
+      <div class="card">
+        <h2>&#128591; Prayer Requests</h2>
+        <div id="prayer-list"><p class="empty-note">Loading...</p></div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-outline" onclick="loadPrayerRequests()">Refresh</button>
+          <button class="btn btn-red" onclick="lockPrayer()">Lock</button>
+        </div>
       </div>
     </div>
   </div>
@@ -282,13 +308,14 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'queue') loadQueue();
     if (name === 'announcements') loadAnnouncementsList();
     if (name === 'visitors') loadVisitors();
+    if (name === 'prayer') { document.getElementById('prayer-lock-card').style.display='block'; document.getElementById('prayer-content').style.display='none'; }
   }
   window.switchTab = switchTab;
 
@@ -590,6 +617,74 @@
     loadVisitors();
   }
   window.deleteVisitor = deleteVisitor;
+
+  // ── Prayer Requests ───────────────────────────────────────────────
+  const PRAYER_PASSWORD = 'BethelPrayer2024!';
+
+  function unlockPrayer() {
+    const pwd = document.getElementById('prayer-pwd').value;
+    const msg = document.getElementById('prayer-lock-msg');
+    if (pwd === PRAYER_PASSWORD) {
+      document.getElementById('prayer-lock-card').style.display = 'none';
+      document.getElementById('prayer-content').style.display = 'block';
+      loadPrayerRequests();
+    } else {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Incorrect password.';
+    }
+  }
+  window.unlockPrayer = unlockPrayer;
+
+  function lockPrayer() {
+    document.getElementById('prayer-lock-card').style.display = 'block';
+    document.getElementById('prayer-content').style.display = 'none';
+    document.getElementById('prayer-pwd').value = '';
+    document.getElementById('prayer-lock-msg').className = 'status-msg';
+    document.getElementById('prayer-lock-msg').textContent = '';
+  }
+  window.lockPrayer = lockPrayer;
+
+  async function loadPrayerRequests() {
+    const list = document.getElementById('prayer-list');
+    if (!list) return;
+    list.innerHTML = '<p class="empty-note">Loading...</p>';
+    try {
+      // Prayer requests use Admin SDK via Cloud Function to bypass Firestore rules
+      const res = await fetch('https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPrayerRequests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: PRAYER_PASSWORD })
+      });
+      const data = await res.json();
+      if (!data.requests || data.requests.length === 0) {
+        list.innerHTML = '<p class="empty-note">No prayer requests yet.</p>';
+        return;
+      }
+      list.innerHTML = '';
+      data.requests.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'scheduled-item';
+        div.style.flexDirection = 'column';
+        div.style.gap = '6px';
+        const shareColor = d.shareWithPrayerLine && d.shareWithPrayerLine.includes('open') ? '#68d391' :
+                           d.shareWithPrayerLine && d.shareWithPrayerLine.includes('anonymous') ? '#f7bf5b' : '#fc8181';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div class="item-title" style="font-size:15px;">&#128591; ${escHtml(d.name)}</div>
+          </div>
+          ${d.phone ? `<div class="item-body">&#9742; <a href="tel:${escHtml(d.phone)}" style="color:#f7bf5b;">${escHtml(d.phone)}</a></div>` : ''}
+          ${d.email ? `<div class="item-body">&#9993; <a href="mailto:${escHtml(d.email)}" style="color:#f7bf5b;">${escHtml(d.email)}</a></div>` : ''}
+          ${d.type ? `<div class="item-body">&#128221; ${escHtml(d.type)}</div>` : ''}
+          <div class="item-body" style="line-height:1.6;color:#ebebeb;">${escHtml(d.request)}</div>
+          <div class="item-body" style="color:${shareColor};font-weight:bold;">&#128172; ${escHtml(d.shareWithPrayerLine || 'No — keep private')}</div>
+          <div class="item-time">&#128337; ${d.submittedAt}</div>`;
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error loading: ' + e.message + '</p>';
+    }
+  }
+  window.loadPrayerRequests = loadPrayerRequests;
 
   // Set min datetime to now
   const dt = document.getElementById('sched-time');

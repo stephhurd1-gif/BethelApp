@@ -93,21 +93,21 @@
     .section-title { margin: 0 0 14px; font-size: 20px; color: var(--gold); }
     .section-sub { margin: -4px 0 14px; font-size: 14px; color: #dddddd; line-height: 1.5; }
 
-    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 
     button.action-btn, a.action-btn {
       appearance: none; border: 0; cursor: pointer; width: 100%; text-decoration: none;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 98px; border-radius: 18px; padding: 14px 10px; font-weight: bold;
+      min-height: 72px; border-radius: 14px; padding: 10px 6px; font-weight: bold;
       text-align: center; transition: transform 0.2s ease, opacity 0.2s ease;
       color: var(--black); background: var(--gold);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.18); font-family: inherit; font-size: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18); font-family: inherit; font-size: 12px;
     }
     .action-btn.secondary { background: var(--white); color: var(--black); }
     .action-btn.green { background: var(--green); color: var(--white); }
     .action-btn.purple { background: var(--purple); color: var(--white); }
     .action-btn:hover { transform: translateY(-2px); opacity: 0.96; }
-    .action-icon { font-size: 24px; line-height: 1; margin-bottom: 8px; }
+    .action-icon { font-size: 20px; line-height: 1; margin-bottom: 5px; }
 
     .feature-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: stretch; }
 
@@ -472,8 +472,8 @@
       #bethel-app { padding: 10px; }
       .hero h1 { font-size: 25px; }
       .hero p { font-size: 14px; }
-      .quick-grid { grid-template-columns: 1fr; }
-      .action-btn { min-height: 82px; }
+      .quick-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+      .action-btn { min-height: 64px; font-size: 11px; }
       .button-row { flex-direction: column; }
       .pill-btn { text-align: center; }
       .bottom-nav {
@@ -1054,6 +1054,9 @@
               <div class="form-group">
                 <label class="form-label">May we share this request with our prayer line participants?</label>
                 <div class="form-radio-group" style="flex-direction:column;gap:10px;">
+                  <label class="form-radio-label">
+                    <input type="radio" name="p-share" value="Yes — I am open to sharing"> Yes — I am open to sharing
+                  </label>
                   <label class="form-radio-label">
                     <input type="radio" name="p-share" value="Yes — anonymously only"> Yes — anonymously only
                   </label>

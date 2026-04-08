@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Give — Bethel AME Lancaster</title>
+  <meta name="description" content="Give your tithes, offerings, and donations to Bethel AME Lancaster.">
+  <script src="https://web.squarecdn.com/v1/square.js"></script>
+  <style>
+    :root {
+      --black: #01060b;
+      --gold: #f7bf5b;
+      --purple: #86239c;
+      --green: #429e40;
+      --white: #fffefe;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #01060b; color: var(--white); font-family: Arial, sans-serif; min-height: 100vh; }
+    .page { max-width: 100%; margin: 0; padding: 24px 18px 60px; }
+
+    .header { text-align: center; padding: 28px 20px 24px; background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%); border-radius: 20px; margin-bottom: 20px; }
+    .logo { width: 90px; height: 90px; border-radius: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .header h1 { margin: 0 0 6px; font-size: 24px; color: var(--gold); }
+    .header p { margin: 0; font-size: 14px; color: #ccc; line-height: 1.5; }
+    .scripture { font-style: italic; font-size: 13px; color: #aaa; margin-top: 10px; }
+
+    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); border-radius: 20px; padding: 22px; margin-bottom: 16px; }
+    .card h2 { margin: 0 0 4px; font-size: 18px; color: var(--gold); }
+    .card .sub { font-size: 13px; color: #aaa; margin: 0 0 18px; line-height: 1.5; }
+
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 4px; }
+    .cat-btn { padding: 12px 10px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.2s; }
+    .cat-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+    .cat-btn.selected { background: rgba(247,191,91,0.15); border-color: var(--gold); color: var(--gold); }
+
+    .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .amt-btn { padding: 12px 8px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #ccc; font-size: 15px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.2s; }
+    .amt-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+    .amt-btn.selected { background: rgba(247,191,91,0.15); border-color: var(--gold); color: var(--gold); }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-label { font-size: 13px; color: #aaa; font-weight: bold; }
+    .form-input { padding: 12px 14px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: var(--white); font-size: 15px; font-family: inherit; outline: none; width: 100%; transition: border-color 0.2s; }
+    .form-input:focus { border-color: rgba(247,191,91,0.5); }
+    .amount-input-wrap { position: relative; }
+    .amount-input-wrap .dollar { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 18px; font-weight: bold; }
+    .amount-input-wrap input { padding-left: 30px; font-size: 22px; font-weight: bold; color: var(--gold); }
+
+    /* Square card form */
+    #card-container { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; margin-bottom: 14px; min-height: 90px; }
+    #card-container.sq-error { border-color: #fc8181; }
+
+    .summary-box { background: rgba(247,191,91,0.08); border: 1px solid rgba(247,191,91,0.2); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: #ccc; margin-bottom: 6px; }
+    .summary-row.total { font-size: 18px; font-weight: bold; color: var(--gold); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 4px; }
+
+    .pay-btn { width: 100%; padding: 16px; background: var(--gold); color: var(--black); border: none; border-radius: 999px; font-size: 17px; font-weight: bold; cursor: pointer; font-family: inherit; transition: opacity 0.2s; margin-top: 4px; }
+    .pay-btn:hover { opacity: 0.88; }
+    .pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .alt-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .alt-btn { padding: 14px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--white); font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; text-decoration: none; display: block; transition: all 0.2s; }
+    .alt-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+
+    .form-msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
+    .form-msg.error { color: #fc8181; }
+    .form-msg.success { color: #68d391; }
+
+    .success-card { display: none; text-align: center; padding: 32px 24px; background: rgba(66,158,64,0.12); border: 1px solid rgba(66,158,64,0.3); border-radius: 20px; }
+    .success-card.visible { display: block; }
+    .success-card .icon { font-size: 56px; margin-bottom: 14px; }
+    .success-card h2 { color: #68d391; margin: 0 0 10px; font-size: 22px; }
+    .success-card p { color: #ccc; font-size: 14px; margin: 0; line-height: 1.6; }
+
+    .step-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 10px; }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: #555; font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-top: 1px solid rgba(255,255,255,0.08); }
+
+    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: #555; line-height: 1.6; }
+    .footer a { color: var(--gold); text-decoration: none; }
+
+    #other-category-group { display: none; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <img src="logo.png" alt="Bethel AME Lancaster" class="logo">
+      <h1>&#10084;&#65039; Give to Bethel</h1>
+      <p>Your generosity supports the mission and ministry of Bethel AME Lancaster.</p>
+      <p class="scripture">&ldquo;God loves a cheerful giver.&rdquo; &mdash; 2 Corinthians 9:7</p>
+    </div>
+
+    <div class="success-card" id="success-card">
+      <div class="icon">&#127979;</div>
+      <h2>Thank You!</h2>
+      <p>Your gift has been received. Thank you for your faithful generosity to Bethel AME Lancaster. May God bless you abundantly.</p>
+    </div>
+
+    <div id="giving-form">
+
+      <!-- Step 1: Category -->
+      <div class="card">
+        <div class="step-label">Step 1 of 4</div>
+        <h2>&#127381; Select Giving Type</h2>
+        <p class="sub">Choose the category for your gift.</p>
+        <div class="category-grid">
+          <button class="cat-btn" onclick="selectCategory(this,'Tithe')">&#128591; Tithe</button>
+          <button class="cat-btn" onclick="selectCategory(this,'General Offering')">&#127873; General Offering</button>
+          <button class="cat-btn" onclick="selectCategory(this,'Class Dues')">&#128218; Class Dues</button>
+          <button class="cat-btn" onclick="selectCategory(this,'YPD')">&#127775; YPD</button>
+          <button class="cat-btn" onclick="selectCategory(this,'Women's Day')">&#128160; Women&rsquo;s Day</button>
+          <button class="cat-btn" onclick="selectCategory(this,'Men's Day')">&#128081; Men&rsquo;s Day</button>
+          <button class="cat-btn" onclick="selectCategory(this,'Love Offering to Pastor')">&#128140; Love Offering to Pastor</button>
+          <button class="cat-btn" onclick="selectCategory(this,'Other')">&#10133; Other</button>
+        </div>
+        <div id="other-category-group">
+          <input class="form-input" type="text" id="other-category" placeholder="Please specify...">
+        </div>
+      </div>
+
+      <!-- Step 2: Amount -->
+      <div class="card">
+        <div class="step-label">Step 2 of 4</div>
+        <h2>&#128181; Enter Amount</h2>
+        <p class="sub">Select a preset or enter your own.</p>
+        <div class="amount-grid">
+          <button class="amt-btn" onclick="selectAmount(this,10)">$10</button>
+          <button class="amt-btn" onclick="selectAmount(this,25)">$25</button>
+          <button class="amt-btn" onclick="selectAmount(this,50)">$50</button>
+          <button class="amt-btn" onclick="selectAmount(this,75)">$75</button>
+          <button class="amt-btn" onclick="selectAmount(this,100)">$100</button>
+          <button class="amt-btn" onclick="selectAmount(this,150)">$150</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Custom amount</label>
+          <div class="amount-input-wrap">
+            <span class="dollar">$</span>
+            <input class="form-input" type="number" id="amount-input" placeholder="0.00" min="1" step="0.01" oninput="onCustomAmount()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Donor Info -->
+      <div class="card">
+        <div class="step-label">Step 3 of 4</div>
+        <h2>&#128100; Your Information</h2>
+        <p class="sub">Optional — helps us keep accurate giving records.</p>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" type="text" id="donor-name" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" id="donor-email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note (optional)</label>
+          <input class="form-input" type="text" id="donor-note" placeholder="e.g. In memory of...">
+        </div>
+      </div>
+
+      <!-- Step 4: Payment -->
+      <div class="card">
+        <div class="step-label">Step 4 of 4</div>
+        <h2>&#128179; Payment</h2>
+        <p class="sub">Enter your card details below. Your payment is processed securely by Square.</p>
+
+        <div class="summary-box" id="summary-box" style="display:none;">
+          <div class="summary-row"><span>Giving type</span><span id="sum-cat">—</span></div>
+          <div class="summary-row total"><span>Amount</span><span id="sum-amt">$—</span></div>
+        </div>
+
+        <div id="card-container"></div>
+        <div class="form-msg" id="form-msg"></div>
+
+        <button class="pay-btn" id="pay-btn" onclick="handlePayment()">
+          &#128274; Give Securely
+        </button>
+
+        <div class="divider">or give via</div>
+
+        <div class="alt-methods">
+          <a class="alt-btn" href="https://cash.app/$BethelAMELancaster" target="_blank" rel="noopener">
+            &#36; Cash App
+          </a>
+          <a class="alt-btn" href="https://square.link/u/cGm3gcCe" target="_blank" rel="noopener">
+            &#9633; Square Link
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <strong style="color:#888;">Bethel AME Lancaster</strong><br>
+      450 E Strawberry St, Lancaster, PA &bull; <a href="tel:7173938379">717-393-8379</a><br>
+      <a href="https://bethelamelancaster.com">bethelamelancaster.com</a><br><br>
+      Powered with &#10084;&#65039; by <strong style="color:#666;">Hurd &amp; Answered Studio</strong>
+    </div>
+  </div>
+
+  <script>
+    // Report height for iframe auto-resize
+    function reportHeight() {
+      window.parent.postMessage({ frameHeight: document.body.scrollHeight }, '*');
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+    new MutationObserver(reportHeight).observe(document.body, { childList: true, subtree: true });
+
+    let selectedCategory = '';
+    let selectedAmount = 0;
+    let card;
+
+    // Init Square Web Payments SDK
+    async function initSquare() {
+      const payments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
+      card = await payments.card({
+        style: {
+          '.input-container': { borderColor: 'rgba(255,255,255,0.12)', borderRadius: '12px' },
+          '.input-container.is-focus': { borderColor: 'rgba(247,191,91,0.5)' },
+          '.input-container.is-error': { borderColor: '#fc8181' },
+          input: { color: '#fffefe', fontFamily: 'Arial, sans-serif', fontSize: '15px' },
+          'input::placeholder': { color: '#666' },
+          '.message-text': { color: '#fc8181' }
+        }
+      });
+      await card.attach('#card-container');
+    }
+
+    initSquare().catch(err => {
+      document.getElementById('card-container').innerHTML = '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
+    });
+
+    function selectCategory(btn, cat) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCategory = cat;
+      document.getElementById('other-category-group').style.display = cat === 'Other' ? 'block' : 'none';
+      if (cat !== 'Other') document.getElementById('other-category').value = '';
+      updateSummary();
+    }
+
+    function selectAmount(btn, amt) {
+      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedAmount = amt;
+      document.getElementById('amount-input').value = '';
+      updateSummary();
+    }
+
+    function onCustomAmount() {
+      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+      selectedAmount = parseFloat(document.getElementById('amount-input').value) || 0;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const cat = selectedCategory === 'Other'
+        ? (document.getElementById('other-category').value.trim() || 'Other')
+        : selectedCategory;
+      const summaryBox = document.getElementById('summary-box');
+      if (selectedCategory && selectedAmount > 0) {
+        document.getElementById('sum-cat').textContent = cat || '—';
+        document.getElementById('sum-amt').textContent = '$' + selectedAmount.toFixed(2);
+        summaryBox.style.display = 'block';
+      } else {
+        summaryBox.style.display = 'none';
+      }
+    }
+
+    async function handlePayment() {
+      const msg = document.getElementById('form-msg');
+      const btn = document.getElementById('pay-btn');
+
+      msg.textContent = '';
+      msg.className = 'form-msg';
+
+      if (!selectedCategory) {
+        msg.textContent = 'Please select a giving type.';
+        msg.className = 'form-msg error';
+        return;
+      }
+      if (!selectedAmount || selectedAmount <= 0) {
+        msg.textContent = 'Please enter an amount.';
+        msg.className = 'form-msg error';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const result = await card.tokenize();
+        if (result.status === 'OK') {
+          const sourceId = result.token;
+          const category = selectedCategory === 'Other'
+            ? (document.getElementById('other-category').value.trim() || 'Other')
+            : selectedCategory;
+          const name  = document.getElementById('donor-name').value.trim();
+          const email = document.getElementById('donor-email').value.trim();
+          const note  = document.getElementById('donor-note').value.trim();
+
+          const response = await fetch('https://us-central1-bethelapp-f2d4e.cloudfunctions.net/processGiving', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceId,
+              amount: Math.round(selectedAmount * 100),
+              category,
+              name: name || null,
+              email: email || null,
+              note: note || null
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById('giving-form').style.display = 'none';
+            document.getElementById('success-card').classList.add('visible');
+            reportHeight();
+          } else {
+            throw new Error(data.error || 'Payment failed');
+          }
+        } else {
+          const errors = result.errors.map(e => e.message).join(', ');
+          throw new Error(errors);
+        }
+      } catch (err) {
+        msg.textContent = 'Payment failed: ' + err.message;
+        msg.className = 'form-msg error';
+        btn.disabled = false;
+        btn.textContent = '🔒 Give Securely';
+      }
+    }
+  </script>
+</body>
+</html>

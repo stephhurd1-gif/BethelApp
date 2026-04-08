@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prayer & Blessings — Bethel AME Lancaster</title>
+  <meta name="description" content="Share a prayer request or praise report with the Bethel AME Lancaster prayer team.">
+  <style>
+    :root {
+      --black: #01060b;
+      --gold: #f7bf5b;
+      --purple: #86239c;
+      --green: #429e40;
+      --white: #fffefe;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #01060b;
+      color: var(--white);
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .page { max-width: 600px; margin: 0 auto; padding: 24px 18px 60px; }
+
+    .header {
+      text-align: center;
+      padding: 28px 20px 24px;
+      background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%);
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .logo { width: 90px; height: 90px; border-radius: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .header h1 { margin: 0 0 6px; font-size: 24px; color: var(--gold); }
+    .header p { margin: 0; font-size: 14px; color: #ccc; line-height: 1.6; }
+    .scripture { font-style: italic; font-size: 13px; color: #aaa; margin-top: 10px; line-height: 1.6; }
+
+    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); border-radius: 20px; padding: 22px; margin-bottom: 16px; }
+    .card h2 { margin: 0 0 4px; font-size: 18px; color: var(--gold); }
+    .card .sub { font-size: 13px; color: #aaa; margin: 0 0 18px; line-height: 1.5; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-label { font-size: 13px; color: #aaa; font-weight: bold; }
+    .form-input, .form-select, .form-textarea {
+      padding: 12px 14px; background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+      color: var(--white); font-size: 15px; font-family: inherit; outline: none; width: 100%;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(247,191,91,0.5); }
+    .form-select option { background: #0a0f16; }
+    .form-textarea { resize: vertical; min-height: 120px; }
+    .form-radio-group { display: flex; flex-direction: column; gap: 10px; }
+    .form-radio-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #ccc; cursor: pointer; }
+    .form-radio-label input { accent-color: var(--gold); width: 18px; height: 18px; }
+
+    .submit-btn {
+      width: 100%; padding: 16px; background: var(--purple); color: var(--white);
+      border: none; border-radius: 999px; font-size: 17px; font-weight: bold;
+      cursor: pointer; font-family: inherit; margin-top: 8px; transition: opacity 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-msg { font-size: 13px; color: #fc8181; margin-top: 6px; min-height: 18px; }
+
+    .success { text-align: center; padding: 32px 24px; background: rgba(134,35,156,0.12); border: 1px solid rgba(134,35,156,0.3); border-radius: 20px; display: none; }
+    .success.visible { display: block; }
+    .success-icon { font-size: 56px; margin-bottom: 14px; }
+    .success h2 { color: var(--gold); margin: 0 0 10px; font-size: 22px; }
+    .success p { color: #ccc; font-size: 15px; margin: 0 0 20px; line-height: 1.6; }
+    .success a { display: inline-block; padding: 13px 28px; background: var(--gold); color: var(--black); border-radius: 999px; font-weight: bold; text-decoration: none; font-size: 15px; }
+
+    .privacy-note { background: rgba(247,191,91,0.06); border: 1px solid rgba(247,191,91,0.15); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+    .privacy-note p { margin: 0; font-size: 13px; color: #bbb; line-height: 1.6; }
+    .privacy-note strong { color: var(--gold); }
+
+    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: #555; line-height: 1.6; }
+    .footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <img src="logo.png" alt="Bethel AME Lancaster" class="logo">
+      <div style="font-size:40px;margin-bottom:10px;">&#128591;</div>
+      <h1>Prayer &amp; Blessings</h1>
+      <p>Share a prayer request or praise report with our prayer team. We are standing in agreement with you.</p>
+      <p class="scripture">&ldquo;The prayer of a righteous person is powerful and effective.&rdquo;<br>&mdash; James 5:16</p>
+    </div>
+
+    <div class="privacy-note">
+      <p><strong>&#128274; Your privacy matters.</strong> Prayer requests are sent directly and confidentially to Pastor Stephanie and our prayer team. They are never posted publicly without your permission.</p>
+    </div>
+
+    <div class="success" id="success">
+      <div class="success-icon">&#128591;</div>
+      <h2>Prayer Received</h2>
+      <p>Thank you for sharing your heart with us. Our prayer team will be lifting you up. Be encouraged — God hears every prayer.</p>
+      <a href="https://bethelamelancaster.com">Return to Website</a>
+    </div>
+
+    <div class="card" id="form-card">
+      <h2>Submit Your Request</h2>
+      <p class="sub">All fields marked * are required.</p>
+
+      <div class="form-group">
+        <label class="form-label">Your Name *</label>
+        <input class="form-input" type="text" id="p-name" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number (optional)</label>
+        <input class="form-input" type="tel" id="p-phone" placeholder="(555) 555-5555">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address (optional)</label>
+        <input class="form-input" type="email" id="p-email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type of Request</label>
+        <select class="form-select" id="p-type">
+          <option value="">Select one...</option>
+          <option>Prayer Request</option>
+          <option>Praise Report</option>
+          <option>Prayer for Healing</option>
+          <option>Prayer for Family</option>
+          <option>Prayer for Guidance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Request *</label>
+        <textarea class="form-textarea" id="p-request" placeholder="Share what is on your heart..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">May we share this request with our prayer line participants?</label>
+        <div class="form-radio-group">
+          <label class="form-radio-label">
+            <input type="radio" name="p-share" value="Yes — I am open to sharing"> Yes — I am open to sharing
+          </label>
+          <label class="form-radio-label">
+            <input type="radio" name="p-share" value="Yes — anonymously only"> Yes — anonymously only
+          </label>
+          <label class="form-radio-label">
+            <input type="radio" name="p-share" value="No — keep private" checked> No — keep private
+          </label>
+        </div>
+      </div>
+
+      <div class="form-msg" id="form-msg"></div>
+      <button class="submit-btn" id="submit-btn" onclick="submitPrayer()">&#128591; Submit Prayer Request</button>
+    </div>
+
+    <div class="footer">
+      <strong style="color:#888;">Bethel AME Lancaster</strong><br>
+      450 E Strawberry St, Lancaster, PA &bull; <a href="tel:7173938379">717-393-8379</a><br>
+      <a href="https://bethelamelancaster.com">bethelamelancaster.com</a><br><br>
+      Powered with &#10084;&#65039; by <strong style="color:#666;">Hurd &amp; Answered Studio</strong>
+    </div>
+
+  </div>
+
+  <script>
+    function reportHeight() {
+      window.parent.postMessage({ frameHeight: document.body.scrollHeight }, '*');
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+    new MutationObserver(reportHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, Timestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const app = initializeApp({
+      apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
+      authDomain: "bethelapp-f2d4e.firebaseapp.com",
+      projectId: "bethelapp-f2d4e",
+      storageBucket: "bethelapp-f2d4e.firebasestorage.app",
+      messagingSenderId: "512787123423",
+      appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
+    });
+    const db = getFirestore(app);
+
+    window.submitPrayer = async function() {
+      const name    = document.getElementById('p-name').value.trim();
+      const phone   = document.getElementById('p-phone').value.trim();
+      const email   = document.getElementById('p-email').value.trim();
+      const type    = document.getElementById('p-type').value;
+      const request = document.getElementById('p-request').value.trim();
+      const share   = document.querySelector('input[name="p-share"]:checked');
+      const msg     = document.getElementById('form-msg');
+      const btn     = document.getElementById('submit-btn');
+
+      if (!name) { msg.textContent = 'Please enter your name.'; return; }
+      if (!request) { msg.textContent = 'Please share your prayer request.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      msg.textContent = '';
+
+      try {
+        await addDoc(collection(db, 'prayer_requests'), {
+          name,
+          phone: phone || null,
+          email: email || null,
+          type: type || null,
+          request,
+          shareWithPrayerLine: share ? share.value : 'No — keep private',
+          submittedAt: Timestamp.now(),
+          source_page: 'website'
+        });
+        document.getElementById('form-card').style.display = 'none';
+        document.getElementById('success').classList.add('visible');
+        reportHeight();
+      } catch(e) {
+        msg.textContent = 'Something went wrong. Please try again.';
+        btn.disabled = false;
+        btn.textContent = '🙏 Submit Prayer Request';
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,11 +1,11 @@
 // sw.js — Bethel AME Lancaster Service Worker v6
-const CACHE_NAME = 'bethel-v6';
+const CACHE_NAME = 'bethel-v7';
 
 const SHELL_FILES = [
-  '/BethelApp/manifest.json',
-  '/BethelApp/logo.png',
-  '/BethelApp/icons/192.png',
-  '/BethelApp/icons/512.png'
+  '/manifest.json',
+  '/logo.png',
+  '/icons/192.png',
+  '/icons/512.png'
 ];
 
 // ── Install: pre-cache static assets (NOT index.html) ────────────────
@@ -39,7 +39,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   // Always network-first for index.html so updates reach users instantly
-  if (url.pathname === '/BethelApp/' || url.pathname === '/BethelApp/index.html') {
+  if (url.pathname === '/' || url.pathname === '/index.html') {
     event.respondWith(
       fetch(event.request)
         .then(response => {
@@ -86,12 +86,12 @@ self.addEventListener('push', event => {
   let title = 'Bethel AME Lancaster';
   let options = {
     body: 'You have a new message from Bethel.',
-    icon: '/BethelApp/icons/192.png',
-    badge: '/BethelApp/icons/192.png',
+    icon: '/icons/192.png',
+    badge: '/icons/192.png',
     tag: 'bethel-notification',
     renotify: true,
     requireInteraction: true,
-    data: { url: '/BethelApp/' },
+    data: { url: '/' },
     actions: [
       { action: 'open', title: 'Open App' },
       { action: 'dismiss', title: 'Dismiss' }
@@ -143,12 +143,12 @@ self.addEventListener('notificationclick', event => {
 
   const target = (event.notification.data && event.notification.data.url)
     ? new URL(event.notification.data.url, self.location.origin).href
-    : 'https://stephhurd1-gif.github.io/BethelApp/';
+    : 'https://app.bethelamelancaster.com/';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       for (const client of clientList) {
-        if (client.url.includes('stephhurd1-gif.github.io/BethelApp') && 'navigate' in client) {
+        if (client.url.includes('app.bethelamelancaster.com') && 'navigate' in client) {
           client.postMessage({
             type: 'NOTIF_CLICKED',
             title: event.notification.title,

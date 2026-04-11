@@ -157,6 +157,14 @@
     .summary-row.total { font-size: 18px; font-weight: bold; color: var(--gold); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 4px; }
     .form-msg.error { color: #fc8181; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
+    /* Give category rows */
+    .give-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px; }
+    .give-cat-row:last-child { border-bottom: none; }
+    .give-cat-label { font-size: 14px; color: #ebebeb; flex: 1; }
+    .give-cat-input-wrap { position: relative; width: 110px; flex-shrink: 0; }
+    .give-cat-input-wrap .dollar { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 15px; font-weight: bold; }
+    .give-cat-input { padding-left: 24px !important; font-size: 15px !important; font-weight: bold; color: var(--gold) !important; text-align: right; }
+
     /* Visitor form */
     .visitor-form { display: grid; gap: 12px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -758,42 +766,67 @@
           </div>
 
           <div id="give-form-wrap">
-            <!-- Step 1: Category -->
+            <!-- Step 1 & 2: Categories + Amounts -->
             <div class="card">
-              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 1 of 4</p>
-              <h2 class="section-title">&#127381; Select Giving Type</h2>
-              <div class="category-grid" id="give-cat-grid">
-                <button class="cat-btn" onclick="selectGiveCat(this,'Tithe')">&#128591; Tithe</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,'General Offering')">&#127873; General Offering</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,'Class Dues')">&#128218; Class Dues</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,'YPD')">&#127775; YPD</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,&quot;Women's Day&quot;)">&#128160; Women&rsquo;s Day</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,&quot;Men's Day&quot;)">&#128081; Men&rsquo;s Day</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,'Love Offering to Pastor')">&#128140; Love Offering</button>
-                <button class="cat-btn" onclick="selectGiveCat(this,'Other')">&#10133; Other</button>
-              </div>
-              <div class="form-group" id="give-other-group" style="display:none;margin-top:10px;">
-                <input class="form-input" type="text" id="give-other-cat" placeholder="Please specify...">
-              </div>
-            </div>
-
-            <!-- Step 2: Amount -->
-            <div class="card">
-              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 2 of 4</p>
-              <h2 class="section-title">&#128181; Enter Amount</h2>
-              <div class="amount-grid">
-                <button class="amt-btn" onclick="selectGiveAmt(this,10)">$10</button>
-                <button class="amt-btn" onclick="selectGiveAmt(this,25)">$25</button>
-                <button class="amt-btn" onclick="selectGiveAmt(this,50)">$50</button>
-                <button class="amt-btn" onclick="selectGiveAmt(this,75)">$75</button>
-                <button class="amt-btn" onclick="selectGiveAmt(this,100)">$100</button>
-                <button class="amt-btn" onclick="selectGiveAmt(this,150)">$150</button>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Custom amount</label>
-                <div class="amount-input-wrap">
-                  <span class="dollar">$</span>
-                  <input class="form-input" type="number" id="give-custom-amt" placeholder="0.00" min="1" step="0.01" oninput="onGiveCustomAmt()">
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 1 of 3</p>
+              <h2 class="section-title">&#127381; Select Giving Type &amp; Amount</h2>
+              <p class="section-sub">Enter amounts for one or more giving types. Leave blank to skip.</p>
+              <div id="give-categories">
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#128591; Tithe</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Tithe" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#127873; General Offering</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="General Offering" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#128218; Class Dues</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Class Dues" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#127775; YPD</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="YPD" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#128160; Women&rsquo;s Day</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Women's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#128081; Men&rsquo;s Day</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Men's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#128140; Love Offering</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Love Offering to Pastor" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
+                </div>
+                <div class="give-cat-row">
+                  <label class="give-cat-label">&#10133; Other</label>
+                  <div class="give-cat-input-wrap">
+                    <span class="dollar">$</span>
+                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                  </div>
                 </div>
               </div>
             </div>
@@ -828,12 +861,8 @@
                 <div class="summary-row total"><span>Amount</span><span id="give-sum-amt">$—</span></div>
               </div>
 
-              <div id="give-cashapp-container" style="margin-bottom:4px;display:none;">
-                <button id="cashapp-pay-btn" onclick="openCashAppPay()" style="width:100%;padding:14px;background:#00D64F;color:#000;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;font-family:inherit;">
-                  &#36; Pay with Cash App
-                </button>
-                <p style="font-size:11px;color:#888;text-align:center;margin:6px 0 12px;">Cash App may display $100.00 on its screen — the correct amount you selected will be charged and recorded.</p>
-              </div>
+              <div id="give-cashapp-container" style="margin-bottom:4px;"></div>
+              <p id="cashapp-note" style="display:none;font-size:11px;color:#888;text-align:center;margin:-8px 0 12px;">Note: Cash App may display $100.00 on its screen — the correct amount will be charged and recorded.</p>
               <div id="give-card-container" style="background:#f5f5f5;border:1px solid #ddd;border-radius:12px;padding:4px;margin-bottom:14px;min-height:90px;"></div>
               <div class="form-msg error" id="give-msg"></div>
 
@@ -1350,63 +1379,35 @@
     window.submitVisitorForm = submitVisitorForm;
 
     // ── Give form ──────────────────────────────────────────────────────
-    let giveCat = '';
     let giveAmt = 0;
     let giveCard = null;
 
-    function selectGiveCat(btn, cat) {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      giveCat = cat;
-      document.getElementById('give-other-group').style.display = cat === 'Other' ? 'flex' : 'none';
-      if (cat !== 'Other') document.getElementById('give-other-cat').value = '';
-      updateGiveSummary();
+    function getGiveLineItems() {
+      const inputs = document.querySelectorAll('.give-cat-input');
+      const items = [];
+      inputs.forEach(input => {
+        const val = parseFloat(input.value) || 0;
+        if (val > 0) items.push({ category: input.getAttribute('data-cat'), amount: val });
+      });
+      return items;
     }
-    window.selectGiveCat = selectGiveCat;
-
-    function selectGiveAmt(btn, amt) {
-      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      giveAmt = amt;
-      document.getElementById('give-custom-amt').value = '';
-      updateGiveSummary();
-    }
-    window.selectGiveAmt = selectGiveAmt;
-
-    function onGiveCustomAmt() {
-      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
-      giveAmt = parseFloat(document.getElementById('give-custom-amt').value) || 0;
-      updateGiveSummary();
-    }
-    window.onGiveCustomAmt = onGiveCustomAmt;
 
     function updateGiveSummary() {
-      const cat = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
+      const items = getGiveLineItems();
+      const total = items.reduce((sum, i) => sum + i.amount, 0);
+      giveAmt = total;
       const box = document.getElementById('give-summary-box');
-      const cashContainer = document.getElementById('give-cashapp-container');
-      if (giveCat && giveAmt > 0) {
-        document.getElementById('give-sum-cat').textContent = cat || '—';
-        document.getElementById('give-sum-amt').textContent = '$' + giveAmt.toFixed(2);
+      if (items.length > 0 && total > 0) {
+        const catText = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(' | ');
+        document.getElementById('give-sum-cat').textContent = catText;
+        document.getElementById('give-sum-amt').textContent = '$' + total.toFixed(2);
         box.style.display = 'block';
-        cashContainer.style.display = 'block';
       } else {
         box.style.display = 'none';
-        cashContainer.style.display = 'none';
       }
     }
 
-    function openCashAppPay() {
-      if (!giveCat) { alert('Please select a giving type first.'); return; }
-      if (!giveAmt || giveAmt <= 0) { alert('Please enter an amount first.'); return; }
-      if (!document.getElementById('give-name').value.trim()) { alert('Please enter your name first.'); return; }
-      const cat = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
-      const name = document.getElementById('give-name').value.trim();
-      const noteText = name ? ('Bethel AME - ' + cat + ' - ' + name) : ('Bethel AME - ' + cat);
-      const note = encodeURIComponent(noteText);
-      const amount = giveAmt.toFixed(2);
-      window.open('https://cash.app/$BethelAMELancaster/' + amount + '?note=' + note, '_blank');
-    }
-    window.openCashAppPay = openCashAppPay;
+
 
     async function initGiveSquare() {
       if (giveCard) return;
@@ -1420,6 +1421,31 @@
         });
         await giveCard.attach('#give-card-container');
 
+        // Cash App Pay via Square SDK
+        try {
+          const paymentRequest = payments.paymentRequest({
+            countryCode: 'US',
+            currencyCode: 'USD',
+            total: { amount: String(Math.round(giveAmt > 0 ? giveAmt * 100 : 100)), label: 'Give to Bethel AME' }
+          });
+          const cashAppPay = await payments.cashAppPay(paymentRequest, {
+            redirectURL: window.location.href,
+            referenceId: 'bethel-give-' + Date.now()
+          });
+          await cashAppPay.attach('#give-cashapp-container');
+          cashAppPay.addEventListener('ontokenization', async function(event) {
+            const { tokenResult } = event.detail;
+            if (tokenResult.status === 'OK') {
+              await processGivePayment(tokenResult.token);
+            }
+          });
+          window.giveCashAppPay = cashAppPay;
+          document.getElementById('cashapp-note').style.display = 'block';
+        } catch(cashErr) {
+          console.warn('Cash App Pay not available:', cashErr);
+          document.getElementById('give-cashapp-container').style.display = 'none';
+          document.getElementById('cashapp-note').style.display = 'none';
+        }
 
       } catch(e) {
         console.warn('Square error:', e);
@@ -1428,7 +1454,8 @@
     }
 
     async function processGivePayment(token) {
-      const category = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
+      const items = getGiveLineItems();
+      const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
       const name  = document.getElementById('give-name').value.trim();
       const email = document.getElementById('give-email').value.trim();
       const note  = document.getElementById('give-note').value.trim();
@@ -1461,8 +1488,8 @@
       const btn = document.getElementById('give-pay-btn');
       msg.textContent = '';
 
-      if (!giveCat) { msg.textContent = 'Please select a giving type.'; return; }
-      if (!giveAmt || giveAmt <= 0) { msg.textContent = 'Please enter an amount.'; return; }
+      const items = getGiveLineItems();
+      if (items.length === 0) { msg.textContent = 'Please enter an amount for at least one giving type.'; return; }
       if (!document.getElementById('give-name').value.trim()) { msg.textContent = 'Please enter your name.'; return; }
 
       btn.disabled = true;
@@ -1486,9 +1513,12 @@
     function resetGiveForm() {
       document.getElementById('give-form-wrap').style.display = 'block';
       document.getElementById('give-success-card').style.display = 'none';
-      giveCat = ''; giveAmt = 0;
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
-      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+      giveAmt = 0;
+      document.querySelectorAll('.give-cat-input').forEach(i => i.value = '');
+      document.getElementById('give-name').value = '';
+      document.getElementById('give-email').value = '';
+      document.getElementById('give-note').value = '';
+      document.getElementById('give-summary-box').style.display = 'none';
     }
     window.resetGiveForm = resetGiveForm;
 

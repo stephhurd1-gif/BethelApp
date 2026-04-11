@@ -1385,6 +1385,14 @@
       } else {
         box.style.display = 'none';
       }
+      // Update Cash App Pay amount dynamically
+      if (window.giveCashAppPay && giveAmt > 0) {
+        try {
+          window.giveCashAppPay.update({
+            total: { amount: String(Math.round(giveAmt * 100)), label: 'Give to Bethel AME' }
+          });
+        } catch(e) { /* silent */ }
+      }
     }
 
     async function initGiveSquare() {
@@ -1401,10 +1409,11 @@
 
         // Try to add Cash App Pay button
         try {
+          window.givePayments = payments;
           const paymentRequest = payments.paymentRequest({
             countryCode: 'US',
             currencyCode: 'USD',
-            total: { amount: giveAmt > 0 ? String(Math.round(giveAmt * 100)) : '100', label: 'Give to Bethel AME' }
+            total: { amount: '100', label: 'Give to Bethel AME' }
           });
           const cashAppPay = await payments.cashAppPay(paymentRequest, {
             redirectURL: window.location.href,

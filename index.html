@@ -825,8 +825,11 @@
                   <label class="give-cat-label">&#10133; Other</label>
                   <div class="give-cat-input-wrap">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0" step="0.01" oninput="handleOtherInput(this)">
                   </div>
+                </div>
+                <div id="give-other-reason-group" style="display:none;padding:8px 0;">
+                  <input class="form-input" type="text" id="give-other-reason" placeholder="Please describe the purpose of this gift..." oninput="updateGiveSummary()">
                 </div>
               </div>
             </div>
@@ -1382,12 +1385,28 @@
     let giveAmt = 0;
     let giveCard = null;
 
+    function handleOtherInput(input) {
+      const val = parseFloat(input.value) || 0;
+      const reasonGroup = document.getElementById('give-other-reason-group');
+      reasonGroup.style.display = val > 0 ? 'block' : 'none';
+      if (val === 0) document.getElementById('give-other-reason').value = '';
+      updateGiveSummary();
+    }
+    window.handleOtherInput = handleOtherInput;
+
     function getGiveLineItems() {
       const inputs = document.querySelectorAll('.give-cat-input');
       const items = [];
       inputs.forEach(input => {
         const val = parseFloat(input.value) || 0;
-        if (val > 0) items.push({ category: input.getAttribute('data-cat'), amount: val });
+        if (val > 0) {
+          let cat = input.getAttribute('data-cat');
+          if (cat === 'Other') {
+            const reason = document.getElementById('give-other-reason').value.trim();
+            if (reason) cat = 'Other: ' + reason;
+          }
+          items.push({ category: cat, amount: val });
+        }
       });
       return items;
     }
@@ -1490,6 +1509,10 @@
 
       const items = getGiveLineItems();
       if (items.length === 0) { msg.textContent = 'Please enter an amount for at least one giving type.'; return; }
+      const otherAmt = parseFloat(document.querySelector('.give-cat-input[data-cat="Other"]').value) || 0;
+      if (otherAmt > 0 && !document.getElementById('give-other-reason').value.trim()) {
+        msg.textContent = 'Please describe the purpose of your Other gift.'; return;
+      }
       if (!document.getElementById('give-name').value.trim()) { msg.textContent = 'Please enter your name.'; return; }
 
       btn.disabled = true;
@@ -1519,6 +1542,8 @@
       document.getElementById('give-email').value = '';
       document.getElementById('give-note').value = '';
       document.getElementById('give-summary-box').style.display = 'none';
+      document.getElementById('give-other-reason').value = '';
+      document.getElementById('give-other-reason-group').style.display = 'none';
     }
     window.resetGiveForm = resetGiveForm;
 

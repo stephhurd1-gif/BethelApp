@@ -828,7 +828,7 @@
                 <div class="summary-row total"><span>Amount</span><span id="give-sum-amt">$—</span></div>
               </div>
 
-              <div id="give-card-container" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin-bottom:14px;min-height:90px;"></div>
+              <div id="give-card-container" style="background:#ffffff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin-bottom:14px;min-height:90px;"></div>
               <div class="form-msg error" id="give-msg"></div>
 
               <button class="form-submit" id="give-pay-btn" onclick="handleGivePayment()">&#128274; Give Securely</button>
@@ -1392,11 +1392,11 @@
         const payments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
         giveCard = await payments.card({
           style: {
-            '.input-container': { borderColor: 'rgba(255,255,255,0.12)', borderRadius: '12px' },
+            '.input-container': { borderColor: 'rgba(255,255,255,0.12)', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.07)' },
             '.input-container.is-focus': { borderColor: 'rgba(247,191,91,0.5)' },
             '.input-container.is-error': { borderColor: '#fc8181' },
-            input: { color: '#fffefe', fontFamily: 'Arial, sans-serif', fontSize: '15px' },
-            'input::placeholder': { color: '#666' },
+            input: { color: '#000000', fontFamily: 'Arial, sans-serif', fontSize: '15px', backgroundColor: '#ffffff' },
+            'input::placeholder': { color: '#999999' },
             '.message-text': { color: '#fc8181' }
           }
         });

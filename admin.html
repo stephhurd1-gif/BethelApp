@@ -144,6 +144,7 @@
     <button class="tab" onclick="switchTab('announcements')">Announcements</button>
     <button class="tab" onclick="switchTab('visitors')">Visitors</button>
     <button class="tab" onclick="switchTab('prayer')">&#128591; Prayer</button>
+    <button class="tab" onclick="switchTab('giving')">&#128181; Giving</button>
   </div>
 
   <!-- Send Now -->
@@ -254,6 +255,32 @@
     </div>
   </div>
 
+  <!-- Giving History -->
+  <div class="tab-panel" id="tab-giving">
+    <div class="card" id="giving-lock-card">
+      <h2>&#128274; Giving History — Restricted Access</h2>
+      <p class="empty-note" style="margin-bottom:16px;">Giving records are confidential. Enter the giving access password to view them.</p>
+      <label>Giving Access Password</label>
+      <input type="password" id="giving-pwd" placeholder="Enter giving password"
+        onkeydown="if(event.key==='Enter')unlockGiving()" style="margin-top:8px;">
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-gold" onclick="unlockGiving()">Unlock</button>
+      </div>
+      <div class="status-msg" id="giving-lock-msg"></div>
+    </div>
+    <div id="giving-content" style="display:none;">
+      <div class="card">
+        <h2>&#128181; Giving History</h2>
+        <div id="giving-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;"></div>
+        <div id="giving-list"><p class="empty-note">Loading...</p></div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-outline" onclick="loadGivingHistory()">Refresh</button>
+          <button class="btn btn-red" onclick="lockGiving()">Lock</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Queue -->
   <div class="tab-panel" id="tab-queue">
     <div class="card">
@@ -322,7 +349,7 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
@@ -330,6 +357,7 @@
     if (name === 'announcements') loadAnnouncementsList();
     if (name === 'visitors') { document.getElementById('visitor-lock-card').style.display='block'; document.getElementById('visitor-content').style.display='none'; document.getElementById('visitor-pwd').value=''; }
     if (name === 'prayer') { document.getElementById('prayer-lock-card').style.display='block'; document.getElementById('prayer-content').style.display='none'; }
+    if (name === 'giving') { document.getElementById('giving-lock-card').style.display='block'; document.getElementById('giving-content').style.display='none'; }
   }
   window.switchTab = switchTab;
 
@@ -657,6 +685,108 @@
     document.getElementById('visitor-lock-msg').textContent = '';
   }
   window.lockVisitors = lockVisitors;
+
+  // ── Giving History ────────────────────────────────────────────────
+  const GIVING_PASSWORD = 'BethelGiving2024!';
+
+  function unlockGiving() {
+    const pwd = document.getElementById('giving-pwd').value;
+    const msg = document.getElementById('giving-lock-msg');
+    if (pwd === GIVING_PASSWORD) {
+      document.getElementById('giving-lock-card').style.display = 'none';
+      document.getElementById('giving-content').style.display = 'block';
+      loadGivingHistory();
+    } else {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Incorrect password.';
+    }
+  }
+  window.unlockGiving = unlockGiving;
+
+  function lockGiving() {
+    document.getElementById('giving-lock-card').style.display = 'block';
+    document.getElementById('giving-content').style.display = 'none';
+    document.getElementById('giving-pwd').value = '';
+    document.getElementById('giving-lock-msg').className = 'status-msg';
+    document.getElementById('giving-lock-msg').textContent = '';
+  }
+  window.lockGiving = lockGiving;
+
+  async function loadGivingHistory() {
+    const list = document.getElementById('giving-list');
+    const summary = document.getElementById('giving-summary');
+    if (!list) return;
+    list.innerHTML = '<p class="empty-note">Loading...</p>';
+    summary.innerHTML = '';
+
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'giving'),
+        orderBy('givenAt', 'desc')
+      ));
+
+      if (snap.empty) {
+        list.innerHTML = '<p class="empty-note">No giving records yet.</p>';
+        return;
+      }
+
+      // Calculate summary stats
+      let total = 0;
+      const categoryTotals = {};
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        total += d.amount || 0;
+        if (d.category) {
+          categoryTotals[d.category] = (categoryTotals[d.category] || 0) + (d.amount || 0);
+        }
+      });
+
+      // Show summary cards
+      summary.innerHTML = `
+        <div style="background:rgba(247,191,91,0.12);border:1px solid rgba(247,191,91,0.3);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Total Received</div>
+          <div style="font-size:22px;font-weight:bold;color:var(--color-gold);">$${total.toFixed(2)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Total Gifts</div>
+          <div style="font-size:22px;font-weight:bold;color:var(--color-text);">${snap.size}</div>
+        </div>
+        <div style="background:rgba(66,158,64,0.12);border:1px solid rgba(66,158,64,0.3);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Top Category</div>
+          <div style="font-size:14px;font-weight:bold;color:#68d391;">${Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—'}</div>
+        </div>`;
+
+      // Show individual records
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const time = d.givenAt.toDate().toLocaleString('en-US', {
+          timeZone: 'America/New_York',
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        });
+        const div = document.createElement('div');
+        div.className = 'scheduled-item';
+        div.style.flexDirection = 'column';
+        div.style.gap = '4px';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="item-title">&#128181; ${escHtml(d.category || 'Gift')}</div>
+            <div style="font-size:18px;font-weight:bold;color:var(--color-gold);">$${(d.amount||0).toFixed(2)}</div>
+          </div>
+          ${d.name ? `<div class="item-body">&#128100; ${escHtml(d.name)}</div>` : ''}
+          ${d.email ? `<div class="item-body">&#9993; <a href="mailto:${escHtml(d.email)}" style="color:var(--color-text-info);">${escHtml(d.email)}</a></div>` : ''}
+          ${d.note ? `<div class="item-body">&#128172; ${escHtml(d.note)}</div>` : ''}
+          <div class="item-body" style="font-size:11px;color:#555;">ID: ${escHtml(d.paymentId || '—')}</div>
+          <div class="item-time">&#128337; ${time}</div>`;
+        list.appendChild(div);
+      });
+
+    } catch(e) {
+      list.innerHTML = '<p class="empty-note" style="color:#fc8181;">Error: ' + e.message + '</p>';
+    }
+  }
+  window.loadGivingHistory = loadGivingHistory;
 
   // ── Prayer Requests ───────────────────────────────────────────────
   const PRAYER_PASSWORD = 'BethelPrayer2024!';

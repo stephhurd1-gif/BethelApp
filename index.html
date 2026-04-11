@@ -1569,17 +1569,34 @@
     }
     window.handleGivePayment = handleGivePayment;
 
-    function resetGiveForm() {
+    async function resetGiveForm() {
       document.getElementById('give-form-wrap').style.display = 'block';
       document.getElementById('give-success-card').style.display = 'none';
       giveAmt = 0;
+      giveCard = null;
       document.querySelectorAll('.give-cat-input').forEach(i => i.value = '');
+      document.querySelectorAll('.give-cat-row').forEach(row => {
+        row.classList.remove('selected');
+        const wrap = row.querySelector('.give-cat-input-wrap');
+        const check = row.querySelector('.give-cat-check');
+        if (wrap) wrap.style.display = 'none';
+        if (check) check.textContent = '\u2744';
+      });
       document.getElementById('give-name').value = '';
       document.getElementById('give-email').value = '';
       document.getElementById('give-note').value = '';
       document.getElementById('give-summary-box').style.display = 'none';
       document.getElementById('give-other-reason').value = '';
       document.getElementById('give-other-reason-group').style.display = 'none';
+      document.getElementById('give-cashapp-container').innerHTML = '';
+      document.getElementById('cashapp-note').style.display = 'none';
+      // Destroy old Cash App Pay instance
+      if (window.giveCashAppPay) {
+        try { await window.giveCashAppPay.destroy(); } catch(e) {}
+        window.giveCashAppPay = null;
+      }
+      // Reinitialize Square
+      setTimeout(initGiveSquare, 300);
     }
     window.resetGiveForm = resetGiveForm;
 

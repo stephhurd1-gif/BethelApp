@@ -158,11 +158,14 @@
     .form-msg.error { color: #fc8181; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
     /* Give category rows */
-    .give-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px; }
+    .give-cat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px; cursor: pointer; border-radius: 8px; transition: background 0.15s; }
     .give-cat-row:last-child { border-bottom: none; }
-    .give-cat-label { font-size: 14px; color: #ebebeb; flex: 1; }
-    .give-cat-input-wrap { position: relative; width: 110px; flex-shrink: 0; }
-    .give-cat-input-wrap .dollar { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 15px; font-weight: bold; }
+    .give-cat-row:hover { background: rgba(255,255,255,0.03); }
+    .give-cat-row.selected { background: rgba(247,191,91,0.06); }
+    .give-cat-check { font-size: 18px; color: var(--gold); flex-shrink: 0; width: 22px; }
+    .give-cat-label { font-size: 14px; color: #ebebeb; flex: 1; pointer-events: none; }
+    .give-cat-input-wrap { position: relative; width: 110px; flex-shrink: 0; display: flex; align-items: center; }
+    .give-cat-input-wrap .dollar { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 15px; font-weight: bold; pointer-events: none; }
     .give-cat-input { padding-left: 24px !important; font-size: 15px !important; font-weight: bold; color: var(--gold) !important; text-align: right; }
 
     /* Visitor form */
@@ -772,60 +775,68 @@
               <h2 class="section-title">&#127381; Select Giving Type &amp; Amount</h2>
               <p class="section-sub">Enter amounts for one or more giving types. Leave blank to skip.</p>
               <div id="give-categories">
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check" id="check-tithe">&#9744;</div>
                   <label class="give-cat-label">&#128591; Tithe</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Tithe" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Tithe" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#127873; General Offering</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="General Offering" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="General Offering" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#128218; Class Dues</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Class Dues" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Class Dues" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#127775; YPD</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="YPD" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="YPD" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#128160; Women&rsquo;s Day</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Women's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Women's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#128081; Men&rsquo;s Day</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Men's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Men's Day" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#128140; Love Offering</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Love Offering to Pastor" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()">
+                    <input class="form-input give-cat-input" type="number" data-cat="Love Offering to Pastor" placeholder="0.00" min="0" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
                   </div>
                 </div>
-                <div class="give-cat-row">
+                <div class="give-cat-row" onclick="toggleGiveCat(this)">
+                  <div class="give-cat-check">&#9744;</div>
                   <label class="give-cat-label">&#10133; Other</label>
-                  <div class="give-cat-input-wrap">
+                  <div class="give-cat-input-wrap" style="display:none;">
                     <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0" step="0.01" oninput="handleOtherInput(this)">
+                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0" step="0.01" oninput="handleOtherInput(this)" onclick="event.stopPropagation()">
                   </div>
                 </div>
                 <div id="give-other-reason-group" style="display:none;padding:8px 0;">
@@ -1384,6 +1395,31 @@
     // ── Give form ──────────────────────────────────────────────────────
     let giveAmt = 0;
     let giveCard = null;
+
+    function toggleGiveCat(row) {
+      const wrap = row.querySelector('.give-cat-input-wrap');
+      const check = row.querySelector('.give-cat-check');
+      const input = row.querySelector('.give-cat-input');
+      const isOpen = wrap.style.display !== 'none';
+      if (isOpen) {
+        wrap.style.display = 'none';
+        check.textContent = '\u2744';
+        if (input) { input.value = ''; }
+        row.classList.remove('selected');
+        // Hide Other reason if Other is deselected
+        if (input && input.getAttribute('data-cat') === 'Other') {
+          document.getElementById('give-other-reason-group').style.display = 'none';
+          document.getElementById('give-other-reason').value = '';
+        }
+      } else {
+        wrap.style.display = 'flex';
+        check.textContent = '\u2611';
+        row.classList.add('selected');
+        setTimeout(() => input && input.focus(), 100);
+      }
+      updateGiveSummary();
+    }
+    window.toggleGiveCat = toggleGiveCat;
 
     function handleOtherInput(input) {
       const val = parseFloat(input.value) || 0;

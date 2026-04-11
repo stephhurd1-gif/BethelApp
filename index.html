@@ -804,7 +804,7 @@
               <h2 class="section-title">&#128100; Your Information</h2>
               <p class="section-sub">Optional — helps us keep accurate giving records.</p>
               <div class="form-group">
-                <label class="form-label">Full Name</label>
+                <label class="form-label">Full Name *</label>
                 <input class="form-input" type="text" id="give-name" placeholder="Your full name">
               </div>
               <div class="form-group">
@@ -828,7 +828,11 @@
                 <div class="summary-row total"><span>Amount</span><span id="give-sum-amt">$—</span></div>
               </div>
 
-              <div id="give-cashapp-container" style="margin-bottom:12px;"></div>
+              <div id="give-cashapp-container" style="margin-bottom:12px;display:none;">
+                <button id="cashapp-pay-btn" onclick="openCashAppPay()" style="width:100%;padding:14px;background:#00D64F;color:#000;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;font-family:inherit;">
+                  &#36; Pay with Cash App
+                </button>
+              </div>
               <div id="give-card-container" style="background:#f5f5f5;border:1px solid #ddd;border-radius:12px;padding:4px;margin-bottom:14px;min-height:90px;"></div>
               <div class="form-msg error" id="give-msg"></div>
 
@@ -1375,51 +1379,33 @@
     }
     window.onGiveCustomAmt = onGiveCustomAmt;
 
-    let cashAppPayInitializing = false;
-    async function updateGiveSummary() {
+    function updateGiveSummary() {
       const cat = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
       const box = document.getElementById('give-summary-box');
+      const cashContainer = document.getElementById('give-cashapp-container');
       if (giveCat && giveAmt > 0) {
         document.getElementById('give-sum-cat').textContent = cat || '—';
         document.getElementById('give-sum-amt').textContent = '$' + giveAmt.toFixed(2);
         box.style.display = 'block';
+        cashContainer.style.display = 'block';
       } else {
         box.style.display = 'none';
-      }
-      // Recreate Cash App Pay button with correct amount
-      if (window.givePayments && giveAmt > 0 && !cashAppPayInitializing) {
-        cashAppPayInitializing = true;
-        const container = document.getElementById('give-cashapp-container');
-        container.innerHTML = '';
-        try {
-          if (window.giveCashAppPay) {
-            await window.giveCashAppPay.destroy();
-            window.giveCashAppPay = null;
-          }
-          const paymentRequest = window.givePayments.paymentRequest({
-            countryCode: 'US',
-            currencyCode: 'USD',
-            total: { amount: String(Math.round(giveAmt * 100)), label: 'Give to Bethel AME' }
-          });
-          const cashAppPay = await window.givePayments.cashAppPay(paymentRequest, {
-            redirectURL: window.location.href,
-            referenceId: 'bethel-give-' + Date.now()
-          });
-          await cashAppPay.attach('#give-cashapp-container');
-          cashAppPay.addEventListener('ontokenization', async function(event) {
-            const { tokenResult } = event.detail;
-            if (tokenResult.status === 'OK') {
-              await processGivePayment(tokenResult.token);
-            }
-          });
-          window.giveCashAppPay = cashAppPay;
-        } catch(e) {
-          console.warn('Cash App Pay:', e);
-          container.style.display = 'none';
-        }
-        cashAppPayInitializing = false;
+        cashContainer.style.display = 'none';
       }
     }
+
+    function openCashAppPay() {
+      if (!giveCat) { alert('Please select a giving type first.'); return; }
+      if (!giveAmt || giveAmt <= 0) { alert('Please enter an amount first.'); return; }
+      if (!document.getElementById('give-name').value.trim()) { alert('Please enter your name first.'); return; }
+      const cat = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
+      const name = document.getElementById('give-name').value.trim();
+      const noteText = name ? ('Bethel AME - ' + cat + ' - ' + name) : ('Bethel AME - ' + cat);
+      const note = encodeURIComponent(noteText);
+      const amount = giveAmt.toFixed(2);
+      window.open('https://cash.app/$BethelAMELancaster/' + amount + '?note=' + note, '_blank');
+    }
+    window.openCashAppPay = openCashAppPay;
 
     async function initGiveSquare() {
       if (giveCard) return;
@@ -1433,8 +1419,7 @@
         });
         await giveCard.attach('#give-card-container');
 
-        // Store payments instance for Cash App Pay
-        window.givePayments = payments;
+
       } catch(e) {
         console.warn('Square error:', e);
         document.getElementById('give-card-container').innerHTML = '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
@@ -1477,6 +1462,7 @@
 
       if (!giveCat) { msg.textContent = 'Please select a giving type.'; return; }
       if (!giveAmt || giveAmt <= 0) { msg.textContent = 'Please enter an amount.'; return; }
+      if (!document.getElementById('give-name').value.trim()) { msg.textContent = 'Please enter your name.'; return; }
 
       btn.disabled = true;
       btn.textContent = 'Processing...';

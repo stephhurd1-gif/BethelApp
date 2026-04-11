@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Bethel App</title>
   <meta name="theme-color" content="#01060b">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" sizes="180x180" href="/BethelApp/icons/180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/BethelApp/icons/152.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/BethelApp/icons/192.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/BethelApp/icons/16.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/152.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/16.png">
   <style>
     :root {
       --black: #01060b;
@@ -139,6 +139,23 @@
     .calendar-wrap iframe { display: block; width: 100%; min-height: 700px; border: 0; }
     .embed-frame { width: 100%; min-height: 72vh; border: 0; border-radius: 18px; background: rgba(255,255,255,0.03); }
     .small-note { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin-top: 10px; }
+
+    /* Give form */
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 4px; }
+    .cat-btn { padding: 12px 10px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.2s; }
+    .cat-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+    .cat-btn.selected { background: rgba(247,191,91,0.15); border-color: var(--gold); color: var(--gold); }
+    .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .amt-btn { padding: 12px 8px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #ccc; font-size: 15px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.2s; }
+    .amt-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+    .amt-btn.selected { background: rgba(247,191,91,0.15); border-color: var(--gold); color: var(--gold); }
+    .amount-input-wrap { position: relative; }
+    .amount-input-wrap .dollar { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 18px; font-weight: bold; }
+    .amount-input-wrap input { padding-left: 30px; font-size: 22px; font-weight: bold; color: var(--gold); }
+    .summary-box { background: rgba(247,191,91,0.08); border: 1px solid rgba(247,191,91,0.2); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: #ccc; margin-bottom: 6px; }
+    .summary-row.total { font-size: 18px; font-weight: bold; color: var(--gold); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 4px; }
+    .form-msg.error { color: #fc8181; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
     /* Visitor form */
     .visitor-form { display: grid; gap: 12px; }
@@ -725,61 +742,118 @@
 
         <!-- GIVE -->
         <div class="view" id="view-give">
-          <div class="card">
-            <h2 class="section-title">Give</h2>
-            <p class="section-sub">Your generosity supports the mission of Bethel AME Lancaster. Choose how you would like to give.</p>
-            <div class="quick-grid">
-              <a class="action-btn" href="https://square.link/u/cGm3gcCe" rel="noopener" aria-label="Give Online">
-                <span class="action-icon" aria-hidden="true">&#128179;</span>
-                <span>Give Online</span>
-              </a>
-              <a class="action-btn secondary" href="https://cash.app/$BethelAMELancaster" rel="noopener" aria-label="Cash App">
-                <span class="action-icon" aria-hidden="true">&#36;</span>
-                <span>Cash App</span>
-              </a>
-              <a class="action-btn green" href="https://maps.google.com/?q=450+E+Strawberry+St+Lancaster+PA" rel="noopener" aria-label="Give in Person">
-                <span class="action-icon" aria-hidden="true">&#8962;</span>
-                <span>In Person</span>
-              </a>
-              <a class="action-btn purple" href="mailto:web@bethelamelancaster.com?subject=Giving%20Question" aria-label="Questions">
-                <span class="action-icon" aria-hidden="true">&#9993;</span>
-                <span>Questions</span>
-              </a>
-            </div>
+
+          <div class="card" style="text-align:center;padding:28px 20px;background:linear-gradient(135deg,rgba(134,35,156,0.2),rgba(1,6,11,0.96));">
+            <div style="font-size:36px;margin-bottom:10px;">&#10084;&#65039;</div>
+            <h2 class="section-title">Give to Bethel</h2>
+            <p class="section-sub">Your generosity supports the mission and ministry of Bethel AME Lancaster.</p>
+            <p style="font-style:italic;font-size:13px;color:#aaa;">&ldquo;God loves a cheerful giver.&rdquo; &mdash; 2 Corinthians 9:7</p>
           </div>
-          <div class="feature-grid">
+
+          <div class="card" id="give-success-card" style="display:none;text-align:center;padding:28px;">
+            <div style="font-size:56px;margin-bottom:14px;">&#127979;</div>
+            <h2 style="color:#68d391;margin:0 0 10px;font-size:22px;">Thank You!</h2>
+            <p style="color:#ccc;font-size:14px;line-height:1.6;">Your gift has been received. Thank you for your faithful generosity. May God bless you abundantly.</p>
+            <button class="pill-btn" style="margin-top:16px;" onclick="resetGiveForm()">Give Again</button>
+          </div>
+
+          <div id="give-form-wrap">
+            <!-- Step 1: Category -->
             <div class="card">
-              <h2 class="section-title">Online Giving</h2>
-              <p class="section-sub">Secure giving via Square &mdash; accepts Credit/Debit, Apple Pay, Google Pay, and Cash App Pay.</p>
-              <div class="button-row">
-                <a class="pill-btn" href="https://square.link/u/cGm3gcCe" rel="noopener">Give Now via Square</a>
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 1 of 4</p>
+              <h2 class="section-title">&#127381; Select Giving Type</h2>
+              <div class="category-grid" id="give-cat-grid">
+                <button class="cat-btn" onclick="selectGiveCat(this,'Tithe')">&#128591; Tithe</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,'General Offering')">&#127873; General Offering</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,'Class Dues')">&#128218; Class Dues</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,'YPD')">&#127775; YPD</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,&quot;Women's Day&quot;)">&#128160; Women&rsquo;s Day</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,&quot;Men's Day&quot;)">&#128081; Men&rsquo;s Day</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,'Love Offering to Pastor')">&#128140; Love Offering</button>
+                <button class="cat-btn" onclick="selectGiveCat(this,'Other')">&#10133; Other</button>
+              </div>
+              <div class="form-group" id="give-other-group" style="display:none;margin-top:10px;">
+                <input class="form-input" type="text" id="give-other-cat" placeholder="Please specify...">
               </div>
             </div>
+
+            <!-- Step 2: Amount -->
             <div class="card">
-              <h2 class="section-title">Cash App</h2>
-              <p class="section-sub">Send directly to our Cash Tag:</p>
-              <div style="font-size:22px;font-weight:bold;color:var(--gold);margin:10px 0;">$BethelAMELancaster</div>
-              <div class="button-row">
-                <a class="pill-btn" href="https://cash.app/$BethelAMELancaster" rel="noopener">Open Cash App</a>
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 2 of 4</p>
+              <h2 class="section-title">&#128181; Enter Amount</h2>
+              <div class="amount-grid">
+                <button class="amt-btn" onclick="selectGiveAmt(this,10)">$10</button>
+                <button class="amt-btn" onclick="selectGiveAmt(this,25)">$25</button>
+                <button class="amt-btn" onclick="selectGiveAmt(this,50)">$50</button>
+                <button class="amt-btn" onclick="selectGiveAmt(this,75)">$75</button>
+                <button class="amt-btn" onclick="selectGiveAmt(this,100)">$100</button>
+                <button class="amt-btn" onclick="selectGiveAmt(this,150)">$150</button>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Custom amount</label>
+                <div class="amount-input-wrap">
+                  <span class="dollar">$</span>
+                  <input class="form-input" type="number" id="give-custom-amt" placeholder="0.00" min="1" step="0.01" oninput="onGiveCustomAmt()">
+                </div>
               </div>
             </div>
-          </div>
-          <div class="card">
-            <h2 class="section-title">Give by Mail</h2>
-            <p class="section-sub">Send a check payable to <strong>Bethel AME Church</strong> to:</p>
-            <div class="contact-list">
-              <div><strong>Address:</strong> 512 E. Strawberry Street, Lancaster, PA 17602</div>
-              <div><strong>Questions:</strong> web@bethelamelancaster.com</div>
+
+            <!-- Step 3: Donor Info -->
+            <div class="card">
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 3 of 4</p>
+              <h2 class="section-title">&#128100; Your Information</h2>
+              <p class="section-sub">Optional — helps us keep accurate giving records.</p>
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input class="form-input" type="text" id="give-name" placeholder="Your full name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input class="form-input" type="email" id="give-email" placeholder="your@email.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Note (optional)</label>
+                <input class="form-input" type="text" id="give-note" placeholder="e.g. In memory of...">
+              </div>
             </div>
-          </div>
-          <div class="card" style="text-align:center;padding:24px 18px;">
-            <p style="font-size:15px;color:#ebebeb;font-style:italic;margin:0 0 6px;">&ldquo;The reward for humility and fear of the LORD is riches and honor and life.&rdquo;</p>
-            <p style="font-size:13px;color:var(--gold);margin:0;">Proverbs 22:4</p>
+
+            <!-- Step 4: Payment -->
+            <div class="card">
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 4 of 4</p>
+              <h2 class="section-title">&#128179; Payment</h2>
+              <p class="section-sub">Enter your card details below. Your payment is processed securely by Square.</p>
+
+              <div class="summary-box" id="give-summary-box" style="display:none;">
+                <div class="summary-row"><span>Giving type</span><span id="give-sum-cat">—</span></div>
+                <div class="summary-row total"><span>Amount</span><span id="give-sum-amt">$—</span></div>
+              </div>
+
+              <div id="give-card-container" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin-bottom:14px;min-height:90px;"></div>
+              <div class="form-msg error" id="give-msg"></div>
+
+              <button class="form-submit" id="give-pay-btn" onclick="handleGivePayment()">&#128274; Give Securely</button>
+
+              <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:#555;font-size:13px;">
+                <div style="flex:1;border-top:1px solid rgba(255,255,255,0.08);"></div>
+                or give via
+                <div style="flex:1;border-top:1px solid rgba(255,255,255,0.08);"></div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <a class="action-btn secondary" href="https://cash.app/$BethelAMELancaster" rel="noopener" style="text-decoration:none;">
+                  <span class="action-icon">&#36;</span>
+                  <span>Cash App</span>
+                </a>
+                <a class="action-btn purple" href="https://square.link/u/cGm3gcCe" rel="noopener" style="text-decoration:none;">
+                  <span class="action-icon">&#9633;</span>
+                  <span>Square Link</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- BIBLE -->
-        <div class="view" id="view-bible">
+                <div class="view" id="view-bible">
           <div class="card">
             <h2 class="section-title">Bible</h2>
             <p class="section-sub">Read, listen, and study Scripture. Tap any option below to open it.</p>
@@ -1113,6 +1187,7 @@
 
   </div><!-- /#bethel-app -->
 
+  <script src="https://web.squarecdn.com/v1/square.js"></script>
   <script>
     // Navigate to visitor form in connect tab
     function goToVisitorForm() {
@@ -1268,6 +1343,134 @@
     }
     window.submitVisitorForm = submitVisitorForm;
 
+    // ── Give form ──────────────────────────────────────────────────────
+    let giveCat = '';
+    let giveAmt = 0;
+    let giveCard = null;
+
+    function selectGiveCat(btn, cat) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      giveCat = cat;
+      document.getElementById('give-other-group').style.display = cat === 'Other' ? 'flex' : 'none';
+      if (cat !== 'Other') document.getElementById('give-other-cat').value = '';
+      updateGiveSummary();
+    }
+    window.selectGiveCat = selectGiveCat;
+
+    function selectGiveAmt(btn, amt) {
+      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      giveAmt = amt;
+      document.getElementById('give-custom-amt').value = '';
+      updateGiveSummary();
+    }
+    window.selectGiveAmt = selectGiveAmt;
+
+    function onGiveCustomAmt() {
+      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+      giveAmt = parseFloat(document.getElementById('give-custom-amt').value) || 0;
+      updateGiveSummary();
+    }
+    window.onGiveCustomAmt = onGiveCustomAmt;
+
+    function updateGiveSummary() {
+      const cat = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
+      const box = document.getElementById('give-summary-box');
+      if (giveCat && giveAmt > 0) {
+        document.getElementById('give-sum-cat').textContent = cat || '—';
+        document.getElementById('give-sum-amt').textContent = '$' + giveAmt.toFixed(2);
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    async function initGiveSquare() {
+      if (giveCard) return;
+      try {
+        const payments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
+        giveCard = await payments.card({
+          style: {
+            '.input-container': { borderColor: 'rgba(255,255,255,0.12)', borderRadius: '12px' },
+            '.input-container.is-focus': { borderColor: 'rgba(247,191,91,0.5)' },
+            '.input-container.is-error': { borderColor: '#fc8181' },
+            input: { color: '#fffefe', fontFamily: 'Arial, sans-serif', fontSize: '15px' },
+            'input::placeholder': { color: '#666' },
+            '.message-text': { color: '#fc8181' }
+          }
+        });
+        await giveCard.attach('#give-card-container');
+      } catch(e) {
+        document.getElementById('give-card-container').innerHTML = '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
+      }
+    }
+
+    async function handleGivePayment() {
+      const msg = document.getElementById('give-msg');
+      const btn = document.getElementById('give-pay-btn');
+      msg.textContent = '';
+
+      if (!giveCat) { msg.textContent = 'Please select a giving type.'; return; }
+      if (!giveAmt || giveAmt <= 0) { msg.textContent = 'Please enter an amount.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const result = await giveCard.tokenize();
+        if (result.status === 'OK') {
+          const category = giveCat === 'Other' ? (document.getElementById('give-other-cat').value.trim() || 'Other') : giveCat;
+          const name  = document.getElementById('give-name').value.trim();
+          const email = document.getElementById('give-email').value.trim();
+          const note  = document.getElementById('give-note').value.trim();
+
+          const response = await fetch('https://us-central1-bethelapp-f2d4e.cloudfunctions.net/processGiving', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceId: result.token,
+              amount: Math.round(giveAmt * 100),
+              category,
+              name: name || null,
+              email: email || null,
+              note: note || null
+            })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById('give-form-wrap').style.display = 'none';
+            document.getElementById('give-success-card').style.display = 'block';
+          } else {
+            throw new Error(data.error || 'Payment failed');
+          }
+        } else {
+          throw new Error(result.errors.map(e => e.message).join(', '));
+        }
+      } catch(e) {
+        msg.textContent = 'Payment failed: ' + e.message;
+        btn.disabled = false;
+        btn.textContent = '🔒 Give Securely';
+      }
+    }
+    window.handleGivePayment = handleGivePayment;
+
+    function resetGiveForm() {
+      document.getElementById('give-form-wrap').style.display = 'block';
+      document.getElementById('give-success-card').style.display = 'none';
+      giveCat = ''; giveAmt = 0;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+    }
+    window.resetGiveForm = resetGiveForm;
+
+    // Init Square when Give tab is shown
+    document.addEventListener('DOMContentLoaded', () => {
+      const giveTab = document.querySelector('[data-view="give"]');
+      if (giveTab) giveTab.addEventListener('click', () => setTimeout(initGiveSquare, 300));
+    });
+
     // ── Welcome onboarding ───────────────────────────────────────────
     function detectDevice() {
       const ua = navigator.userAgent;
@@ -1359,6 +1562,7 @@
       document.querySelectorAll('.nav-item[data-view]').forEach(b => {
         b.classList.toggle('is-active', b.getAttribute('data-view') === name);
       });
+      if (name === 'give') setTimeout(initGiveSquare, 300);
       if (!lazyLoaded.has(name)) {
         const view = document.getElementById('view-' + name);
         if (view) {
@@ -1664,7 +1868,7 @@
     // Service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/BethelApp/sw.js', { scope: '/BethelApp/' })
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(reg => console.log('SW registered:', reg.scope))
           .catch(err => console.warn('SW failed:', err));
       });

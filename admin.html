@@ -730,18 +730,21 @@
         return;
       }
 
-      // Calculate summary stats
+      // Show individual records
+      list.innerHTML = '';
+      // Calculate summary excluding refunded
       let total = 0;
       const categoryTotals = {};
       snap.forEach(docSnap => {
         const d = docSnap.data();
+        if (d.refunded) return;
         total += d.amount || 0;
         if (d.category) {
           categoryTotals[d.category] = (categoryTotals[d.category] || 0) + (d.amount || 0);
         }
       });
 
-      // Show summary cards
+      // Show summary
       summary.innerHTML = `
         <div style="background:rgba(247,191,91,0.12);border:1px solid rgba(247,191,91,0.3);border-radius:14px;padding:14px;text-align:center;">
           <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Total Received</div>
@@ -749,15 +752,13 @@
         </div>
         <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;text-align:center;">
           <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Total Gifts</div>
-          <div style="font-size:22px;font-weight:bold;color:var(--color-text);">${snap.size}</div>
+          <div style="font-size:22px;font-weight:bold;color:var(--color-text);">${snap.docs.filter(d => !d.data().refunded).length}</div>
         </div>
         <div style="background:rgba(66,158,64,0.12);border:1px solid rgba(66,158,64,0.3);border-radius:14px;padding:14px;text-align:center;">
           <div style="font-size:12px;color:#aaa;margin-bottom:4px;">Top Category</div>
           <div style="font-size:14px;font-weight:bold;color:#68d391;">${Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—'}</div>
         </div>`;
 
-      // Show individual records
-      list.innerHTML = '';
       snap.forEach(docSnap => {
         const d = docSnap.data();
         const time = d.givenAt.toDate().toLocaleString('en-US', {
@@ -765,20 +766,31 @@
           dateStyle: 'medium',
           timeStyle: 'short'
         });
+        const isRefunded = d.refunded === true;
         const div = document.createElement('div');
         div.className = 'scheduled-item';
         div.style.flexDirection = 'column';
         div.style.gap = '4px';
+        div.style.opacity = isRefunded ? '0.5' : '1';
         div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
             <div class="item-title">&#128181; ${escHtml(d.category || 'Gift')}</div>
-            <div style="font-size:18px;font-weight:bold;color:var(--color-gold);">$${(d.amount||0).toFixed(2)}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${isRefunded ? '<span style="font-size:11px;background:rgba(255,77,79,0.2);color:#fc8181;padding:2px 8px;border-radius:99px;">Refunded</span>' : ''}
+              <div style="font-size:18px;font-weight:bold;color:var(--color-gold);${isRefunded ? 'text-decoration:line-through;' : ''}">$${(d.amount||0).toFixed(2)}</div>
+            </div>
           </div>
           ${d.name ? `<div class="item-body">&#128100; ${escHtml(d.name)}</div>` : ''}
           ${d.email ? `<div class="item-body">&#9993; <a href="mailto:${escHtml(d.email)}" style="color:var(--color-text-info);">${escHtml(d.email)}</a></div>` : ''}
           ${d.note ? `<div class="item-body">&#128172; ${escHtml(d.note)}</div>` : ''}
           <div class="item-body" style="font-size:11px;color:#555;">ID: ${escHtml(d.paymentId || '—')}</div>
-          <div class="item-time">&#128337; ${time}</div>`;
+          <div class="item-time">&#128337; ${time}</div>
+          <div style="margin-top:6px;">
+            ${isRefunded 
+              ? `<button class="btn btn-outline" style="font-size:12px;padding:6px 12px;" onclick="markGivingRefunded('${docSnap.id}', false)">Undo Refund</button>`
+              : `<button class="btn btn-red" style="font-size:12px;padding:6px 12px;" onclick="markGivingRefunded('${docSnap.id}', true)">Mark as Refunded</button>`
+            }
+          </div>`;
         list.appendChild(div);
       });
 
@@ -787,6 +799,16 @@
     }
   }
   window.loadGivingHistory = loadGivingHistory;
+
+  async function markGivingRefunded(id, refunded) {
+    try {
+      await updateDoc(doc(db, 'giving', id), { refunded });
+      loadGivingHistory();
+    } catch(e) {
+      alert('Error: ' + e.message);
+    }
+  }
+  window.markGivingRefunded = markGivingRefunded;
 
   // ── Prayer Requests ───────────────────────────────────────────────
   const PRAYER_PASSWORD = 'BethelPrayer2024!';

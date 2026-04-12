@@ -1488,7 +1488,14 @@
           await giveCashApp.attach('#give-cashapp-container');
           giveCashApp.addEventListener('ontokenization', async e => {
             const { tokenResult } = e.detail;
-            if (tokenResult.status === 'OK') await processGivePayment(tokenResult.token);
+            if (tokenResult.status === 'OK') {
+              await processGivePayment(tokenResult.token);
+            } else if (tokenResult.status === 'Cancel') {
+              // User cancelled — stay on form, do nothing
+              console.log('Cash App Pay cancelled by user');
+            } else {
+              document.getElementById('give-msg').textContent = 'Cash App Pay was not completed. Please try again.';
+            }
           });
           document.getElementById('cashapp-note').style.display = 'block';
         } catch(ce) {

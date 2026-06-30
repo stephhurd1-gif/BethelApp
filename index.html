@@ -875,9 +875,10 @@
                 <div class="summary-row total"><span>Total</span><span id="give-sum-total">$0.00</span></div>
               </div>
 
-              <div id="give-cashapp-container" style="margin-bottom:4px;"></div>
-              <p id="cashapp-note" style="display:none;font-size:11px;color:#888;text-align:center;margin:-6px 0 12px;">Note: Cash App may display $100.00 — the correct amount will be charged.</p>
 
+
+              <div id="give-cashapp-container" style="display:none;margin-bottom:4px;"></div>
+              <p id="cashapp-note" style="display:none;font-size:11px;color:#888;text-align:center;margin:-2px 0 12px;"></p>
               <div id="give-card-container" style="background:#f5f5f5;border:1px solid #ddd;border-radius:12px;padding:4px;margin-bottom:14px;min-height:90px;"></div>
               <p id="give-msg" style="color:#fc8181;font-size:13px;margin:0 0 8px;min-height:18px;"></p>
 
@@ -1393,8 +1394,11 @@
     // ── Give form ──────────────────────────────────────────────────────
     let giveAmt = 0;
     let giveCard = null;
-    let giveCashApp = null;
     let givePayments = null;
+    let giveCashApp = null;
+    let giveIdempotencyKey = crypto.randomUUID();
+    let cashAppRefreshTimer = null;
+    let cashAppBuiltFor = null;   // amount string the current Cash App button was built for
 
     function toggleGiveCat(row) {
       const wrap = row.querySelector('.give-cat-input-wrap');
@@ -1461,6 +1465,101 @@
       } else {
         box.style.display = 'none';
       }
+      // Cash App Pay can't update its amount after creation, so rebuild it
+      // (debounced) whenever the total changes.
+      scheduleCashAppRefresh();
+    }
+
+    // ── Cash App Pay: must be rebuilt whenever the amount changes ─────────
+    // Square's Cash App Pay does NOT support PaymentRequest.update(), so the
+    // only way to show the correct amount is to destroy and recreate it.
+    function scheduleCashAppRefresh() {
+      clearTimeout(cashAppRefreshTimer);
+      cashAppRefreshTimer = setTimeout(refreshCashAppPay, 500);
+    }
+
+    async function refreshCashAppPay() {
+      const container = document.getElementById('give-cashapp-container');
+      const note = document.getElementById('cashapp-note');
+      if (!givePayments || !container) return;
+
+      const amountStr = giveAmt > 0 ? giveAmt.toFixed(2) : null;
+
+      // No valid amount yet — tear the button down.
+      if (!amountStr) {
+        try { if (giveCashApp) { await giveCashApp.destroy(); } } catch (e) {}
+        giveCashApp = null;
+        cashAppBuiltFor = null;
+        container.innerHTML = '';
+        container.style.display = 'none';
+        if (note) { note.textContent = ''; note.style.display = 'none'; }
+        return;
+      }
+
+      // Already built for this exact amount — leave it alone.
+      if (giveCashApp && cashAppBuiltFor === amountStr) return;
+
+      // Rebuild for the new amount.
+      try { if (giveCashApp) { await giveCashApp.destroy(); } } catch (e) {}
+      giveCashApp = null;
+      container.innerHTML = '';
+
+      try {
+        const pr = givePayments.paymentRequest({
+          countryCode: 'US',
+          currencyCode: 'USD',
+          total: { amount: amountStr, label: 'Give to Bethel AME' }
+        });
+        giveCashApp = await givePayments.cashAppPay(pr, {
+          redirectURL: window.location.href,
+          referenceId: 'bethel-' + Date.now()
+        });
+        giveCashApp.addEventListener('ontokenization', async e => {
+          const { tokenResult } = e.detail;
+          console.log('Cash App Pay tokenResult status:', tokenResult.status);
+          if (tokenResult.status === 'OK') {
+            // The Cash App button tokenizes on tap, so this is the last chance
+            // to catch a missing name/amount before we charge.
+            const problem = giveValidationError();
+            if (problem) { document.getElementById('give-msg').textContent = problem; return; }
+            try {
+              await processGivePayment(tokenResult.token);
+            } catch (err) {
+              document.getElementById('give-msg').textContent = 'Payment failed: ' + err.message;
+            }
+          } else if (tokenResult.status === 'Cancel') {
+            console.log('Cash App Pay cancelled by user — no charge');
+          } else {
+            console.warn('Cash App Pay unexpected status:', tokenResult.status, tokenResult.errors);
+            document.getElementById('give-msg').textContent = 'Cash App Pay was not completed. Please try again.';
+          }
+        });
+        await giveCashApp.attach('#give-cashapp-container');
+        cashAppBuiltFor = amountStr;
+        container.style.display = 'block';
+        if (note) {
+          note.textContent = 'Cash App will show $' + amountStr + ' — that exact amount will be charged.';
+          note.style.display = 'block';
+        }
+      } catch (ce) {
+        console.warn('Cash App Pay unavailable:', ce);
+        cashAppBuiltFor = null;
+        container.style.display = 'none';
+        if (note) { note.textContent = ''; note.style.display = 'none'; }
+      }
+    }
+
+    // Shared validation for both the card and Cash App payment paths.
+    function giveValidationError() {
+      const items = getGiveLineItems();
+      if (items.length === 0) return 'Please select at least one giving type and enter an amount.';
+      const otherInput = document.querySelector('.give-cat-input[data-cat="Other"]');
+      const otherAmt = otherInput ? (parseFloat(otherInput.value) || 0) : 0;
+      if (otherAmt > 0 && !document.getElementById('give-other-reason').value.trim()) {
+        return 'Please describe the purpose of your Other gift.';
+      }
+      if (!document.getElementById('give-name').value.trim()) return 'Please enter your name.';
+      return null;
     }
 
     async function initGiveSquare() {
@@ -1474,38 +1573,14 @@
           }
         });
         await giveCard.attach('#give-card-container');
-
-        // Cash App Pay
-        try {
-          const pr = givePayments.paymentRequest({
-            countryCode: 'US', currencyCode: 'USD',
-            total: { amount: '100', label: 'Give to Bethel AME' }
-          });
-          giveCashApp = await givePayments.cashAppPay(pr, {
-            redirectURL: window.location.href,
-            referenceId: 'bethel-' + Date.now()
-          });
-          await giveCashApp.attach('#give-cashapp-container');
-          giveCashApp.addEventListener('ontokenization', async e => {
-            const { tokenResult } = e.detail;
-            if (tokenResult.status === 'OK') {
-              await processGivePayment(tokenResult.token);
-            } else if (tokenResult.status === 'Cancel') {
-              // User cancelled — stay on form, do nothing
-              console.log('Cash App Pay cancelled by user');
-            } else {
-              document.getElementById('give-msg').textContent = 'Cash App Pay was not completed. Please try again.';
-            }
-          });
-          document.getElementById('cashapp-note').style.display = 'block';
-        } catch(ce) {
-          console.warn('Cash App Pay unavailable:', ce);
-        }
       } catch(e) {
         console.warn('Square init error:', e);
         document.getElementById('give-card-container').innerHTML =
           '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
       }
+      // Build Cash App Pay to match whatever amount is currently entered
+      // (stays hidden until there's a valid amount).
+      refreshCashAppPay();
     }
 
     async function processGivePayment(token) {
@@ -1520,7 +1595,8 @@
         body: JSON.stringify({
           sourceId: token,
           amount: Math.round(giveAmt * 100),
-          category, name: name || null, email: email || null, note: note || null
+          category, name: name || null, email: email || null, note: note || null,
+          idempotencyKey: giveIdempotencyKey
         })
       });
       const data = await response.json();
@@ -1537,13 +1613,8 @@
       const msg = document.getElementById('give-msg');
       const btn = document.getElementById('give-pay-btn');
       msg.textContent = '';
-      const items = getGiveLineItems();
-      if (items.length === 0) { msg.textContent = 'Please select at least one giving type and enter an amount.'; return; }
-      const otherAmt = parseFloat(document.querySelector('.give-cat-input[data-cat="Other"]').value) || 0;
-      if (otherAmt > 0 && !document.getElementById('give-other-reason').value.trim()) {
-        msg.textContent = 'Please describe the purpose of your Other gift.'; return;
-      }
-      if (!document.getElementById('give-name').value.trim()) { msg.textContent = 'Please enter your name.'; return; }
+      const problem = giveValidationError();
+      if (problem) { msg.textContent = problem; return; }
       btn.disabled = true;
       btn.textContent = 'Processing...';
       try {
@@ -1567,6 +1638,7 @@
       document.getElementById('give-success-card').style.display = 'none';
       document.getElementById('give-msg').textContent = '';
       giveAmt = 0;
+      giveIdempotencyKey = crypto.randomUUID();
 
       // Reset category rows
       document.querySelectorAll('.give-cat-row').forEach(row => {
@@ -1584,16 +1656,20 @@
       document.getElementById('give-email').value = '';
       document.getElementById('give-note').value = '';
       document.getElementById('give-summary-box').style.display = 'none';
-      document.getElementById('cashapp-note').style.display = 'none';
-
-      // Destroy Square instances
-      try { if (window.giveCashAppPay) { await window.giveCashAppPay.destroy(); window.giveCashAppPay = null; } } catch(e) {}
-      try { if (giveCard) { await giveCard.destroy(); giveCard = null; } } catch(e) {}
+      // Tear down Square instances
+      clearTimeout(cashAppRefreshTimer);
+      try { if (giveCashApp) { await giveCashApp.destroy(); } } catch(e) {}
+      try { if (giveCard) { await giveCard.destroy(); } } catch(e) {}
+      giveCashApp = null;
+      giveCard = null;
+      cashAppBuiltFor = null;
       document.getElementById('give-cashapp-container').innerHTML = '';
+      document.getElementById('give-cashapp-container').style.display = 'none';
+      document.getElementById('cashapp-note').style.display = 'none';
       document.getElementById('give-card-container').innerHTML = '';
 
-      // Reinit after short delay
-      setTimeout(initGiveSquare, 400);
+      // Rebuild the card form. Cash App stays hidden until a new amount is entered.
+      await initGiveSquare();
     }
     window.resetGiveForm = resetGiveForm;
 

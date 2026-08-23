@@ -741,12 +741,14 @@
         </div>
 
         <!-- EVENTS -->
+        <!-- Events are maintained in /events.html so the website and app share one calendar experience. -->
         <div class="view" id="view-events">
-          <div class="card">
-            <h2 class="section-title">Events Calendar</h2>
-            <p class="section-sub">View upcoming church events right here on the page.</p>
-            <div class="calendar-wrap">
-              <iframe data-src="https://calendar.google.com/calendar/embed?height=800&wkst=1&ctz=America%2FNew_York&title=Bethel%20Events&mode=MONTH&showCalendars=0&src=YmV0aGVsYW1lbGFuY2FzdGVyQGdtYWlsLmNvbQ&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23E4C441&color=%230B8043" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Bethel Events Calendar"></iframe>
+          <div class="card" style="text-align:center;padding:32px 22px;background:linear-gradient(135deg,rgba(134,35,156,0.18),rgba(1,6,11,0.96));">
+            <div style="font-size:42px;margin-bottom:12px;">&#128197;</div>
+            <h2 class="section-title">What's Happening at Bethel</h2>
+            <p class="section-sub">Browse upcoming events, details, locations, and calendar links in the interactive Events view.</p>
+            <div class="button-row" style="justify-content:center;margin-top:18px;">
+              <a class="pill-btn" href="/events.html">Open Events</a>
             </div>
           </div>
         </div>
@@ -1366,6 +1368,7 @@
     }
 
     const CANONICAL_GIVING_URL = '/give.html';
+    const CANONICAL_EVENTS_URL = '/events.html';
 
     navButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1375,6 +1378,12 @@
           // Use the real top-level giving page rather than an iframe or
           // duplicate form. This is important for Cash App and digital wallets.
           window.location.href = CANONICAL_GIVING_URL;
+          return;
+        }
+
+        if (target === 'events') {
+          // One canonical events experience for the installed app and website.
+          window.location.href = CANONICAL_EVENTS_URL;
           return;
         }
 

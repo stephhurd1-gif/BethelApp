@@ -666,6 +666,40 @@
       line-height: 1.45;
     }
 
+
+    .wallet-native {
+      text-align: center;
+      padding: 8px 0 2px;
+    }
+
+    .wallet-note {
+      margin: 10px 0 0;
+      color: #9da8b0;
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    #google-pay-container {
+      min-height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #apple-pay-button {
+      display: none;
+      width: min(100%, 320px);
+      height: 48px;
+      margin: 4px auto 0;
+      border: 0;
+      border-radius: 7px;
+      cursor: pointer;
+      -webkit-appearance: -apple-pay-button;
+      -apple-pay-button-type: donate;
+      -apple-pay-button-style: black;
+    }
+
     .success-card {
       display: none;
       text-align: center;
@@ -895,7 +929,7 @@
       <div class="card">
         <div class="step-label">Step 3 of 3</div>
         <h2>&#128179; Payment</h2>
-        <p class="sub">Choose a frequency and payment method. Bank account, Cash App Pay, and card payments are processed securely by Square.</p>
+        <p class="sub">Choose a frequency and payment method. Apple Pay, Google Pay, bank account, Cash App Pay, and card payments are processed securely by Square.</p>
 
         <div class="freq-row">
           <button type="button" id="freq-once" class="freq-btn selected" onclick="setFrequency('once')">One-time</button>
@@ -913,11 +947,19 @@
         <div class="payment-method-grid" id="payment-method-grid">
           <button type="button" class="payment-method-btn" id="method-ach" onclick="selectPaymentMethod('ach')">
             <span class="payment-method-name">🏦 Bank account (ACH)</span>
-            <span class="payment-method-meta">One-time or weekly · secure bank transfer</span>
+            <span class="payment-method-meta">One-time only · secure bank transfer</span>
           </button>
           <button type="button" class="payment-method-btn" id="method-cashapp" onclick="selectPaymentMethod('cashapp')">
             <span class="payment-method-name">$ Cash App Pay</span>
             <span class="payment-method-meta">One-time gifts · confirm before charge</span>
+          </button>
+          <button type="button" class="payment-method-btn" id="method-applepay" onclick="selectPaymentMethod('applepay')" hidden>
+            <span class="payment-method-name"> Apple Pay</span>
+            <span class="payment-method-meta">One-time gift · Apple Wallet</span>
+          </button>
+          <button type="button" class="payment-method-btn" id="method-googlepay" onclick="selectPaymentMethod('googlepay')" hidden>
+            <span class="payment-method-name"> Google Pay</span>
+            <span class="payment-method-meta">One-time gift · Google Wallet</span>
           </button>
           <button type="button" class="payment-method-btn selected" id="method-card" onclick="selectPaymentMethod('card')">
             <span class="payment-method-name">💳 Credit / debit card</span>
@@ -935,14 +977,8 @@
             Your routing and full account numbers are entered only in the secure bank-linking window and are not exposed to Bethel's website.
           </p>
           <button type="button" class="ach-action" id="ach-start-btn" onclick="startAchPayment()">Connect bank account</button>
-          <p class="ach-note" id="ach-note">One-time and weekly bank giving are enabled for testing. Monthly ACH will be added after the weekly recurring authorization is verified.</p>
-
-          <label class="consent-row" id="ach-consent-row" style="display:none;margin-top:14px;">
-            <input type="checkbox" id="ach-consent-check">
-            <span>I authorize Bethel AME Lancaster to debit the selected bank account for this gift <strong id="ach-consent-freq">every week</strong> until I cancel. I understand ACH payments may take several business days to settle.</span>
-          </label>
-
-          <div class="ach-confirm-panel" id="ach-confirm-panel">
+          <p class="ach-note" id="ach-note">ACH bank transfer is available for one-time gifts. Weekly and monthly recurring gifts are available by credit/debit card.</p>
+<div class="ach-confirm-panel" id="ach-confirm-panel">
             <div style="font-size:13px;font-weight:800;color:#f7bf5b;margin-bottom:6px;">Bank authorization returned</div>
             <div id="ach-confirm-text" style="font-size:12px;line-height:1.5;color:#cbd2d8;margin-bottom:12px;">
               No ACH payment has been submitted yet.
@@ -992,6 +1028,31 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+
+        <!-- Apple Pay is shown only on supported Apple Safari devices -->
+        <div class="payment-panel" id="applepay-panel">
+          <div class="payment-panel-heading">
+            <strong>Apple Pay</strong>
+            <span>One-time gifts only</span>
+          </div>
+          <div class="wallet-native">
+            <button type="button" id="apple-pay-button" aria-label="Donate with Apple Pay" onclick="submitApplePay()"></button>
+            <p class="wallet-note" id="apple-pay-note">Select a giving amount to load Apple Pay.</p>
+          </div>
+        </div>
+
+        <!-- Google Pay is shown only when supported by the buyer's browser/device -->
+        <div class="payment-panel" id="googlepay-panel">
+          <div class="payment-panel-heading">
+            <strong>Google Pay</strong>
+            <span>One-time gifts only</span>
+          </div>
+          <div class="wallet-native">
+            <div id="google-pay-container"></div>
+            <p class="wallet-note" id="google-pay-note">Select a giving amount to load Google Pay.</p>
           </div>
         </div>
 
@@ -1054,6 +1115,14 @@
     let cashAppRefreshTimer = null;
     let cashAppGeneration = 0;
     let cashAppPaymentInProgress = false;
+
+    let applePay = null;
+    let googlePay = null;
+    let applePaySupported = false;
+    let googlePaySupported = false;
+    let walletRefreshTimer = null;
+    let walletGeneration = 0;
+    let walletPaymentInProgress = false;
 
     // Cash App is intentionally two-step:
     // Square authorization/tokenization first, then an explicit confirmation
@@ -1171,6 +1240,7 @@
       });
 
       await card.attach('#card-container');
+      await detectDigitalWalletSupport();
       selectPaymentMethod('card', true);
       scheduleCashAppRefresh();
     }
@@ -1182,38 +1252,43 @@
       if (container) {
         container.innerHTML =
           '<p style="color:#fc8181;font-size:13px;line-height:1.5;margin:0;">' +
-          'Card form could not load. Please refresh the page. If it still does not load, use Cash App or Square Link below.' +
+          'Card form could not load. Please refresh the page. If it still does not load, use another available payment method or Square Link below.' +
           '</p>';
       }
     });
 
     // ── Payment method selector ───────────────────────────────────────
     function selectPaymentMethod(method, silent) {
-      if (!['ach', 'cashapp', 'card'].includes(method)) return;
+      if (!['ach', 'cashapp', 'applepay', 'googlepay', 'card'].includes(method)) return;
 
-      // Cash App cannot be used for recurring gifts.
-      if (frequency !== 'once' && method === 'cashapp') {
-        method = 'card';
-      }
-
-      // Weekly ACH is enabled in this test. Monthly ACH stays card-only until
-      // the weekly bank-on-file authorization flow is verified.
-      if (frequency === 'monthly' && method === 'ach') {
-        setMsg('Monthly bank-account giving is not enabled in this test yet. Please use card for monthly giving.', 'error');
+      // Wallets, Cash App, and ACH are one-time only in this integration.
+      if (frequency !== 'once' &&
+          ['ach', 'cashapp', 'applepay', 'googlepay'].includes(method)) {
+        if (!silent) {
+          setMsg('Weekly and monthly recurring gifts are currently available by credit/debit card.', 'error');
+        }
         method = 'card';
       }
 
       paymentMethod = method;
 
-      ['ach', 'cashapp', 'card'].forEach(m => {
+      ['ach', 'cashapp', 'applepay', 'googlepay', 'card'].forEach(m => {
         const button = document.getElementById('method-' + m);
         const panel = document.getElementById(m === 'cashapp' ? 'cashapp-panel' : m + '-panel');
         if (button) button.classList.toggle('selected', m === method);
         if (panel) panel.classList.toggle('visible', m === method);
       });
 
+      const oneTime = frequency === 'once';
+      const achButton = document.getElementById('method-ach');
       const cashButton = document.getElementById('method-cashapp');
-      if (cashButton) cashButton.hidden = frequency !== 'once';
+      const appleButton = document.getElementById('method-applepay');
+      const googleButton = document.getElementById('method-googlepay');
+
+      if (achButton) achButton.hidden = !oneTime;
+      if (cashButton) cashButton.hidden = !oneTime;
+      if (appleButton) appleButton.hidden = !oneTime || !applePaySupported;
+      if (googleButton) googleButton.hidden = !oneTime || !googlePaySupported;
 
       if (method === 'cashapp') {
         scheduleCashAppRefresh();
@@ -1221,25 +1296,352 @@
         destroyCashAppPay();
       }
 
+      if (method === 'applepay' || method === 'googlepay') {
+        scheduleWalletRefresh();
+      } else {
+        destroyDigitalWalletInstances();
+      }
+
       if (method !== 'ach') {
         clearPendingAchAuthorization(false);
       }
 
       const cardConsent = document.getElementById('consent-row');
-      const achConsent = document.getElementById('ach-consent-row');
       if (cardConsent) {
         cardConsent.style.display =
           method === 'card' && frequency !== 'once' ? 'flex' : 'none';
-      }
-      if (achConsent) {
-        achConsent.style.display =
-          method === 'ach' && frequency === 'weekly' ? 'flex' : 'none';
       }
 
       if (!silent) setMsg('');
       reportHeight();
     }
     window.selectPaymentMethod = selectPaymentMethod;
+
+    // ── Apple Pay + Google Pay (one-time only) ──────────────────────
+    function walletPaymentRequest(amount) {
+      return payments.paymentRequest({
+        countryCode: 'US',
+        currencyCode: 'USD',
+        total: {
+          amount: amount,
+          label: 'Bethel AME Lancaster Gift',
+          pending: false
+        }
+      });
+    }
+
+    async function detectDigitalWalletSupport() {
+      if (!payments) return;
+
+      const testRequest = walletPaymentRequest('1.00');
+
+      try {
+        const testApple = await payments.applePay(testRequest);
+        applePaySupported = true;
+        try { await testApple.destroy(); } catch (_) {}
+      } catch (err) {
+        applePaySupported = false;
+        if (err && err.name !== 'PaymentMethodUnsupportedError') {
+          console.warn('Apple Pay availability check:', err);
+        }
+      }
+
+      try {
+        const testGoogle = await payments.googlePay(testRequest);
+        googlePaySupported = true;
+        try { await testGoogle.destroy(); } catch (_) {}
+      } catch (err) {
+        googlePaySupported = false;
+        if (err && err.name !== 'PaymentMethodUnsupportedError') {
+          console.warn('Google Pay availability check:', err);
+        }
+      }
+
+      const appleButton = document.getElementById('method-applepay');
+      const googleButton = document.getElementById('method-googlepay');
+      if (appleButton) appleButton.hidden = !applePaySupported || frequency !== 'once';
+      if (googleButton) googleButton.hidden = !googlePaySupported || frequency !== 'once';
+    }
+
+    function scheduleWalletRefresh() {
+      clearTimeout(walletRefreshTimer);
+      walletRefreshTimer = setTimeout(refreshSelectedDigitalWallet, 300);
+    }
+
+    async function destroyDigitalWalletInstances() {
+      walletGeneration += 1;
+
+      const oldApple = applePay;
+      const oldGoogle = googlePay;
+      applePay = null;
+      googlePay = null;
+
+      if (oldApple) {
+        try { await oldApple.destroy(); } catch (_) {}
+      }
+      if (oldGoogle) {
+        try { await oldGoogle.destroy(); } catch (_) {}
+      }
+
+      const appleButton = document.getElementById('apple-pay-button');
+      const googleContainer = document.getElementById('google-pay-container');
+
+      if (appleButton) appleButton.style.display = 'none';
+      if (googleContainer) {
+        googleContainer.innerHTML = '';
+        googleContainer.onclick = null;
+      }
+    }
+
+    async function refreshSelectedDigitalWallet() {
+      if (!payments ||
+          frequency !== 'once' ||
+          giveTotal <= 0 ||
+          !['applepay', 'googlepay'].includes(paymentMethod)) {
+        await destroyDigitalWalletInstances();
+        return;
+      }
+
+      const selected = paymentMethod;
+      const amountForAttempt = giveTotal.toFixed(2);
+      const generation = ++walletGeneration;
+
+      const oldApple = applePay;
+      const oldGoogle = googlePay;
+      applePay = null;
+      googlePay = null;
+      if (oldApple) {
+        try { await oldApple.destroy(); } catch (_) {}
+      }
+      if (oldGoogle) {
+        try { await oldGoogle.destroy(); } catch (_) {}
+      }
+
+      const appleButton = document.getElementById('apple-pay-button');
+      const appleNote = document.getElementById('apple-pay-note');
+      const googleContainer = document.getElementById('google-pay-container');
+      const googleNote = document.getElementById('google-pay-note');
+
+      if (appleButton) appleButton.style.display = 'none';
+      if (googleContainer) {
+        googleContainer.innerHTML = '';
+        googleContainer.onclick = null;
+      }
+
+      try {
+        const request = walletPaymentRequest(amountForAttempt);
+
+        if (selected === 'applepay') {
+          if (!applePaySupported) {
+            throw new Error('Apple Pay is not available on this browser or device.');
+          }
+
+          const instance = await payments.applePay(request);
+
+          if (generation !== walletGeneration ||
+              paymentMethod !== 'applepay' ||
+              frequency !== 'once' ||
+              giveTotal.toFixed(2) !== amountForAttempt) {
+            try { await instance.destroy(); } catch (_) {}
+            return;
+          }
+
+          applePay = instance;
+          if (appleButton) appleButton.style.display = 'block';
+          if (appleNote) {
+            appleNote.textContent =
+              'Apple Pay will show the $' + amountForAttempt + ' gift before you authorize it.';
+          }
+        } else {
+          if (!googlePaySupported) {
+            throw new Error('Google Pay is not available on this browser or device.');
+          }
+
+          const instance = await payments.googlePay(request);
+
+          if (generation !== walletGeneration ||
+              paymentMethod !== 'googlepay' ||
+              frequency !== 'once' ||
+              giveTotal.toFixed(2) !== amountForAttempt) {
+            try { await instance.destroy(); } catch (_) {}
+            return;
+          }
+
+          googlePay = instance;
+          await instance.attach('#google-pay-container', {
+            buttonColor: 'default',
+            buttonType: 'long'
+          });
+
+          if (googleContainer) {
+            googleContainer.onclick = submitGooglePay;
+          }
+          if (googleNote) {
+            googleNote.textContent =
+              'Google Pay will show the $' + amountForAttempt + ' gift before you authorize it.';
+          }
+        }
+
+        reportHeight();
+      } catch (err) {
+        console.error(selected + ' initialization failed:', err);
+
+        if (selected === 'applepay') {
+          applePaySupported = false;
+          const method = document.getElementById('method-applepay');
+          if (method) method.hidden = true;
+          if (appleNote) {
+            appleNote.textContent = 'Apple Pay is not available on this browser or device.';
+          }
+        } else {
+          if (googleNote) {
+            googleNote.textContent =
+              'Google Pay could not load. You can still use another payment method.';
+          }
+        }
+
+        if (paymentMethod === selected) {
+          setMsg(
+            selected === 'applepay'
+              ? 'Apple Pay is not available on this browser or device.'
+              : 'Google Pay could not load on this browser or device.',
+            'error'
+          );
+        }
+        reportHeight();
+      }
+    }
+
+    async function submitDigitalWallet(method) {
+      if (walletPaymentInProgress) return;
+
+      const problem = validationError();
+      if (problem) {
+        setMsg(problem, 'error');
+        return;
+      }
+
+      if (frequency !== 'once' || paymentMethod !== method) {
+        setMsg('Digital wallets are available for one-time gifts only.', 'error');
+        return;
+      }
+
+      const amountForAttempt = giveTotal.toFixed(2);
+      const instance = method === 'applepay' ? applePay : googlePay;
+      if (!instance) {
+        setMsg(
+          (method === 'applepay' ? 'Apple Pay' : 'Google Pay') +
+          ' is still loading. Please try again.',
+          'error'
+        );
+        scheduleWalletRefresh();
+        return;
+      }
+
+      walletPaymentInProgress = true;
+      setMsg(
+        'Opening ' + (method === 'applepay' ? 'Apple Pay' : 'Google Pay') + '…',
+        ''
+      );
+
+      try {
+        const tokenResult = await instance.tokenize();
+
+        if (tokenResult.status === 'Cancel' || tokenResult.status === 'Abort') {
+          setMsg(
+            (method === 'applepay' ? 'Apple Pay' : 'Google Pay') +
+            ' was canceled. No payment was submitted.',
+            'success'
+          );
+          scheduleWalletRefresh();
+          return;
+        }
+
+        if (tokenResult.status !== 'OK' || !tokenResult.token) {
+          const details = (tokenResult.errors || [])
+            .map(e => e.message || e.detail || e.code)
+            .filter(Boolean)
+            .join(', ');
+          throw new Error(details || 'Wallet authorization was not completed.');
+        }
+
+        // Square recommends buyer verification for customer-initiated digital
+        // wallet transactions. If Square returns a verification token, pass it
+        // to CreatePayment on the backend.
+        let verificationToken;
+        try {
+          const verification = await payments.verifyBuyer(
+            tokenResult.token,
+            getVerificationDetails('CHARGE')
+          );
+          verificationToken = verification && verification.token
+            ? verification.token
+            : undefined;
+        } catch (verifyErr) {
+          console.error('Digital wallet buyer verification failed:', verifyErr);
+          throw new Error('Buyer verification could not be completed.');
+        }
+
+        if (frequency !== 'once' ||
+            paymentMethod !== method ||
+            giveTotal.toFixed(2) !== amountForAttempt) {
+          throw new Error('The giving amount changed. Please start the wallet payment again.');
+        }
+
+        const items = getLineItems();
+        const category = items
+          .map(i => i.category + ': $' + i.amount.toFixed(2))
+          .join(', ');
+        const donor = getDonorDetails();
+
+        const response = await fetch(PROCESS_GIVING_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: tokenResult.token,
+            amount: Math.round(Number(amountForAttempt) * 100),
+            category,
+            name: donor.name || null,
+            email: donor.email || null,
+            note: donor.note || null,
+            idempotencyKey,
+            verificationToken,
+            paymentMethod: method === 'applepay' ? 'apple_pay' : 'google_pay'
+          })
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch (_) {}
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Wallet payment failed.');
+        }
+
+        showSuccess(
+          'Your ' + (method === 'applepay' ? 'Apple Pay' : 'Google Pay') +
+          ' gift has been received. Thank you for supporting Bethel AME Lancaster.'
+        );
+      } catch (err) {
+        console.error(method + ' payment error:', err);
+        setMsg(
+          (method === 'applepay' ? 'Apple Pay' : 'Google Pay') +
+          ' payment failed: ' + (err.message || 'Please try again.'),
+          'error'
+        );
+        scheduleWalletRefresh();
+      } finally {
+        walletPaymentInProgress = false;
+      }
+    }
+
+    function submitApplePay() {
+      return submitDigitalWallet('applepay');
+    }
+    function submitGooglePay() {
+      return submitDigitalWallet('googlepay');
+    }
+    window.submitApplePay = submitApplePay;
+    window.submitGooglePay = submitGooglePay;
 
     // ── ACH / bank payment (one-time test) ───────────────────────────
     function clearPendingAchAuthorization(showMessage) {
@@ -1281,6 +1683,12 @@
       clearPendingAchAuthorization(true);
     }
     window.cancelPendingAchPayment = cancelPendingAchPayment;
+
+    function getSelectedFrequencyFromUi() {
+      if (document.getElementById('freq-weekly')?.classList.contains('selected')) return 'weekly';
+      if (document.getElementById('freq-monthly')?.classList.contains('selected')) return 'monthly';
+      return 'once';
+    }
 
     function squareWeekdayName(date) {
       return ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][date.getDay()];
@@ -1397,6 +1805,18 @@
     async function startAchPayment() {
       if (paymentMethod !== 'ach') return;
 
+      const requestedFrequency = getSelectedFrequencyFromUi();
+      frequency = requestedFrequency;
+
+      if (requestedFrequency !== 'once') {
+        setMsg(
+          'Recurring bank-account giving is temporarily unavailable. Please use a credit/debit card for weekly or monthly gifts.',
+          'error'
+        );
+        selectPaymentMethod('card', true);
+        return;
+      }
+
       setMsg('');
       const problem = validationError();
       if (problem) {
@@ -1404,22 +1824,7 @@
         return;
       }
 
-      if (frequency === 'monthly') {
-        setMsg('Monthly ACH is not enabled in this test yet. Please use card for monthly giving.', 'error');
-        return;
-      }
-
       const donor = getDonorDetails();
-      if (frequency !== 'once' && !donor.email) {
-        setMsg('Please enter your email so we can send your receipt and recurring-gift management link.', 'error');
-        return;
-      }
-
-      if (frequency === 'weekly' &&
-          !document.getElementById('ach-consent-check').checked) {
-        setMsg('Please check the authorization box for the weekly bank-account gift.', 'error');
-        return;
-      }
 
       if (!payments) {
         setMsg('Secure payments are still loading. Please wait a moment.', 'error');
@@ -1433,147 +1838,55 @@
       clearPendingAchAuthorization(false);
       if (startBtn) {
         startBtn.disabled = true;
-        startBtn.textContent = frequency === 'once'
-          ? 'Opening bank connection…'
-          : 'Linking bank for weekly gift…';
+        startBtn.textContent = 'Opening bank connection…';
       }
 
       try {
         await destroyAch();
 
-        // ONE-TIME ACH: keep the already-proven CHARGE flow.
-        if (frequency === 'once') {
-          const instance = await payments.ach({
-            transactionId: ('bethel-' + attemptKey).slice(0, 40)
-          });
-          ach = instance;
+        const instance = await payments.ach({
+          transactionId: ('bethel-' + attemptKey).slice(0, 40)
+        });
+        ach = instance;
 
-          const result = await waitForAchToken(instance, {
-            intent: 'CHARGE',
-            accountHolderName: donor.name,
-            amount: amountForAttempt,
-            currency: 'USD'
-          });
+        const result = await waitForAchToken(instance, {
+          intent: 'CHARGE',
+          accountHolderName: donor.name,
+          amount: amountForAttempt,
+          currency: 'USD'
+        });
 
-          if (result.canceled) {
-            setMsg('Bank authorization canceled. No payment was submitted.', 'success');
-            return;
-          }
-
-          pendingAchToken = result.token;
-          pendingAchAttemptKey = attemptKey;
-          pendingAchAmount = amountForAttempt;
-          pendingAchFrequency = 'once';
-
-          const bank = result.details && result.details.bankAccount
-            ? result.details.bankAccount
-            : null;
-
-          pendingAchBankLabel = bank
-            ? [bank.bankName, bank.accountType, bank.accountNumberSuffix ? '•••' + bank.accountNumberSuffix : '']
-                .filter(Boolean).join(' · ')
-            : 'linked bank account';
-
-        } else {
-          // WEEKLY ACH:
-          // 1) Link with intent STORE -> BNON.
-          // 2) Server stores BNON with Square -> BACT.
-          // 3) Browser authorizes the fixed weekly schedule -> reusable BAUTH.
-          const storeInstance = await payments.ach({
-            transactionId: ('bethel-store-' + attemptKey).slice(0, 40)
-          });
-          ach = storeInstance;
-
-          const storeResult = await waitForAchToken(storeInstance, {
-            intent: 'STORE',
-            accountHolderName: donor.name
-          });
-
-          if (storeResult.canceled) {
-            setMsg('Bank linking canceled. No recurring gift was created.', 'success');
-            return;
-          }
-
-          setMsg('Bank linked. Setting up the weekly authorization…', '');
-
-          const storeResponse = await fetch(STORE_RECURRING_BANK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sourceId: storeResult.token,
-              name: donor.name,
-              email: donor.email,
-              idempotencyKey: attemptKey
-            })
-          });
-
-          let stored = {};
-          try { stored = await storeResponse.json(); } catch (_) {}
-
-          if (!storeResponse.ok || !stored.success) {
-            throw new Error(stored.error || 'The bank account could not be stored for recurring giving.');
-          }
-
-          await destroyAch();
-
-          const recurringInstance = await payments.ach({
-            transactionId: ('bethel-weekly-' + attemptKey).slice(0, 40)
-          });
-          ach = recurringInstance;
-
-          const now = new Date();
-          const recurringResult = await waitForAchToken(recurringInstance, {
-            intent: 'RECURRING_CHARGE',
-            bankAccountId: stored.bankAccountId,
-            amount: amountForAttempt,
-            currency: 'USD',
-            startDate: localDateString(now),
-            frequency: {
-              weekly: {
-                occurrence: 1,
-                daysOfWeek: [squareWeekdayName(now)]
-              }
-            }
-          });
-
-          if (recurringResult.canceled) {
-            setMsg('Weekly bank authorization canceled. No recurring gift was created.', 'success');
-            return;
-          }
-
-          pendingAchToken = recurringResult.token;
-          pendingAchAttemptKey = attemptKey;
-          pendingAchAmount = amountForAttempt;
-          pendingAchFrequency = 'weekly';
-          pendingAchCustomerId = stored.customerId;
-          pendingAchBankAccountId = stored.bankAccountId;
-          pendingAchBankLabel = [
-            stored.bankName || 'Bank account',
-            stored.accountType || '',
-            stored.accountNumberSuffix ? '•••' + stored.accountNumberSuffix : ''
-          ].filter(Boolean).join(' · ');
+        if (result.canceled) {
+          setMsg('Bank authorization canceled. No payment was submitted.', 'success');
+          return;
         }
+
+        pendingAchToken = result.token;
+        pendingAchAttemptKey = attemptKey;
+        pendingAchAmount = amountForAttempt;
+        pendingAchFrequency = 'once';
+
+        const bank = result.details && result.details.bankAccount
+          ? result.details.bankAccount
+          : null;
+
+        pendingAchBankLabel = bank
+          ? [bank.bankName, bank.accountType, bank.accountNumberSuffix ? '•••' + bank.accountNumberSuffix : '']
+              .filter(Boolean).join(' · ')
+          : 'linked bank account';
 
         const confirmText = document.getElementById('ach-confirm-text');
         const confirmPanel = document.getElementById('ach-confirm-panel');
 
         if (confirmText) {
-          if (pendingAchFrequency === 'weekly') {
-            confirmText.textContent =
-              'Square authorized ' + pendingAchBankLabel + ' for a $' + amountForAttempt +
-              ' weekly gift. No debit has been submitted yet. Confirm below to submit the first gift and activate the weekly schedule.';
-          } else {
-            confirmText.textContent =
-              'Square authorized ' + pendingAchBankLabel + ' for a $' + amountForAttempt +
-              ' gift. No payment has been submitted yet. Confirm below to continue.';
-          }
+          confirmText.textContent =
+            'Square authorized ' + pendingAchBankLabel + ' for a ONE-TIME $' + amountForAttempt +
+            ' gift. No payment has been submitted yet. Confirm below to continue.';
         }
         if (confirmPanel) confirmPanel.classList.add('visible');
 
         setMsg(
-          pendingAchFrequency === 'weekly'
-            ? 'Weekly bank authorization is ready, but NOTHING has been debited yet. Please confirm below.'
-            : 'Bank account authorized, but your gift has NOT been submitted yet. Please confirm below.',
+          'Bank account authorized, but your gift has NOT been submitted yet. Please confirm below.',
           'success'
         );
         reportHeight();
@@ -1582,8 +1895,7 @@
         console.error('ACH setup error:', err);
         setMsg(
           'Bank setup could not be completed: ' +
-          (err.message || 'Please try again.') +
-          ' — Please copy or screenshot this exact message.',
+          (err.message || 'Please try again.'),
           'error'
         );
       } finally {
@@ -1609,25 +1921,21 @@
         return;
       }
 
-      if (giveTotal.toFixed(2) !== pendingAchAmount ||
-          frequency !== pendingAchFrequency) {
+      const currentVisibleFrequency = getSelectedFrequencyFromUi();
+      frequency = currentVisibleFrequency;
+
+      if (pendingAchFrequency !== 'once' ||
+          currentVisibleFrequency !== 'once' ||
+          giveTotal.toFixed(2) !== pendingAchAmount) {
         clearPendingAchAuthorization(false);
-        setMsg('The giving amount or frequency changed. The bank authorization was discarded; please start again.', 'error');
+        setMsg(
+          'The giving amount or frequency changed. The bank authorization was discarded; please start again.',
+          'error'
+        );
         return;
       }
 
       const donor = getDonorDetails();
-      if (pendingAchFrequency === 'weekly' && !donor.email) {
-        setMsg('Please enter your email for the recurring-gift receipt and management link.', 'error');
-        return;
-      }
-
-      if (pendingAchFrequency === 'weekly' &&
-          !document.getElementById('ach-consent-check').checked) {
-        setMsg('Please check the weekly ACH authorization box.', 'error');
-        return;
-      }
-
       const token = pendingAchToken;
       const attemptKey = pendingAchAttemptKey;
       const amountForAttempt = pendingAchAmount;
@@ -1642,48 +1950,24 @@
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
-      setMsg(
-        pendingAchFrequency === 'weekly'
-          ? 'Submitting the first ACH gift and activating the weekly schedule…'
-          : 'Submitting your confirmed bank-account gift…',
-        ''
-      );
+      setMsg('Submitting your confirmed bank-account gift…', '');
 
       try {
         const items = getLineItems();
         const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
 
-        const endpoint = pendingAchFrequency === 'weekly'
-          ? CREATE_RECURRING_ACH_URL
-          : PROCESS_GIVING_URL;
-
-        const payload = pendingAchFrequency === 'weekly'
-          ? {
-              recurringAuthorizationToken: token,
-              bankAccountId: pendingAchBankAccountId,
-              customerId: pendingAchCustomerId,
-              amount: Math.round(Number(amountForAttempt) * 100),
-              frequency: 'weekly',
-              category,
-              name: donor.name,
-              email: donor.email,
-              note: donor.note || null,
-              idempotencyKey: attemptKey
-            }
-          : {
-              sourceId: token,
-              amount: Math.round(Number(amountForAttempt) * 100),
-              category,
-              name: donor.name || null,
-              email: donor.email || null,
-              note: donor.note || null,
-              idempotencyKey: attemptKey
-            };
-
-        const response = await fetch(endpoint, {
+        const response = await fetch(PROCESS_GIVING_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            sourceId: token,
+            amount: Math.round(Number(amountForAttempt) * 100),
+            category,
+            name: donor.name || null,
+            email: donor.email || null,
+            note: donor.note || null,
+            idempotencyKey: attemptKey
+          })
         });
 
         let data = {};
@@ -1693,13 +1977,10 @@
           throw new Error(data.error || 'ACH payment failed');
         }
 
-        const wasWeekly = pendingAchFrequency === 'weekly';
         clearPendingAchAuthorization(false);
 
         showSuccess(
-          wasWeekly
-            ? 'Your weekly bank-account gift is set up and your first ACH gift has been submitted. ACH payments may remain pending for a few business days. We emailed you a private link to manage or cancel the recurring gift.'
-            : 'Your bank-account gift has been submitted. ACH gifts may take a few business days to fully settle. Thank you for supporting Bethel AME Lancaster.'
+          'Your bank-account gift has been submitted. ACH gifts may take a few business days to fully settle. Thank you for supporting Bethel AME Lancaster.'
         );
       } catch (err) {
         console.error('ACH payment error:', err);
@@ -2069,6 +2350,9 @@
       }
       if (pendingAchToken && pendingAchAmount !== total.toFixed(2)) clearPendingAchAuthorization(false);
       scheduleCashAppRefresh();
+      if (['applepay', 'googlepay'].includes(paymentMethod)) {
+        scheduleWalletRefresh();
+      }
       reportHeight();
     }
 
@@ -2082,69 +2366,49 @@
 
       const consentRow = document.getElementById('consent-row');
       const consentFreq = document.getElementById('consent-freq');
-      const achConsentRow = document.getElementById('ach-consent-row');
-      const achConsentFreq = document.getElementById('ach-consent-freq');
-      const achNote = document.getElementById('ach-note');
       const recurNote = document.getElementById('recurring-note');
       const emailLabel = document.getElementById('email-label');
       const btn = document.getElementById('pay-btn');
       const cashButton = document.getElementById('method-cashapp');
+      const achButton = document.getElementById('method-ach');
+      const appleButton = document.getElementById('method-applepay');
+      const googleButton = document.getElementById('method-googlepay');
+      const achNote = document.getElementById('ach-note');
 
-      if (cashButton) cashButton.hidden = freq !== 'once';
+      const recurring = freq !== 'once';
+
+      if (cashButton) cashButton.hidden = recurring;
+      if (achButton) achButton.hidden = recurring;
+      if (appleButton) appleButton.hidden = recurring || !applePaySupported;
+      if (googleButton) googleButton.hidden = recurring || !googlePaySupported;
 
       if (freq === 'once') {
         consentRow.style.display = 'none';
-        if (achConsentRow) achConsentRow.style.display = 'none';
         recurNote.style.display = 'none';
         emailLabel.textContent = 'Email Address';
         btn.innerHTML = '&#128274; Give Securely';
-        if (achNote) achNote.textContent =
-          'One-time ACH is enabled. The bank transfer may remain pending for several business days.';
-      } else {
-        consentRow.style.display = paymentMethod === 'card' ? 'flex' : 'none';
-        consentFreq.textContent = freq === 'weekly' ? 'every week' : 'every month';
-
-        if (achConsentRow) {
-          achConsentRow.style.display =
-            paymentMethod === 'ach' && freq === 'weekly' ? 'flex' : 'none';
-        }
-        if (achConsentFreq) {
-          achConsentFreq.textContent = 'every week';
-        }
-
-        recurNote.style.display = 'block';
-        recurNote.textContent =
-          freq === 'weekly'
-            ? 'Weekly gifts can use card or bank account. Cash App Pay is one-time only.'
-            : 'Monthly card gifts are enabled. Monthly ACH will be added after the weekly bank-account test is verified.';
-
-        emailLabel.textContent = 'Email Address * (for your receipt & manage link)';
-        btn.innerHTML = '&#128257; Start Recurring Gift';
-
         if (achNote) {
           achNote.textContent =
-            freq === 'weekly'
-              ? 'Weekly ACH is enabled for testing. Square/Plaid will first link the bank account, then show the recurring debit authorization.'
-              : 'Monthly ACH is not enabled in this test yet.';
+            'One-time ACH bank transfers may remain pending for several business days before they settle.';
         }
-
-        if (freq === 'monthly' && paymentMethod !== 'card') {
+      } else {
+        if (paymentMethod !== 'card') {
           selectPaymentMethod('card', true);
         }
-      }
 
-      // Refresh method-specific consent visibility after frequency change.
-      if (paymentMethod === 'ach') {
-        consentRow.style.display = 'none';
-        if (achConsentRow) {
-          achConsentRow.style.display = freq === 'weekly' ? 'flex' : 'none';
-        }
-      } else if (paymentMethod === 'card' && freq !== 'once') {
         consentRow.style.display = 'flex';
-        if (achConsentRow) achConsentRow.style.display = 'none';
+        consentFreq.textContent = freq === 'weekly' ? 'every week' : 'every month';
+        recurNote.style.display = 'block';
+        recurNote.textContent =
+          'Recurring gifts are currently available by credit/debit card.';
+        emailLabel.textContent = 'Email Address * (for your receipt & manage link)';
+        btn.innerHTML = '&#128257; Start Recurring Gift';
       }
 
       scheduleCashAppRefresh();
+      if (['applepay', 'googlepay'].includes(paymentMethod)) {
+        scheduleWalletRefresh();
+      }
       reportHeight();
     }
     window.setFrequency = setFrequency;

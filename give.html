@@ -204,6 +204,25 @@
       margin-top: 2px;
     }
 
+    .cat-row.invalid-selection {
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 2px rgba(255,107,107,0.10);
+    }
+
+    .cat-amt.invalid-field,
+    #other-reason.invalid-field {
+      border-color: #ff6b6b !important;
+      box-shadow: 0 0 0 3px rgba(255,107,107,0.10);
+    }
+
+    .required-help {
+      display: block;
+      margin-top: 6px;
+      color: #aeb7be;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
     /* Donor fields */
     .donor-grid {
       display: grid;
@@ -839,7 +858,7 @@
             <span class="cat-name">&#128591; Tithe</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Tithe" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Tithe" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -847,7 +866,7 @@
             <span class="cat-name">&#127873; General Offering</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="General Offering" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="General Offering" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -855,7 +874,7 @@
             <span class="cat-name">&#128218; Class Dues</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Class Dues" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Class Dues" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -863,7 +882,7 @@
             <span class="cat-name">&#127775; YPD</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="YPD" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="YPD" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -871,7 +890,7 @@
             <span class="cat-name">&#128160; Women&rsquo;s Day</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Women's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Women's Day" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -879,7 +898,7 @@
             <span class="cat-name">&#128081; Men&rsquo;s Day</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Men's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Men's Day" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -887,7 +906,7 @@
             <span class="cat-name">&#128140; Love Offering to Pastor</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Love Offering to Pastor" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Love Offering to Pastor" placeholder="Required" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -895,11 +914,14 @@
             <span class="cat-name">&#10133; Other</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Other" placeholder="0.00" min="0.01" step="0.01" oninput="onOtherInput(this)" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Other" placeholder="Required" min="0.01" step="0.01" oninput="onOtherInput(this)" onclick="event.stopPropagation()">
             </div>
           </div>
           <div id="other-reason-group">
-            <input class="form-input" type="text" id="other-reason" placeholder="Please describe the purpose of this gift..." oninput="updateSummary()">
+            <input class="form-input" type="text" id="other-reason"
+              placeholder="Required — e.g. Building Fund, Scholarship, Memorial..."
+              oninput="onOtherReasonInput(this)">
+            <span class="required-help">Please tell us what this “Other” gift should be credited toward.</span>
           </div>
         </div>
       </div>
@@ -916,7 +938,7 @@
           </div>
           <div class="form-group">
             <label class="form-label" id="email-label" for="donor-email">Email Address</label>
-            <input class="form-input" type="email" id="donor-email" placeholder="your@email.com" autocomplete="email" inputmode="email">
+            <input class="form-input" type="email" id="donor-email" required aria-required="true" placeholder="your@email.com" autocomplete="email" inputmode="email">
           </div>
           <div class="form-group full-width">
             <label class="form-label" for="donor-note">Note (optional)</label>
@@ -1594,6 +1616,27 @@
           .join(', ');
         const donor = getDonorDetails();
 
+        // Square identifies which SDK method produced the token.
+        // Save that value too so wallet reporting stays reliable.
+        const squareTokenMethod =
+          tokenResult &&
+          tokenResult.details &&
+          tokenResult.details.method
+            ? String(tokenResult.details.method)
+            : '';
+
+        const paymentMethodMap = {
+          'Apple Pay': 'apple_pay',
+          'Google Pay': 'google_pay',
+          'Card': 'card',
+          'Cash App Pay': 'cash_app',
+          'ACH': 'ach'
+        };
+
+        const trackedPaymentMethod =
+          paymentMethodMap[squareTokenMethod] ||
+          (method === 'applepay' ? 'apple_pay' : 'google_pay');
+
         const response = await fetch(PROCESS_GIVING_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1606,7 +1649,8 @@
             note: donor.note || null,
             idempotencyKey,
             verificationToken,
-            paymentMethod: method === 'applepay' ? 'apple_pay' : 'google_pay'
+            paymentMethod: trackedPaymentMethod,
+            squareTokenMethod
           })
         });
 
@@ -2286,59 +2330,167 @@
     window.confirmCashAppPayment = confirmCashAppPayment;
 
     // ── Category selection ───────────────────────────────────────────
+    function categoryLabel(row) {
+      const input = row ? row.querySelector('.cat-amt') : null;
+      return input ? (input.getAttribute('data-cat') || 'this giving type') : 'this giving type';
+    }
+
+    function updateCategoryVisualState(row, showError) {
+      if (!row) return;
+
+      const input = row.querySelector('.cat-amt');
+      const selected = row.classList.contains('selected');
+      const amount = input ? (parseFloat(input.value) || 0) : 0;
+      const missingAmount = selected && amount <= 0;
+
+      row.classList.toggle('invalid-selection', Boolean(showError && missingAmount));
+      if (input) {
+        input.classList.toggle('invalid-field', Boolean(showError && missingAmount));
+        input.required = selected;
+        input.setAttribute('aria-required', selected ? 'true' : 'false');
+        if (!missingAmount) input.removeAttribute('aria-invalid');
+        else if (showError) input.setAttribute('aria-invalid', 'true');
+      }
+
+      if (input && input.getAttribute('data-cat') === 'Other') {
+        const reason = document.getElementById('other-reason');
+        const reasonGroup = document.getElementById('other-reason-group');
+
+        if (reasonGroup) reasonGroup.style.display = selected ? 'block' : 'none';
+
+        if (reason) {
+          reason.required = selected;
+          reason.setAttribute('aria-required', selected ? 'true' : 'false');
+
+          const missingReason = selected && !reason.value.trim();
+          reason.classList.toggle('invalid-field', Boolean(showError && missingReason));
+
+          if (!missingReason) reason.removeAttribute('aria-invalid');
+          else if (showError) reason.setAttribute('aria-invalid', 'true');
+        }
+      }
+    }
+
+    function refreshAllCategoryVisuals(showErrors) {
+      document.querySelectorAll('.cat-row').forEach(row => {
+        updateCategoryVisualState(row, showErrors);
+      });
+    }
+
     function toggleCat(row) {
       const wrap = row.querySelector('.cat-amt-wrap');
       const check = row.querySelector('.cat-check');
       const input = row.querySelector('.cat-amt');
-      const isOpen = wrap.style.display === 'flex';
-      if (isOpen) {
+      const isSelected = row.classList.contains('selected');
+
+      if (isSelected) {
+        // Removing the checkmark always removes the amount from the gift.
+        row.classList.remove('selected', 'invalid-selection');
         wrap.style.display = 'none';
         check.innerHTML = '&#9744;';
-        row.classList.remove('selected');
-        if (input) input.value = '';
+
+        if (input) {
+          input.value = '';
+          input.required = false;
+          input.classList.remove('invalid-field');
+          input.removeAttribute('aria-invalid');
+        }
+
         if (input && input.getAttribute('data-cat') === 'Other') {
-          document.getElementById('other-reason-group').style.display = 'none';
-          document.getElementById('other-reason').value = '';
+          const reasonGroup = document.getElementById('other-reason-group');
+          const reason = document.getElementById('other-reason');
+
+          if (reasonGroup) reasonGroup.style.display = 'none';
+          if (reason) {
+            reason.value = '';
+            reason.required = false;
+            reason.classList.remove('invalid-field');
+            reason.removeAttribute('aria-invalid');
+          }
         }
       } else {
+        row.classList.add('selected');
         wrap.style.display = 'flex';
         check.innerHTML = '&#9745;';
-        row.classList.add('selected');
-        setTimeout(() => { if (input) input.focus(); }, 80);
+
+        if (input) {
+          input.required = true;
+          input.setAttribute('aria-required', 'true');
+        }
+
+        // "Other" requires both an amount and a description as soon as it is selected.
+        if (input && input.getAttribute('data-cat') === 'Other') {
+          const reasonGroup = document.getElementById('other-reason-group');
+          const reason = document.getElementById('other-reason');
+
+          if (reasonGroup) reasonGroup.style.display = 'block';
+          if (reason) {
+            reason.required = true;
+            reason.setAttribute('aria-required', 'true');
+          }
+        }
+
+        setTimeout(() => {
+          if (input) input.focus();
+        }, 80);
       }
+
+      updateCategoryVisualState(row, false);
       updateSummary();
     }
     window.toggleCat = toggleCat;
 
     function onOtherInput(input) {
-      const val = parseFloat(input.value) || 0;
-      document.getElementById('other-reason-group').style.display = val > 0 ? 'block' : 'none';
-      if (val === 0) document.getElementById('other-reason').value = '';
+      const row = input.closest('.cat-row');
+      updateCategoryVisualState(row, false);
       updateSummary();
     }
     window.onOtherInput = onOtherInput;
 
+    function onOtherReasonInput(input) {
+      input.classList.remove('invalid-field');
+      input.removeAttribute('aria-invalid');
+
+      const otherAmount = document.querySelector('.cat-amt[data-cat="Other"]');
+      if (otherAmount) {
+        updateCategoryVisualState(otherAmount.closest('.cat-row'), false);
+      }
+
+      updateSummary();
+    }
+    window.onOtherReasonInput = onOtherReasonInput;
+
     function getLineItems() {
       const items = [];
-      document.querySelectorAll('.cat-amt').forEach(input => {
+
+      // Only checked giving types are ever included.
+      document.querySelectorAll('.cat-row.selected').forEach(row => {
+        const input = row.querySelector('.cat-amt');
+        if (!input) return;
+
         const val = parseFloat(input.value) || 0;
-        if (val > 0) {
-          let cat = input.getAttribute('data-cat');
-          if (cat === 'Other') {
-            const reason = document.getElementById('other-reason').value.trim();
-            if (reason) cat = 'Other: ' + reason;
-          }
-          items.push({ category: cat, amount: val });
+        if (val <= 0) return;
+
+        let cat = input.getAttribute('data-cat');
+        if (cat === 'Other') {
+          const reason = document.getElementById('other-reason').value.trim();
+          if (reason) cat = 'Other: ' + reason;
         }
+
+        items.push({ category: cat, amount: val });
       });
+
       return items;
     }
 
     function updateSummary() {
+      refreshAllCategoryVisuals(false);
+
       const items = getLineItems();
       const total = items.reduce((s, i) => s + i.amount, 0);
       giveTotal = total;
       const box = document.getElementById('summary-box');
+
       if (items.length > 0 && total > 0) {
         document.getElementById('summary-lines').innerHTML = items.map(i =>
           '<div class="summary-row"><span>' + escHtml(i.category) + '</span><span>$' + i.amount.toFixed(2) + '</span></div>'
@@ -2348,11 +2500,17 @@
       } else {
         box.style.display = 'none';
       }
-      if (pendingAchToken && pendingAchAmount !== total.toFixed(2)) clearPendingAchAuthorization(false);
+
+      if (pendingAchToken && pendingAchAmount !== total.toFixed(2)) {
+        clearPendingAchAuthorization(false);
+      }
+
       scheduleCashAppRefresh();
+
       if (['applepay', 'googlepay'].includes(paymentMethod)) {
         scheduleWalletRefresh();
       }
+
       reportHeight();
     }
 
@@ -2385,7 +2543,7 @@
       if (freq === 'once') {
         consentRow.style.display = 'none';
         recurNote.style.display = 'none';
-        emailLabel.textContent = 'Email Address';
+        emailLabel.textContent = 'Email Address *';
         btn.innerHTML = '&#128274; Give Securely';
         if (achNote) {
           achNote.textContent =
@@ -2415,21 +2573,54 @@
 
     // ── Shared validation ────────────────────────────────────────────
     function validationError() {
-      const items = getLineItems();
-      if (items.length === 0) return 'Please select at least one giving type and enter an amount.';
-      if (giveTotal <= 0) return 'Please enter a valid gift amount.';
+      const selectedRows = Array.from(document.querySelectorAll('.cat-row.selected'));
+
+      if (selectedRows.length === 0) {
+        return 'Please select at least one giving type.';
+      }
+
+      // Every checked giving type must contain its own positive amount.
+      for (const row of selectedRows) {
+        const input = row.querySelector('.cat-amt');
+        const amount = input ? (parseFloat(input.value) || 0) : 0;
+
+        if (amount <= 0) {
+          refreshAllCategoryVisuals(true);
+          if (input) input.focus();
+          return 'Please enter an amount for ' + categoryLabel(row) + '.';
+        }
+      }
 
       const otherInput = document.querySelector('.cat-amt[data-cat="Other"]');
-      const otherAmt = otherInput ? (parseFloat(otherInput.value) || 0) : 0;
-      if (otherAmt > 0 && !document.getElementById('other-reason').value.trim()) {
-        return 'Please describe the purpose of your Other gift.';
+      const otherRow = otherInput ? otherInput.closest('.cat-row') : null;
+
+      if (otherRow && otherRow.classList.contains('selected')) {
+        const reason = document.getElementById('other-reason');
+        if (!reason.value.trim()) {
+          refreshAllCategoryVisuals(true);
+          reason.focus();
+          return 'Please tell us what your Other gift should be credited toward.';
+        }
+      }
+
+      const items = getLineItems();
+      if (items.length === 0 || giveTotal <= 0) {
+        return 'Please enter a valid gift amount.';
       }
 
       const name = document.getElementById('donor-name').value.trim();
       if (!name) return 'Please enter your name.';
 
       const emailInput = document.getElementById('donor-email');
-      if (emailInput.value.trim() && !emailInput.validity.valid) {
+      const email = emailInput.value.trim();
+
+      if (!email) {
+        emailInput.focus();
+        return 'Please enter your email address.';
+      }
+
+      if (!emailInput.validity.valid) {
+        emailInput.focus();
         return 'Please enter a valid email address.';
       }
 

@@ -752,152 +752,19 @@
         </div>
 
         <!-- GIVE -->
+        <!--
+          Giving now lives in /give.html so the app and website always use the
+          same payment form. The data-view="give" buttons navigate there
+          directly. This lightweight view remains only as a fallback.
+        -->
         <div class="view" id="view-give">
-
-          <div class="card" style="text-align:center;padding:28px 20px;background:linear-gradient(135deg,rgba(134,35,156,0.2),rgba(1,6,11,0.96));">
-            <div style="font-size:36px;margin-bottom:10px;">&#10084;&#65039;</div>
+          <div class="card" style="text-align:center;padding:32px 22px;background:linear-gradient(135deg,rgba(134,35,156,0.2),rgba(1,6,11,0.96));">
+            <div style="font-size:42px;margin-bottom:12px;">&#10084;&#65039;</div>
             <h2 class="section-title">Give to Bethel</h2>
-            <p class="section-sub">Your generosity supports the mission and ministry of Bethel AME Lancaster.</p>
-            <p style="font-style:italic;font-size:13px;color:#aaa;">&ldquo;God loves a cheerful giver.&rdquo; &mdash; 2 Corinthians 9:7</p>
-          </div>
-
-          <div class="card" id="give-success-card" style="display:none;text-align:center;padding:28px;">
-            <div style="font-size:56px;margin-bottom:14px;">&#127979;</div>
-            <h2 style="color:#68d391;margin:0 0 10px;font-size:22px;">Thank You!</h2>
-            <p style="color:#ccc;font-size:14px;line-height:1.6;">Your gift has been received. Thank you for your faithful generosity. May God bless you abundantly.</p>
-            <button class="pill-btn" style="margin-top:16px;" onclick="resetGiveForm()">Give Again</button>
-          </div>
-
-          <div id="give-form-wrap">
-
-            <!-- Step 1: Select Categories -->
-            <div class="card">
-              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 1 of 3</p>
-              <h2 class="section-title">&#127381; Select Giving Type</h2>
-              <p class="section-sub">Tap a giving type to enter an amount. Select multiple if needed.</p>
-              <div id="give-categories">
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#128591; Tithe</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Tithe" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#127873; General Offering</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="General Offering" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#128218; Class Dues</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Class Dues" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#127775; YPD</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="YPD" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#128160; Women&rsquo;s Day</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Women's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#128081; Men&rsquo;s Day</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Men's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#128140; Love Offering to Pastor</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Love Offering to Pastor" placeholder="0.00" min="0.01" step="0.01" oninput="updateGiveSummary()" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div class="give-cat-row" onclick="toggleGiveCat(this)">
-                  <span class="give-cat-check">&#9744;</span>
-                  <span class="give-cat-label">&#10133; Other</span>
-                  <div class="give-cat-input-wrap" style="display:none;">
-                    <span class="dollar">$</span>
-                    <input class="form-input give-cat-input" type="number" data-cat="Other" placeholder="0.00" min="0.01" step="0.01" oninput="handleOtherGiveInput(this)" onclick="event.stopPropagation()">
-                  </div>
-                </div>
-                <div id="give-other-reason-group" style="display:none;padding:8px 0 4px;">
-                  <input class="form-input" type="text" id="give-other-reason" placeholder="Please describe the purpose of this gift..." oninput="updateGiveSummary()">
-                </div>
-              </div>
+            <p class="section-sub">Bethel uses one secure giving page so payment options and updates stay consistent everywhere.</p>
+            <div class="button-row" style="justify-content:center;margin-top:18px;">
+              <a class="pill-btn" href="/give.html">Open Secure Giving</a>
             </div>
-
-            <!-- Step 2: Your Info -->
-            <div class="card">
-              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 2 of 3</p>
-              <h2 class="section-title">&#128100; Your Information</h2>
-              <div class="form-group">
-                <label class="form-label">Full Name *</label>
-                <input class="form-input" type="text" id="give-name" placeholder="Your full name">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Email Address (optional)</label>
-                <input class="form-input" type="email" id="give-email" placeholder="your@email.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Note (optional)</label>
-                <input class="form-input" type="text" id="give-note" placeholder="e.g. In memory of...">
-              </div>
-            </div>
-
-            <!-- Step 3: Payment -->
-            <div class="card">
-              <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin:0 0 10px;">Step 3 of 3</p>
-              <h2 class="section-title">&#128179; Payment</h2>
-              <p class="section-sub">Enter your card details below. Processed securely by Square.</p>
-
-              <div class="summary-box" id="give-summary-box" style="display:none;margin-bottom:16px;">
-                <div id="give-sum-lines"></div>
-                <div class="summary-row total"><span>Total</span><span id="give-sum-total">$0.00</span></div>
-              </div>
-
-
-
-              <div id="give-cashapp-container" style="display:none;margin-bottom:4px;"></div>
-              <p id="cashapp-note" style="display:none;font-size:11px;color:#888;text-align:center;margin:-2px 0 12px;"></p>
-              <div id="give-card-container" style="background:#f5f5f5;border:1px solid #ddd;border-radius:12px;padding:4px;margin-bottom:14px;min-height:90px;"></div>
-              <p id="give-msg" style="color:#fc8181;font-size:13px;margin:0 0 8px;min-height:18px;"></p>
-
-              <button class="form-submit" id="give-pay-btn" onclick="handleGivePayment()">&#128274; Give Securely</button>
-
-              <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:#555;font-size:13px;">
-                <div style="flex:1;border-top:1px solid rgba(255,255,255,0.08);"></div>or give via
-                <div style="flex:1;border-top:1px solid rgba(255,255,255,0.08);"></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <a class="action-btn secondary" href="https://cash.app/$BethelAMELancaster" rel="noopener" style="text-decoration:none;">
-                  <span class="action-icon">&#36;</span><span>Cash App</span>
-                </a>
-                <a class="action-btn purple" href="https://square.link/u/cGm3gcCe" rel="noopener" style="text-decoration:none;">
-                  <span class="action-icon">&#9633;</span><span>Square Link</span>
-                </a>
-              </div>
-            </div>
-
           </div>
         </div>
 
@@ -1235,7 +1102,6 @@
 
   </div><!-- /#bethel-app -->
 
-  <script src="https://web.squarecdn.com/v1/square.js"></script>
   <script>
     // Navigate to visitor form in connect tab
     function goToVisitorForm() {
@@ -1391,289 +1257,11 @@
     }
     window.submitVisitorForm = submitVisitorForm;
 
-    // ── Give form ──────────────────────────────────────────────────────
-    let giveAmt = 0;
-    let giveCard = null;
-    let givePayments = null;
-    let giveCashApp = null;
-    let giveIdempotencyKey = crypto.randomUUID();
-    let cashAppRefreshTimer = null;
-    let cashAppBuiltFor = null;   // amount string the current Cash App button was built for
+    // Giving is maintained in /give.html.
+    // Keeping payment code out of the app shell prevents the app and website
+    // from drifting into two different versions.
 
-    function toggleGiveCat(row) {
-      const wrap = row.querySelector('.give-cat-input-wrap');
-      const check = row.querySelector('.give-cat-check');
-      const input = row.querySelector('.give-cat-input');
-      const isOpen = wrap.style.display === 'flex' || wrap.style.display === 'block';
-      if (isOpen) {
-        wrap.style.display = 'none';
-        check.innerHTML = '&#9744;';
-        row.style.background = '';
-        if (input) input.value = '';
-        if (input && input.getAttribute('data-cat') === 'Other') {
-          document.getElementById('give-other-reason-group').style.display = 'none';
-          document.getElementById('give-other-reason').value = '';
-        }
-      } else {
-        wrap.style.display = 'flex';
-        check.innerHTML = '&#9745;';
-        row.style.background = 'rgba(247,191,91,0.06)';
-        setTimeout(() => { if (input) input.focus(); }, 100);
-      }
-      updateGiveSummary();
-    }
-    window.toggleGiveCat = toggleGiveCat;
-
-    function handleOtherGiveInput(input) {
-      const val = parseFloat(input.value) || 0;
-      document.getElementById('give-other-reason-group').style.display = val > 0 ? 'block' : 'none';
-      if (val === 0) document.getElementById('give-other-reason').value = '';
-      updateGiveSummary();
-    }
-    window.handleOtherGiveInput = handleOtherGiveInput;
-
-    function getGiveLineItems() {
-      const inputs = document.querySelectorAll('.give-cat-input');
-      const items = [];
-      inputs.forEach(input => {
-        const val = parseFloat(input.value) || 0;
-        if (val > 0) {
-          let cat = input.getAttribute('data-cat');
-          if (cat === 'Other') {
-            const reason = document.getElementById('give-other-reason').value.trim();
-            if (reason) cat = 'Other: ' + reason;
-          }
-          items.push({ category: cat, amount: val });
-        }
-      });
-      return items;
-    }
-
-    function updateGiveSummary() {
-      const items = getGiveLineItems();
-      const total = items.reduce((s, i) => s + i.amount, 0);
-      giveAmt = total;
-      const box = document.getElementById('give-summary-box');
-      const linesEl = document.getElementById('give-sum-lines');
-      const totalEl = document.getElementById('give-sum-total');
-      if (items.length > 0 && total > 0) {
-        linesEl.innerHTML = items.map(i =>
-          '<div class="summary-row"><span>' + escHtml(i.category) + '</span><span>$' + i.amount.toFixed(2) + '</span></div>'
-        ).join('');
-        totalEl.textContent = '$' + total.toFixed(2);
-        box.style.display = 'block';
-      } else {
-        box.style.display = 'none';
-      }
-      // Cash App Pay can't update its amount after creation, so rebuild it
-      // (debounced) whenever the total changes.
-      scheduleCashAppRefresh();
-    }
-
-    // ── Cash App Pay: must be rebuilt whenever the amount changes ─────────
-    // Square's Cash App Pay does NOT support PaymentRequest.update(), so the
-    // only way to show the correct amount is to destroy and recreate it.
-    function scheduleCashAppRefresh() {
-      clearTimeout(cashAppRefreshTimer);
-      cashAppRefreshTimer = setTimeout(refreshCashAppPay, 500);
-    }
-
-    async function refreshCashAppPay() {
-      const container = document.getElementById('give-cashapp-container');
-      const note = document.getElementById('cashapp-note');
-      if (!givePayments || !container) return;
-
-      const amountStr = giveAmt > 0 ? giveAmt.toFixed(2) : null;
-
-      // No valid amount yet — tear the button down.
-      if (!amountStr) {
-        try { if (giveCashApp) { await giveCashApp.destroy(); } } catch (e) {}
-        giveCashApp = null;
-        cashAppBuiltFor = null;
-        container.innerHTML = '';
-        container.style.display = 'none';
-        if (note) { note.textContent = ''; note.style.display = 'none'; }
-        return;
-      }
-
-      // Already built for this exact amount — leave it alone.
-      if (giveCashApp && cashAppBuiltFor === amountStr) return;
-
-      // Rebuild for the new amount.
-      try { if (giveCashApp) { await giveCashApp.destroy(); } } catch (e) {}
-      giveCashApp = null;
-      container.innerHTML = '';
-
-      try {
-        const pr = givePayments.paymentRequest({
-          countryCode: 'US',
-          currencyCode: 'USD',
-          total: { amount: amountStr, label: 'Give to Bethel AME' }
-        });
-        giveCashApp = await givePayments.cashAppPay(pr, {
-          redirectURL: window.location.href,
-          referenceId: 'bethel-' + Date.now()
-        });
-        giveCashApp.addEventListener('ontokenization', async e => {
-          const { tokenResult } = e.detail;
-          console.log('Cash App Pay tokenResult status:', tokenResult.status);
-          if (tokenResult.status === 'OK') {
-            // The Cash App button tokenizes on tap, so this is the last chance
-            // to catch a missing name/amount before we charge.
-            const problem = giveValidationError();
-            if (problem) { document.getElementById('give-msg').textContent = problem; return; }
-            try {
-              await processGivePayment(tokenResult.token);
-            } catch (err) {
-              document.getElementById('give-msg').textContent = 'Payment failed: ' + err.message;
-            }
-          } else if (tokenResult.status === 'Cancel') {
-            console.log('Cash App Pay cancelled by user — no charge');
-          } else {
-            console.warn('Cash App Pay unexpected status:', tokenResult.status, tokenResult.errors);
-            document.getElementById('give-msg').textContent = 'Cash App Pay was not completed. Please try again.';
-          }
-        });
-        await giveCashApp.attach('#give-cashapp-container');
-        cashAppBuiltFor = amountStr;
-        container.style.display = 'block';
-        if (note) {
-          note.textContent = 'Cash App will show $' + amountStr + ' — that exact amount will be charged.';
-          note.style.display = 'block';
-        }
-      } catch (ce) {
-        console.warn('Cash App Pay unavailable:', ce);
-        cashAppBuiltFor = null;
-        container.style.display = 'none';
-        if (note) { note.textContent = ''; note.style.display = 'none'; }
-      }
-    }
-
-    // Shared validation for both the card and Cash App payment paths.
-    function giveValidationError() {
-      const items = getGiveLineItems();
-      if (items.length === 0) return 'Please select at least one giving type and enter an amount.';
-      const otherInput = document.querySelector('.give-cat-input[data-cat="Other"]');
-      const otherAmt = otherInput ? (parseFloat(otherInput.value) || 0) : 0;
-      if (otherAmt > 0 && !document.getElementById('give-other-reason').value.trim()) {
-        return 'Please describe the purpose of your Other gift.';
-      }
-      if (!document.getElementById('give-name').value.trim()) return 'Please enter your name.';
-      return null;
-    }
-
-    async function initGiveSquare() {
-      if (giveCard) return;
-      try {
-        givePayments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
-        giveCard = await givePayments.card({
-          style: {
-            input: { color: '#000000', fontSize: '16px', fontFamily: 'Arial, sans-serif' },
-            'input::placeholder': { color: '#999999' }
-          }
-        });
-        await giveCard.attach('#give-card-container');
-      } catch(e) {
-        console.warn('Square init error:', e);
-        document.getElementById('give-card-container').innerHTML =
-          '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
-      }
-      // Build Cash App Pay to match whatever amount is currently entered
-      // (stays hidden until there's a valid amount).
-      refreshCashAppPay();
-    }
-
-    async function processGivePayment(token) {
-      const items = getGiveLineItems();
-      const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
-      const name  = document.getElementById('give-name').value.trim();
-      const email = document.getElementById('give-email').value.trim();
-      const note  = document.getElementById('give-note').value.trim();
-      const response = await fetch('https://us-central1-bethelapp-f2d4e.cloudfunctions.net/processGiving', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceId: token,
-          amount: Math.round(giveAmt * 100),
-          category, name: name || null, email: email || null, note: note || null,
-          idempotencyKey: giveIdempotencyKey
-        })
-      });
-      const data = await response.json();
-      if (data.success) {
-        document.getElementById('give-form-wrap').style.display = 'none';
-        document.getElementById('give-success-card').style.display = 'block';
-      } else {
-        throw new Error(data.error || 'Payment failed');
-      }
-    }
-    window.processGivePayment = processGivePayment;
-
-    async function handleGivePayment() {
-      const msg = document.getElementById('give-msg');
-      const btn = document.getElementById('give-pay-btn');
-      msg.textContent = '';
-      const problem = giveValidationError();
-      if (problem) { msg.textContent = problem; return; }
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      try {
-        const result = await giveCard.tokenize();
-        if (result.status === 'OK') {
-          await processGivePayment(result.token);
-        } else {
-          throw new Error(result.errors.map(e => e.message).join(', '));
-        }
-      } catch(e) {
-        msg.textContent = 'Payment failed: ' + e.message;
-      }
-      btn.disabled = false;
-      btn.textContent = '\uD83D\uDD12 Give Securely';
-    }
-    window.handleGivePayment = handleGivePayment;
-
-    async function resetGiveForm() {
-      // Reset UI
-      document.getElementById('give-form-wrap').style.display = 'block';
-      document.getElementById('give-success-card').style.display = 'none';
-      document.getElementById('give-msg').textContent = '';
-      giveAmt = 0;
-      giveIdempotencyKey = crypto.randomUUID();
-
-      // Reset category rows
-      document.querySelectorAll('.give-cat-row').forEach(row => {
-        const wrap = row.querySelector('.give-cat-input-wrap');
-        const check = row.querySelector('.give-cat-check');
-        const input = row.querySelector('.give-cat-input');
-        if (wrap) wrap.style.display = 'none';
-        if (check) check.innerHTML = '&#9744;';
-        if (input) input.value = '';
-        row.style.background = '';
-      });
-      document.getElementById('give-other-reason').value = '';
-      document.getElementById('give-other-reason-group').style.display = 'none';
-      document.getElementById('give-name').value = '';
-      document.getElementById('give-email').value = '';
-      document.getElementById('give-note').value = '';
-      document.getElementById('give-summary-box').style.display = 'none';
-      // Tear down Square instances
-      clearTimeout(cashAppRefreshTimer);
-      try { if (giveCashApp) { await giveCashApp.destroy(); } } catch(e) {}
-      try { if (giveCard) { await giveCard.destroy(); } } catch(e) {}
-      giveCashApp = null;
-      giveCard = null;
-      cashAppBuiltFor = null;
-      document.getElementById('give-cashapp-container').innerHTML = '';
-      document.getElementById('give-cashapp-container').style.display = 'none';
-      document.getElementById('cashapp-note').style.display = 'none';
-      document.getElementById('give-card-container').innerHTML = '';
-
-      // Rebuild the card form. Cash App stays hidden until a new amount is entered.
-      await initGiveSquare();
-    }
-    window.resetGiveForm = resetGiveForm;
-
-        // ── Welcome onboarding ───────────────────────────────────────────
+    // ── Welcome onboarding ───────────────────────────────────────────
     function detectDevice() {
       const ua = navigator.userAgent;
       if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
@@ -1764,7 +1352,6 @@
       document.querySelectorAll('.nav-item[data-view]').forEach(b => {
         b.classList.toggle('is-active', b.getAttribute('data-view') === name);
       });
-      if (name === 'give') setTimeout(initGiveSquare, 300);
       if (!lazyLoaded.has(name)) {
         const view = document.getElementById('view-' + name);
         if (view) {
@@ -1778,8 +1365,21 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    const CANONICAL_GIVING_URL = '/give.html';
+
     navButtons.forEach(btn => {
-      btn.addEventListener('click', () => showView(btn.getAttribute('data-view')));
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-view');
+
+        if (target === 'give') {
+          // Use the real top-level giving page rather than an iframe or
+          // duplicate form. This is important for Cash App and digital wallets.
+          window.location.href = CANONICAL_GIVING_URL;
+          return;
+        }
+
+        showView(target);
+      });
     });
 
     // Firebase + Push notifications

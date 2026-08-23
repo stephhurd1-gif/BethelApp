@@ -40,6 +40,28 @@
 
     button, input { font: inherit; }
 
+    .back-to-app {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px 0 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: #d7dde2;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .back-to-app:hover,
+    .back-to-app:focus-visible {
+      color: var(--gold);
+      border-color: rgba(247,191,91,0.35);
+      outline: none;
+    }
+
     .page {
       width: min(100%, 980px);
       margin: 0 auto;
@@ -851,6 +873,8 @@
 </head>
 <body>
   <div class="page">
+
+    <a class="back-to-app" href="/" aria-label="Back to Bethel App">&#8592; Back to Bethel App</a>
 
     <div class="header">
       <img src="logo.png" alt="Bethel AME Lancaster" class="logo">

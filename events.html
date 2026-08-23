@@ -74,7 +74,7 @@
     .hero {
       position:relative;
       overflow:hidden;
-      padding:34px clamp(18px, 4vw, 42px);
+      padding:30px clamp(18px, 4vw, 42px);
       border:1px solid var(--border);
       border-radius:24px;
       background:
@@ -122,39 +122,6 @@
       color:#c8d0d6;
       font-size:clamp(14px, 2vw, 17px);
       line-height:1.6;
-    }
-    .sync-line {
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:10px 16px;
-      margin-top:22px;
-      color:var(--muted);
-      font-size:11px;
-    }
-    .sync-badge {
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      padding:7px 9px;
-      border:1px solid rgba(66,158,64,.26);
-      border-radius:999px;
-      background:rgba(66,158,64,.08);
-      color:#a7dfa6;
-      font-weight:800;
-    }
-    .sync-badge::before {
-      content:"";
-      width:7px; height:7px; border-radius:50%; background:#6ed56a;
-    }
-    .text-btn {
-      border:0;
-      background:none;
-      color:var(--gold);
-      padding:3px 0;
-      cursor:pointer;
-      font-size:11px;
-      font-weight:800;
     }
 
     .toolbar {
@@ -280,6 +247,9 @@
       box-shadow:var(--shadow);
     }
     .featured.visible { display:grid; grid-template-columns:minmax(0, 1.3fr) minmax(260px, .7fr); }
+    .featured.visible.no-image { grid-template-columns:1fr; }
+    .featured.no-image .featured-main { padding-block:26px; }
+    .featured.no-image .featured-side { display:none; }
     .featured-main { padding:clamp(20px, 4vw, 38px); }
     .featured-label {
       display:inline-flex;
@@ -468,7 +438,12 @@
       letter-spacing:.05em;
     }
     .badge.today { background:var(--gold-soft); color:var(--gold); }
-    .badge.recurring { background:rgba(66,158,64,.10); color:#93d491; }
+    .badge.recurring {
+      background:rgba(255,255,255,.035);
+      color:#88949c;
+      border:1px solid rgba(255,255,255,.06);
+      font-weight:800;
+    }
     .event-card h3 {
       margin:0;
       font-size:17px;
@@ -771,11 +746,6 @@
       <div class="eyebrow"><span class="eyebrow-dot"></span> Bethel AME Lancaster</div>
       <h1>What's Happening at Bethel</h1>
       <p>Worship, community, youth, ministry, and special events — with the details you need in one easy place.</p>
-      <div class="sync-line">
-        <span class="sync-badge">Synced with Bethel Google Calendar</span>
-        <span id="last-updated">Loading events…</span>
-        <button class="text-btn" type="button" id="refresh-btn">Refresh</button>
-      </div>
     </header>
 
     <section class="toolbar" aria-label="Event filters">
@@ -1236,14 +1206,16 @@
         return { start:today, end:addDays(today, 365) };
       }
 
-      return { start:today, end:addDays(today, 90) };
+      // "Upcoming" means the event has not ended yet. This keeps events that
+      // are currently in progress, but removes events that finished earlier today.
+      return { start:now, end:addDays(today, 90) };
     }
 
     function filteredEvents() {
       const {start,end} = timeBounds(state.timeFilter);
       const q = state.search.toLowerCase().trim();
 
-      return state.events.filter(ev => {
+      const matches = state.events.filter(ev => {
         if (ev.end < start || ev.start > end) return false;
         if (state.category !== 'All' && ev.category !== state.category) return false;
 
@@ -1252,6 +1224,23 @@
           if (!hay.includes(q)) return false;
         }
 
+        return true;
+      });
+
+      // In the default Upcoming feed, show only the next two occurrences of
+      // each recurring series. The calendar, This Week, This Month, and All
+      // Events views still retain the full recurring schedule.
+      if (state.timeFilter !== 'upcoming') return matches;
+
+      const recurringSeen = new Map();
+      return matches.filter(ev => {
+        if (!ev.recurring) return true;
+
+        const key = ev.uid || ev.title;
+        const count = recurringSeen.get(key) || 0;
+        if (count >= 2) return false;
+
+        recurringSeen.set(key, count + 1);
         return true;
       });
     }
@@ -1301,15 +1290,9 @@
     function chooseFeatured(events) {
       if (!events.length) return null;
 
-      const explicit = events.find(ev => ev.featured);
-      if (explicit) return explicit;
-
-      const special = events.find(ev =>
-        !ev.recurring &&
-        ['Special Event','Community','Youth','Ministry'].includes(ev.category)
-      );
-
-      return special || null;
+      // Featured placement is intentional only. Add [featured] to a Google
+      // Calendar event description when you want the large hero treatment.
+      return events.find(ev => ev.featured) || null;
     }
 
     function renderFeatured(events) {
@@ -1318,7 +1301,7 @@
       const ev = chooseFeatured(events);
 
       if (!ev) {
-        el.classList.remove('visible');
+        el.classList.remove('visible', 'no-image');
         section.style.display = 'none';
         return;
       }
@@ -1330,6 +1313,8 @@
       const desc = ev.description
         ? esc(ev.description.length > 260 ? ev.description.slice(0,257) + '…' : ev.description)
         : 'Join us at Bethel. Tap Event Details for everything you need to know.';
+
+      el.classList.toggle('no-image', !ev.image);
 
       el.innerHTML = `
         <div class="featured-main">
@@ -1363,9 +1348,15 @@
       const moreWrap = document.getElementById('show-more-wrap');
       const count = document.getElementById('result-count');
 
-      count.textContent = events.length + (events.length === 1 ? ' event' : ' events');
-
       const shown = events.slice(0, state.visibleCount);
+
+      if (!events.length) {
+        count.textContent = '';
+      } else if (events.length > shown.length) {
+        count.textContent = 'Showing ' + shown.length + ' upcoming';
+      } else {
+        count.textContent = shown.length + (shown.length === 1 ? ' event' : ' events');
+      }
       grid.innerHTML = shown.map(cardMarkup).join('');
       empty.style.display = events.length ? 'none' : 'block';
       moreWrap.style.display = events.length > state.visibleCount ? 'block' : 'none';
@@ -1659,10 +1650,6 @@
 
         loading.style.display = 'none';
         content.style.display = 'block';
-        document.getElementById('last-updated').textContent =
-          'Updated ' + new Intl.DateTimeFormat('en-US',{
-            hour:'numeric',minute:'2-digit'
-          }).format(new Date());
 
         const deepLinkId = new URL(location.href).searchParams.get('event');
         if (deepLinkId && eventById(deepLinkId)) {
@@ -1732,7 +1719,6 @@
       renderCalendar();
     });
 
-    document.getElementById('refresh-btn').addEventListener('click',() => loadEvents(true));
     document.getElementById('retry-btn').addEventListener('click',() => loadEvents(true));
     document.getElementById('modal-close').addEventListener('click',closeModal);
     document.getElementById('event-modal').addEventListener('click',e => {

@@ -1293,33 +1293,78 @@
       return y + '-' + m + '-' + d;
     }
 
+    function achErrorText(value) {
+      if (!value) return '';
+      if (typeof value === 'string') return value;
+      if (value.message) return value.message;
+      try { return JSON.stringify(value); } catch (_) { return String(value); }
+    }
+
+    function achTokenErrorsText(errors) {
+      if (!errors) return '';
+      const list = Array.isArray(errors) ? errors : [errors];
+      return list.map(err => {
+        if (!err) return '';
+        if (typeof err === 'string') return err;
+        return err.message || err.detail || err.code || achErrorText(err);
+      }).filter(Boolean).join(' | ');
+    }
+
     async function waitForAchToken(instance, options) {
       return new Promise(async (resolve, reject) => {
         let finished = false;
 
         const handler = (event) => {
           if (finished) return;
-          finished = true;
 
           const detail = event && event.detail ? event.detail : {};
           const tokenResult = detail.tokenResult || {};
           const eventError = detail.error;
+          const status = tokenResult.status || 'Unknown';
+
+          console.log('Square ACH ontokenization:', {
+            options,
+            status,
+            eventError,
+            tokenResult
+          });
 
           if (eventError) {
-            reject(new Error('Bank authorization was not completed.'));
+            finished = true;
+            const message = achErrorText(eventError);
+            reject(new Error(
+              'Square ACH tokenization error' + (message ? ': ' + message : '') +
+              ' [status: ' + status + ']'
+            ));
             return;
           }
 
-          if (tokenResult.status === 'Cancel') {
-            resolve({ canceled: true });
+          if (status === 'Cancel' || status === 'Abort') {
+            finished = true;
+            resolve({ canceled: true, status });
             return;
           }
 
-          if (tokenResult.status !== 'OK' || !tokenResult.token) {
-            reject(new Error('Bank authorization was not completed.'));
+          if (status === 'Error' || status === 'Invalid') {
+            finished = true;
+            const errorsText = achTokenErrorsText(tokenResult.errors);
+            reject(new Error(
+              'Square ACH returned ' + status +
+              (errorsText ? ': ' + errorsText : '')
+            ));
             return;
           }
 
+          if (status !== 'OK' || !tokenResult.token) {
+            finished = true;
+            reject(new Error(
+              'Square ACH returned an unexpected tokenization result [status: ' +
+              status + ']'
+            ));
+            return;
+          }
+
+          finished = true;
           resolve({
             canceled: false,
             token: tokenResult.token,
@@ -1332,9 +1377,18 @@
         try {
           await instance.tokenize(options);
         } catch (err) {
+          console.error('Square ACH tokenize() threw:', err, { options });
           if (!finished) {
             finished = true;
-            reject(err);
+
+            const nested = err && Array.isArray(err.errors)
+              ? achTokenErrorsText(err.errors)
+              : '';
+
+            reject(new Error(
+              (err && err.message ? err.message : 'Square ACH tokenize() failed') +
+              (nested ? ' — ' + nested : '')
+            ));
           }
         }
       });
@@ -1526,7 +1580,12 @@
 
       } catch (err) {
         console.error('ACH setup error:', err);
-        setMsg('Bank setup could not be completed: ' + (err.message || 'Please try again.'), 'error');
+        setMsg(
+          'Bank setup could not be completed: ' +
+          (err.message || 'Please try again.') +
+          ' — Please copy or screenshot this exact message.',
+          'error'
+        );
       } finally {
         if (startBtn) {
           startBtn.disabled = false;

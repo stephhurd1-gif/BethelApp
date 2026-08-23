@@ -1003,7 +1003,7 @@
             <span class="payment-method-name"> Google Pay</span>
             <span class="payment-method-meta">One-time gift · Google Wallet</span>
           </button>
-          <button type="button" class="payment-method-btn selected" id="method-card" onclick="selectPaymentMethod('card')">
+          <button type="button" class="payment-method-btn" id="method-card" onclick="selectPaymentMethod('card')">
             <span class="payment-method-name">💳 Credit / debit card</span>
             <span class="payment-method-meta">Secure card payment through Square</span>
           </button>
@@ -1102,7 +1102,7 @@
         </div>
 
         <!-- Card fields appear only when Card is selected -->
-        <div class="payment-panel visible" id="card-panel">
+        <div class="payment-panel" id="card-panel">
           <div class="payment-panel-heading">
             <strong>Credit / debit card</strong>
             <span>Securely entered with Square</span>
@@ -1155,7 +1155,7 @@
     let ach = null;
     let giveTotal = 0;
     let frequency = 'once';            // 'once' | 'weekly' | 'monthly'
-    let paymentMethod = 'card';         // 'ach' | 'cashapp' | 'card'
+    let paymentMethod = null;           // selected only after donor chooses a method
     let cashAppPay = null;
     let cashAppRefreshTimer = null;
     let cashAppGeneration = 0;
@@ -1286,7 +1286,7 @@
 
       await card.attach('#card-container');
       await detectDigitalWalletSupport();
-      selectPaymentMethod('card', true);
+      clearPaymentMethodSelection();
       updateAlternativePaymentAvailability();
       scheduleCashAppRefresh();
     }
@@ -1355,25 +1355,51 @@
       if (note) {
         if (!oneTime) {
           note.textContent =
-            'Recurring gifts are currently available by credit/debit card.';
+            paymentMethod === 'card'
+              ? 'Credit/debit card selected for this recurring gift.'
+              : 'Recurring gifts are available by credit/debit card. Select Card to continue.';
         } else if (!ready) {
           note.textContent =
             'Complete the giving amount, name, and email above to unlock bank and wallet payment options.';
+        } else if (!paymentMethod) {
+          note.textContent =
+            'Payment options are ready. Choose the method you would like to use.';
         } else {
           note.textContent =
-            'Bank and wallet payment options are ready.';
+            'Payment information for your selected method is shown below.';
         }
       }
 
       // If required information is cleared after an alternative method was
-      // selected, return safely to Card before any external authorization can
-      // continue with stale/incomplete information.
+      // selected, close the payment method instead of automatically opening
+      // another one. The donor chooses what to use next.
       if (!ready &&
           ['ach', 'cashapp', 'applepay', 'googlepay'].includes(paymentMethod)) {
-        selectPaymentMethod('card', true);
+        clearPaymentMethodSelection();
       }
     }
     window.updateAlternativePaymentAvailability = updateAlternativePaymentAvailability;
+
+    function clearPaymentMethodSelection() {
+      paymentMethod = null;
+
+      ['ach', 'cashapp', 'applepay', 'googlepay', 'card'].forEach(m => {
+        const button = document.getElementById('method-' + m);
+        const panel = document.getElementById(m === 'cashapp' ? 'cashapp-panel' : m + '-panel');
+
+        if (button) button.classList.remove('selected');
+        if (panel) panel.classList.remove('visible');
+      });
+
+      destroyCashAppPay();
+      destroyDigitalWalletInstances();
+
+      const consentRow = document.getElementById('consent-row');
+      if (consentRow) consentRow.style.display = 'none';
+
+      reportHeight();
+    }
+    window.clearPaymentMethodSelection = clearPaymentMethodSelection;
 
     // ── Payment method selector ───────────────────────────────────────
     function selectPaymentMethod(method, silent) {
@@ -1398,7 +1424,7 @@
         if (!silent) {
           setMsg('Weekly and monthly recurring gifts are currently available by credit/debit card.', 'error');
         }
-        method = 'card';
+        return;
       }
 
       paymentMethod = method;
@@ -2664,11 +2690,11 @@
             'One-time ACH bank transfers may remain pending for several business days before they settle.';
         }
       } else {
-        if (paymentMethod !== 'card') {
-          selectPaymentMethod('card', true);
+        if (paymentMethod && paymentMethod !== 'card') {
+          clearPaymentMethodSelection();
         }
 
-        consentRow.style.display = 'flex';
+        consentRow.style.display = paymentMethod === 'card' ? 'flex' : 'none';
         consentFreq.textContent = freq === 'weekly' ? 'every week' : 'every month';
         recurNote.style.display = 'block';
         recurNote.textContent =

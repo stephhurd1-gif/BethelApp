@@ -6,88 +6,584 @@
   <title>Give — Bethel AME Lancaster</title>
   <meta name="description" content="Give your tithes, offerings, and donations to Bethel AME Lancaster.">
   <script src="https://web.squarecdn.com/v1/square.js"></script>
+
   <style>
     :root {
       --black: #01060b;
+      --panel: #0f171d;
+      --panel-2: #141d24;
       --gold: #f7bf5b;
+      --gold-soft: rgba(247,191,91,0.12);
       --purple: #86239c;
       --green: #429e40;
       --white: #fffefe;
+      --text: #f7f7f7;
+      --muted: #a8b0b7;
+      --border: rgba(255,255,255,0.12);
+      --danger: #ff9a9a;
+      --success: #7ee787;
     }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: #01060b; color: var(--white); font-family: Arial, sans-serif; min-height: 100vh; }
-    .page { max-width: 100%; margin: 0; padding: 24px 18px 60px; }
 
-    .header { text-align: center; padding: 28px 20px 24px; background: linear-gradient(135deg, rgba(134,35,156,0.35), rgba(1,6,11,0.96) 60%); border-radius: 20px; margin-bottom: 20px; }
-    .logo { width: 90px; height: 90px; border-radius: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-    .header h1 { margin: 0 0 6px; font-size: 24px; color: var(--gold); }
-    .header p { margin: 0; font-size: 14px; color: #ccc; line-height: 1.5; }
-    .scripture { font-style: italic; font-size: 13px; color: #aaa; margin-top: 10px; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: var(--black);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
 
-    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); border-radius: 20px; padding: 22px; margin-bottom: 16px; }
-    .card h2 { margin: 0 0 4px; font-size: 18px; color: var(--gold); }
-    .card .sub { font-size: 13px; color: #aaa; margin: 0 0 18px; line-height: 1.5; }
+    body { min-height: 100vh; }
 
-    /* Multi-category rows */
-    .cat-row { display: flex; align-items: center; gap: 10px; padding: 12px 12px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); margin-bottom: 10px; cursor: pointer; flex-wrap: wrap; transition: all 0.2s; }
-    .cat-row:hover { border-color: rgba(247,191,91,0.35); }
-    .cat-row.selected { border-color: var(--gold); background: rgba(247,191,91,0.10); }
-    .cat-check { color: var(--gold); font-size: 18px; flex: 0 0 auto; }
-    .cat-name { font-size: 14px; font-weight: bold; color: #ddd; flex: 1; }
+    button, input { font: inherit; }
+
+    .page {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding: 20px 16px 44px;
+    }
+
+    .header {
+      text-align: center;
+      padding: 24px 20px 22px;
+      background:
+        radial-gradient(circle at top left, rgba(134,35,156,0.30), transparent 50%),
+        linear-gradient(135deg, rgba(134,35,156,0.18), rgba(15,23,29,0.94) 58%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .logo {
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+    }
+
+    .header h1 {
+      margin: 0 0 7px;
+      font-size: clamp(22px, 3vw, 28px);
+      line-height: 1.15;
+      color: var(--gold);
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      color: #d4d8dc;
+      line-height: 1.5;
+    }
+
+    .scripture {
+      font-style: italic;
+      font-size: 12px !important;
+      color: var(--muted) !important;
+      margin-top: 8px !important;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.045));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: clamp(16px, 2.5vw, 22px);
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    }
+
+    .card h2 {
+      margin: 0 0 5px;
+      font-size: 18px;
+      color: var(--gold);
+    }
+
+    .card .sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+
+    .step-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: #7f8992;
+      margin-bottom: 9px;
+      font-weight: 700;
+    }
+
+    /* Giving categories */
+    #categories {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      padding: 11px 12px;
+      border-radius: 13px;
+      border: 1.5px solid var(--border);
+      background: rgba(255,255,255,0.035);
+      cursor: pointer;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+      touch-action: manipulation;
+    }
+
+    .cat-row:hover {
+      border-color: rgba(247,191,91,0.42);
+      background: rgba(247,191,91,0.05);
+    }
+
+    .cat-row.selected {
+      border-color: var(--gold);
+      background: var(--gold-soft);
+    }
+
+    .cat-check {
+      color: var(--gold);
+      font-size: 17px;
+      flex: 0 0 auto;
+    }
+
+    .cat-name {
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #e1e5e8;
+      flex: 1 1 auto;
+      line-height: 1.3;
+    }
+
     .cat-row.selected .cat-name { color: var(--gold); }
-    .cat-amt-wrap { display: flex; align-items: center; gap: 4px; width: 130px; flex: 0 0 auto; }
-    .cat-dollar { color: var(--gold); font-size: 16px; font-weight: bold; }
-    .cat-amt { width: 100%; padding: 8px 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: var(--gold); font-size: 16px; font-weight: bold; font-family: inherit; outline: none; }
-    .cat-amt:focus { border-color: rgba(247,191,91,0.6); }
 
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .form-label { font-size: 13px; color: #aaa; font-weight: bold; }
-    .form-input { padding: 12px 14px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: var(--white); font-size: 15px; font-family: inherit; outline: none; width: 100%; transition: border-color 0.2s; }
-    .form-input:focus { border-color: rgba(247,191,91,0.5); }
+    .cat-amt-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 116px;
+      flex: 0 0 auto;
+    }
+
+    .cat-dollar {
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .cat-amt {
+      min-width: 0;
+      width: 100%;
+      padding: 8px 9px;
+      background: #090f14;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 9px;
+      color: var(--gold);
+      font-size: 16px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .cat-amt:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(247,191,91,0.12);
+    }
+
+    #other-reason-group {
+      display: none;
+      grid-column: 1 / -1;
+      margin-top: 2px;
+    }
+
+    /* Donor fields */
+    .donor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 12px;
+      color: #b5bdc4;
+      font-weight: 700;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 13px;
+      background: #0a1117;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 11px;
+      color: var(--white);
+      font-size: 16px;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .form-input::placeholder { color: #6f7981; }
+
+    .form-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(247,191,91,0.10);
+    }
 
     /* Frequency toggle */
-    .freq-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .freq-btn { flex: 1; padding: 11px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-    .freq-btn.selected { background: var(--gold); color: var(--black); border-color: var(--gold); }
-    .recurring-note { display: none; font-size: 11px; color: #888; text-align: center; margin: -4px 0 12px; line-height: 1.5; }
+    .freq-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
 
-    #card-container { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; margin-bottom: 14px; min-height: 90px; }
+    .freq-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 10px 8px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.16);
+      background: transparent;
+      color: #d1d6da;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .18s ease;
+      touch-action: manipulation;
+    }
 
-    .summary-box { background: rgba(247,191,91,0.08); border: 1px solid rgba(247,191,91,0.2); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-    .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: #ccc; margin-bottom: 6px; }
-    .summary-row.total { font-size: 18px; font-weight: bold; color: var(--gold); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 4px; }
+    .freq-btn:hover { border-color: rgba(247,191,91,0.45); }
 
-    .consent-row { display: none; align-items: flex-start; gap: 9px; margin: 0 0 14px; font-size: 12px; color: #cbd5c8; line-height: 1.5; cursor: pointer; }
-    .consent-row input { margin-top: 2px; flex: 0 0 auto; }
+    .freq-btn.selected {
+      background: var(--gold);
+      color: var(--black);
+      border-color: var(--gold);
+    }
 
-    .pay-btn { width: 100%; padding: 16px; background: var(--gold); color: var(--black); border: none; border-radius: 999px; font-size: 17px; font-weight: bold; cursor: pointer; font-family: inherit; transition: opacity 0.2s; margin-top: 4px; }
-    .pay-btn:hover { opacity: 0.88; }
-    .pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .recurring-note {
+      display: none;
+      font-size: 11px;
+      color: #9aa3aa;
+      text-align: center;
+      margin: -1px 0 13px;
+      line-height: 1.45;
+    }
 
-    .alt-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .alt-btn { padding: 14px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--white); font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; text-align: center; text-decoration: none; display: block; transition: all 0.2s; }
-    .alt-btn:hover { border-color: rgba(247,191,91,0.4); color: var(--gold); }
+    /* Summary */
+    .summary-box {
+      background: rgba(247,191,91,0.075);
+      border: 1px solid rgba(247,191,91,0.22);
+      border-radius: 13px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
 
-    .form-msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
-    .form-msg.error { color: #fc8181; }
-    .form-msg.success { color: #68d391; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 13px;
+      color: #d1d5d9;
+      margin-bottom: 6px;
+    }
 
-    .success-card { display: none; text-align: center; padding: 32px 24px; background: rgba(66,158,64,0.12); border: 1px solid rgba(66,158,64,0.3); border-radius: 20px; }
+    .summary-row span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-row span:last-child { white-space: nowrap; }
+
+    .summary-row.total {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gold);
+      border-top: 1px solid rgba(255,255,255,0.10);
+      padding-top: 9px;
+      margin: 8px 0 0;
+    }
+
+    /* Square secure card fields */
+    .card-entry-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin: 2px 0 7px;
+      font-size: 12px;
+      color: #c8ced3;
+      font-weight: 700;
+    }
+
+    .card-entry-label span {
+      color: #7f8992;
+      font-size: 10px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    #card-container {
+      background: #ffffff;
+      border: 1px solid #d5d9dd;
+      border-radius: 12px;
+      padding: 13px;
+      margin-bottom: 8px;
+      min-height: 88px;
+      box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+    }
+
+    .card-help {
+      margin: 0 0 13px;
+      font-size: 10px;
+      line-height: 1.45;
+      color: #8f989f;
+    }
+
+    .consent-row {
+      display: none;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 4px 0 13px;
+      padding: 11px 12px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      font-size: 11px;
+      color: #cbd2d7;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    .consent-row input {
+      margin-top: 2px;
+      flex: 0 0 auto;
+      accent-color: var(--gold);
+    }
+
+    .form-msg {
+      font-size: 12px;
+      line-height: 1.45;
+      margin: 7px 0 2px;
+      min-height: 18px;
+    }
+
+    .form-msg.error { color: var(--danger); }
+    .form-msg.success { color: var(--success); }
+
+    .preferred-label {
+      margin: 16px 0 7px;
+      text-align: center;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .pay-btn {
+      width: fit-content;
+      min-width: 280px;
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
+      padding: 14px 36px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .18s ease, opacity .18s ease;
+      touch-action: manipulation;
+      box-shadow: 0 8px 22px rgba(247,191,91,.16);
+    }
+
+    .pay-btn:hover {
+      opacity: .94;
+      transform: translateY(-1px);
+    }
+
+    .pay-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 34px 0 18px;
+      color: #8a949c;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .alt-methods {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .alt-btn {
+      width: auto;
+      min-width: 140px;
+      max-width: 170px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.025);
+      color: #c8cdd1;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      transition: all .18s ease;
+    }
+
+    .alt-btn:hover {
+      border-color: rgba(247,191,91,0.45);
+      color: var(--gold);
+    }
+
+    .success-card {
+      display: none;
+      text-align: center;
+      padding: 30px 22px;
+      background: rgba(66,158,64,0.12);
+      border: 1px solid rgba(66,158,64,0.34);
+      border-radius: 18px;
+    }
+
     .success-card.visible { display: block; }
-    .success-card .icon { font-size: 56px; margin-bottom: 14px; }
-    .success-card h2 { color: #68d391; margin: 0 0 10px; font-size: 22px; }
-    .success-card p { color: #ccc; font-size: 14px; margin: 0; line-height: 1.6; }
+    .success-card .icon { font-size: 48px; margin-bottom: 12px; }
+    .success-card h2 { color: var(--success); margin: 0 0 9px; font-size: 22px; }
+    .success-card p { color: #d6dbde; font-size: 14px; margin: 0; line-height: 1.6; }
 
-    .step-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 10px; }
+    .footer {
+      text-align: center;
+      margin-top: 22px;
+      padding: 0 8px;
+      font-size: 11px;
+      color: #69737b;
+      line-height: 1.6;
+    }
 
-    .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: #555; font-size: 13px; }
-    .divider::before, .divider::after { content: ''; flex: 1; border-top: 1px solid rgba(255,255,255,0.08); }
+    .footer a {
+      color: #cba75d;
+      text-decoration: none;
+    }
 
-    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: #555; line-height: 1.6; }
-    .footer a { color: var(--gold); text-decoration: none; }
+    @media (max-width: 720px) {
+      .page { padding: 10px 10px 32px; }
 
-    #other-reason-group { display: none; margin-bottom: 10px; }
+      .header {
+        padding: 20px 14px 18px;
+        border-radius: 16px;
+        margin-bottom: 10px;
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+      }
+
+      .card {
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+
+      #categories,
+      .donor-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .form-group.full-width { grid-column: auto; }
+
+      .cat-row {
+        flex-wrap: wrap;
+        padding: 11px;
+      }
+
+      .cat-amt-wrap {
+        width: calc(100% - 27px);
+        margin-left: 27px;
+      }
+
+      .cat-amt { padding: 9px 10px; }
+
+      .freq-row { gap: 6px; }
+      .freq-btn { font-size: 12px; padding: 10px 5px; }
+
+      .card-entry-label {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .card-entry-label span { text-align: left; }
+
+      #card-container {
+        padding: 10px;
+        min-height: 96px;
+      }
+
+      .alt-methods { gap: 8px; }
+      .alt-btn {
+        min-width: 132px;
+        max-width: 155px;
+        padding: 9px 14px;
+      }
+      .footer { margin-top: 18px; }
+    }
+
+    @media (max-width: 390px) {
+      .page { padding-left: 8px; padding-right: 8px; }
+      .header h1 { font-size: 21px; }
+      .card h2 { font-size: 17px; }
+      .freq-btn { font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
   </style>
+
 </head>
 <body>
   <div class="page">
@@ -99,7 +595,7 @@
       <p class="scripture">&ldquo;God loves a cheerful giver.&rdquo; &mdash; 2 Corinthians 9:7</p>
     </div>
 
-    <div class="success-card" id="success-card">
+    <div class="success-card" id="success-card" role="status" aria-live="polite">
       <div class="icon">&#127979;</div>
       <h2>Thank You!</h2>
       <p id="success-msg">Your gift has been received. Thank you for your faithful generosity to Bethel AME Lancaster. May God bless you abundantly.</p>
@@ -118,7 +614,7 @@
             <span class="cat-name">&#128591; Tithe</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Tithe" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Tithe" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -126,7 +622,7 @@
             <span class="cat-name">&#127873; General Offering</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="General Offering" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="General Offering" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -134,7 +630,7 @@
             <span class="cat-name">&#128218; Class Dues</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Class Dues" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Class Dues" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -142,7 +638,7 @@
             <span class="cat-name">&#127775; YPD</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="YPD" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="YPD" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -150,7 +646,7 @@
             <span class="cat-name">&#128160; Women&rsquo;s Day</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Women's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Women's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -158,7 +654,7 @@
             <span class="cat-name">&#128081; Men&rsquo;s Day</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Men's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Men's Day" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -166,7 +662,7 @@
             <span class="cat-name">&#128140; Love Offering to Pastor</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Love Offering to Pastor" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Love Offering to Pastor" placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()" onclick="event.stopPropagation()">
             </div>
           </div>
           <div class="cat-row" onclick="toggleCat(this)">
@@ -174,7 +670,7 @@
             <span class="cat-name">&#10133; Other</span>
             <div class="cat-amt-wrap" style="display:none;">
               <span class="cat-dollar">$</span>
-              <input class="cat-amt" type="number" data-cat="Other" placeholder="0.00" min="0.01" step="0.01" oninput="onOtherInput(this)" onclick="event.stopPropagation()">
+              <input class="cat-amt" type="number" inputmode="decimal" data-cat="Other" placeholder="0.00" min="0.01" step="0.01" oninput="onOtherInput(this)" onclick="event.stopPropagation()">
             </div>
           </div>
           <div id="other-reason-group">
@@ -188,17 +684,19 @@
         <div class="step-label">Step 2 of 3</div>
         <h2>&#128100; Your Information</h2>
         <p class="sub">Helps us keep accurate giving records.</p>
-        <div class="form-group">
-          <label class="form-label">Full Name *</label>
-          <input class="form-input" type="text" id="donor-name" placeholder="Your full name">
-        </div>
-        <div class="form-group">
-          <label class="form-label" id="email-label">Email Address</label>
-          <input class="form-input" type="email" id="donor-email" placeholder="your@email.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Note (optional)</label>
-          <input class="form-input" type="text" id="donor-note" placeholder="e.g. In memory of...">
+        <div class="donor-grid">
+          <div class="form-group">
+            <label class="form-label" for="donor-name">Full Name *</label>
+            <input class="form-input" type="text" id="donor-name" placeholder="Your full name" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="email-label" for="donor-email">Email Address</label>
+            <input class="form-input" type="email" id="donor-email" placeholder="your@email.com" autocomplete="email" inputmode="email">
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label" for="donor-note">Note (optional)</label>
+            <input class="form-input" type="text" id="donor-note" placeholder="e.g. In memory of...">
+          </div>
         </div>
       </div>
 
@@ -220,19 +718,25 @@
           <div class="summary-row total"><span>Total</span><span id="sum-total">$0.00</span></div>
         </div>
 
+        <div class="card-entry-label">
+          <div>Card details</div>
+          <span>Securely entered with Square</span>
+        </div>
         <div id="card-container"></div>
+        <p class="card-help">Your full card number and security code are handled inside Square's secure payment fields and are not exposed to this website.</p>
 
         <label class="consent-row" id="consent-row">
           <input type="checkbox" id="consent-check">
           <span>I authorize Bethel AME to securely save my card with Square and charge this gift <strong id="consent-freq">every month</strong> until I cancel. I can cancel anytime using the link in my email receipt.</span>
         </label>
 
-        <div class="form-msg" id="form-msg"></div>
+        <div class="form-msg" id="form-msg" role="status" aria-live="polite"></div>
 
-        <button class="pay-btn" id="pay-btn" onclick="handlePayment()">&#128274; Give Securely</button>
+        <div class="preferred-label">Preferred giving method</div>
+        <button type="button" class="pay-btn" id="pay-btn" onclick="handlePayment()">&#128274; Give Securely</button>
 
         <div id="alt-methods">
-          <div class="divider">or give via</div>
+          <div class="divider">Other ways to give</div>
           <div class="alt-methods">
             <a class="alt-btn" href="https://cash.app/$BethelAMELancaster" target="_blank" rel="noopener">&#36; Cash App</a>
             <a class="alt-btn" href="https://square.link/u/cGm3gcCe" target="_blank" rel="noopener">&#9633; Square Link</a>
@@ -266,10 +770,49 @@
     let card = null;
     let giveTotal = 0;
     let frequency = 'once';            // 'once' | 'weekly' | 'monthly'
-    let idempotencyKey = crypto.randomUUID();
+    function newIdempotencyKey() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return 'give-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    }
+
+    let idempotencyKey = newIdempotencyKey();
 
     function escHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function getDonorDetails() {
+      const name = document.getElementById('donor-name').value.trim();
+      const email = document.getElementById('donor-email').value.trim();
+      const note = document.getElementById('donor-note').value.trim();
+      const parts = name.split(/\s+/).filter(Boolean);
+
+      return {
+        name,
+        email,
+        note,
+        givenName: parts[0] || name,
+        familyName: parts.slice(1).join(' ') || undefined
+      };
+    }
+
+    function getVerificationDetails(intent) {
+      const donor = getDonorDetails();
+
+      return {
+        amount: giveTotal.toFixed(2),
+        currencyCode: 'USD',
+        intent,
+        billingContact: {
+          givenName: donor.givenName,
+          familyName: donor.familyName,
+          email: donor.email || undefined
+        },
+        customerInitiated: true,
+        sellerKeyedIn: false
+      };
     }
 
     // ── Square init ──────────────────────────────────────────────────
@@ -277,12 +820,54 @@
       payments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
       card = await payments.card({
         style: {
-          '.input-container': { borderColor: 'rgba(255,255,255,0.12)', borderRadius: '12px' },
-          '.input-container.is-focus': { borderColor: 'rgba(247,191,91,0.5)' },
-          '.input-container.is-error': { borderColor: '#fc8181' },
-          input: { color: '#fffefe', fontFamily: 'Arial, sans-serif', fontSize: '15px' },
-          'input::placeholder': { color: '#666' },
-          '.message-text': { color: '#fc8181' }
+          '.input-container': {
+            borderColor: '#cfd4d9',
+            borderRadius: '8px',
+            borderWidth: '1px',
+            backgroundColor: '#ffffff'
+          },
+          '.input-container.is-focus': {
+            borderColor: '#b77700',
+            borderWidth: '2px'
+          },
+          '.input-container.is-error': {
+            borderColor: '#c62828',
+            borderWidth: '2px'
+          },
+          input: {
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            fontFamily: 'Arial, Helvetica, sans-serif',
+            fontSize: '16px',
+            fontWeight: '500'
+          },
+          'input.is-focus': {
+            backgroundColor: '#ffffff',
+            color: '#111827'
+          },
+          'input::placeholder': {
+            color: '#6b7280'
+          },
+          'input.is-error': {
+            color: '#991b1b'
+          },
+          '.message-text': {
+            color: '#4b5563'
+          },
+          '.message-text.is-error': {
+            color: '#b91c1c'
+          },
+          '.message-icon': {
+            color: '#6b7280'
+          },
+          '.message-icon.is-error': {
+            color: '#b91c1c'
+          },
+          '@media screen and (max-width: 600px)': {
+            input: {
+              fontSize: '16px'
+            }
+          }
         }
       });
       await card.attach('#card-container');
@@ -393,12 +978,22 @@
     function validationError() {
       const items = getLineItems();
       if (items.length === 0) return 'Please select at least one giving type and enter an amount.';
+      if (giveTotal <= 0) return 'Please enter a valid gift amount.';
+
       const otherInput = document.querySelector('.cat-amt[data-cat="Other"]');
       const otherAmt = otherInput ? (parseFloat(otherInput.value) || 0) : 0;
       if (otherAmt > 0 && !document.getElementById('other-reason').value.trim()) {
         return 'Please describe the purpose of your Other gift.';
       }
-      if (!document.getElementById('donor-name').value.trim()) return 'Please enter your name.';
+
+      const name = document.getElementById('donor-name').value.trim();
+      if (!name) return 'Please enter your name.';
+
+      const emailInput = document.getElementById('donor-email');
+      if (emailInput.value.trim() && !emailInput.validity.valid) {
+        return 'Please enter a valid email address.';
+      }
+
       return null;
     }
 
@@ -413,31 +1008,46 @@
       document.getElementById('success-msg').textContent = text;
       document.getElementById('giving-form').style.display = 'none';
       document.getElementById('success-card').classList.add('visible');
-      idempotencyKey = crypto.randomUUID();
+      idempotencyKey = newIdempotencyKey();
       reportHeight();
     }
 
-    // ── Pay button dispatcher ────────────────────────────────────────
+    // ── One-time payment ───────────────────────────────────────────────
     async function handlePayment() {
       if (frequency !== 'once') return handleRecurring();
+
       const btn = document.getElementById('pay-btn');
       setMsg('');
+
       const problem = validationError();
-      if (problem) { setMsg(problem, 'error'); return; }
-      if (!card) { setMsg('The card form is still loading — please wait a moment.', 'error'); return; }
+      if (problem) {
+        setMsg(problem, 'error');
+        return;
+      }
+
+      if (!card) {
+        setMsg('The card form is still loading — please wait a moment.', 'error');
+        return;
+      }
 
       btn.disabled = true;
       btn.textContent = 'Processing...';
+
       try {
-        const result = await card.tokenize();
+        const result = await card.tokenize(getVerificationDetails('CHARGE'));
+
         if (result.status !== 'OK') {
-          throw new Error((result.errors || []).map(e => e.message).join(', ') || 'Please check your card details.');
+          throw new Error(
+            (result.errors || []).map(e => e.message).join(', ') ||
+            'Please check your card details.'
+          );
         }
+
         const items = getLineItems();
-        const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
-        const name  = document.getElementById('donor-name').value.trim();
-        const email = document.getElementById('donor-email').value.trim();
-        const note  = document.getElementById('donor-note').value.trim();
+        const category = items
+          .map(i => i.category + ': $' + i.amount.toFixed(2))
+          .join(', ');
+        const donor = getDonorDetails();
 
         const response = await fetch(PROCESS_GIVING_URL, {
           method: 'POST',
@@ -445,86 +1055,133 @@
           body: JSON.stringify({
             sourceId: result.token,
             amount: Math.round(giveTotal * 100),
-            category, name: name || null, email: email || null, note: note || null,
+            category,
+            name: donor.name || null,
+            email: donor.email || null,
+            note: donor.note || null,
             idempotencyKey
           })
         });
+
         const data = await response.json();
-        if (data.success) {
-          showSuccess('Your gift has been received. Thank you for your faithful generosity to Bethel AME Lancaster. May God bless you abundantly.');
-        } else {
+
+        if (!response.ok || !data.success) {
           throw new Error(data.error || 'Payment failed');
         }
+
+        showSuccess(
+          'Your gift has been received. Thank you for your faithful generosity to Bethel AME Lancaster. May God bless you abundantly.'
+        );
       } catch (err) {
-        setMsg('Payment failed: ' + err.message, 'error');
+        console.error('One-time payment error:', err);
+        setMsg('Payment failed: ' + (err.message || 'Please try again.'), 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = frequency === 'once'
+          ? '&#128274; Give Securely'
+          : '&#128257; Start Recurring Gift';
       }
-      btn.disabled = false;
-      btn.innerHTML = frequency === 'once' ? '&#128274; Give Securely' : '&#128257; Start Recurring Gift';
     }
     window.handlePayment = handlePayment;
 
-    // ── Recurring path ───────────────────────────────────────────────
+    // ── Recurring payment ──────────────────────────────────────────────
     async function handleRecurring() {
       const btn = document.getElementById('pay-btn');
       setMsg('');
+
       const problem = validationError();
-      if (problem) { setMsg(problem, 'error'); return; }
-      const email = document.getElementById('donor-email').value.trim();
-      if (!email) { setMsg('Please enter your email so we can send your receipt and a link to manage your recurring gift.', 'error'); return; }
-      if (!document.getElementById('consent-check').checked) { setMsg('Please check the box to authorize the recurring gift.', 'error'); return; }
-      if (!card) { setMsg('The card form is still loading — please wait a moment.', 'error'); return; }
+      if (problem) {
+        setMsg(problem, 'error');
+        return;
+      }
+
+      const donor = getDonorDetails();
+
+      if (!donor.email) {
+        setMsg(
+          'Please enter your email so we can send your receipt and a link to manage your recurring gift.',
+          'error'
+        );
+        return;
+      }
+
+      if (!document.getElementById('consent-check').checked) {
+        setMsg('Please check the box to authorize the recurring gift.', 'error');
+        return;
+      }
+
+      if (!card) {
+        setMsg('The card form is still loading — please wait a moment.', 'error');
+        return;
+      }
 
       btn.disabled = true;
       btn.textContent = 'Processing...';
+
       try {
-        const tok = await card.tokenize();
+        // Square's current card-on-file flow performs buyer verification
+        // during tokenization. CHARGE_AND_STORE is the correct intent when
+        // charging the first gift and storing the card for future recurring gifts.
+        const tok = await card.tokenize(
+          getVerificationDetails('CHARGE_AND_STORE')
+        );
+
         if (tok.status !== 'OK') {
-          throw new Error((tok.errors || []).map(e => e.message).join(', ') || 'Please check your card details.');
+          throw new Error(
+            (tok.errors || []).map(e => e.message).join(', ') ||
+            'Please check your card details.'
+          );
         }
-        const name = document.getElementById('donor-name').value.trim();
-        const parts = name.split(/\s+/);
-        let verificationToken;
-        try {
-          const vr = await payments.verifyBuyer(tok.token, {
-            amount: giveTotal.toFixed(2),
-            currencyCode: 'USD',
-            intent: 'CHARGE',
-            billingContact: { givenName: parts[0] || name, familyName: parts.slice(1).join(' ') || undefined, email: email || undefined },
-            customerInitiated: true,
-            sellerKeyedIn: false
-          });
-          verificationToken = vr && vr.token;
-        } catch (ve) { console.warn('verifyBuyer skipped:', ve); }
 
         const items = getLineItems();
-        const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
-        const note = document.getElementById('donor-note').value.trim();
+        const category = items
+          .map(i => i.category + ': $' + i.amount.toFixed(2))
+          .join(', ');
 
         const response = await fetch(CREATE_RECURRING_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sourceId: tok.token,
-            verificationToken: verificationToken || null,
+            // Buyer verification is now handled by card.tokenize() above.
+            // Keep this field for compatibility with the existing function.
+            verificationToken: null,
             amount: Math.round(giveTotal * 100),
             frequency,
-            category, name: name || null, email, note: note || null,
+            category,
+            name: donor.name || null,
+            email: donor.email,
+            note: donor.note || null,
             idempotencyKey
           })
         });
+
         const data = await response.json();
-        if (data.success) {
-          showSuccess(data.stored === false
-            ? (data.warning || 'Your first gift was received, but we could not save your card for automatic gifts. Please try again or contact the church.')
-            : 'Your recurring gift is set up and your first gift has been received. We just emailed your receipt and a private link to change or cancel it anytime.');
-        } else {
+
+        if (!response.ok || !data.success) {
           throw new Error(data.error || 'Could not set up the recurring gift.');
         }
+
+        showSuccess(
+          data.stored === false
+            ? (
+                data.warning ||
+                'Your first gift was received, but we could not save your card for automatic gifts. Please try again or contact the church.'
+              )
+            : 'Your recurring gift is set up and your first gift has been received. We just emailed your receipt and a private link to change or cancel it anytime.'
+        );
       } catch (err) {
-        setMsg('Could not start recurring gift: ' + err.message, 'error');
+        console.error('Recurring payment error:', err);
+        setMsg(
+          'Could not start recurring gift: ' + (err.message || 'Please try again.'),
+          'error'
+        );
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = frequency === 'once'
+          ? '&#128274; Give Securely'
+          : '&#128257; Start Recurring Gift';
       }
-      btn.disabled = false;
-      btn.innerHTML = frequency === 'once' ? '&#128274; Give Securely' : '&#128257; Start Recurring Gift';
     }
     window.handleRecurring = handleRecurring;
   </script>

@@ -774,6 +774,28 @@
             <div class="cash-app-native-label">Cash App Pay · one-time gifts</div>
             <div id="cash-app-pay-container"></div>
             <p class="cash-app-note" id="cash-app-note">Select a giving amount above to load Cash App Pay.</p>
+            <p class="cash-app-note" id="cash-app-context-note" style="display:none;margin-top:8px;">
+              Cash App Pay needs to open from the secure giving page directly on mobile.
+              <a href="https://app.bethelamelancaster.com/give.html" target="_blank" rel="noopener"
+                 style="color:#f7bf5b;font-weight:700;">Open giving page</a>
+            </p>
+
+            <div id="cash-app-confirm-panel" style="display:none;margin-top:14px;padding:14px;border:1px solid rgba(247,191,91,.35);border-radius:14px;background:rgba(247,191,91,.07);">
+              <div style="font-size:13px;font-weight:800;color:#f7bf5b;margin-bottom:6px;">Cash App authorization returned</div>
+              <div id="cash-app-confirm-text" style="font-size:12px;line-height:1.5;color:#cbd2d8;margin-bottom:12px;">
+                No payment has been submitted yet.
+              </div>
+              <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                <button type="button" id="cash-app-confirm-btn" onclick="confirmCashAppPayment()"
+                  style="border:0;border-radius:999px;padding:11px 18px;background:#f7bf5b;color:#01060b;font-weight:800;font-size:13px;cursor:pointer;">
+                  Confirm Cash App Gift
+                </button>
+                <button type="button" id="cash-app-cancel-btn" onclick="cancelPendingCashAppPayment()"
+                  style="border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 18px;background:transparent;color:#d6dadd;font-weight:700;font-size:13px;cursor:pointer;">
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="alt-methods">
@@ -812,6 +834,13 @@
     let cashAppRefreshTimer = null;
     let cashAppGeneration = 0;
     let cashAppPaymentInProgress = false;
+
+    // Cash App is intentionally two-step:
+    // Square authorization/tokenization first, then an explicit confirmation
+    // back on Bethel's page before the backend is ever allowed to charge it.
+    let pendingCashAppToken = null;
+    let pendingCashAppAttemptKey = null;
+    let pendingCashAppAmount = null;
 
     function newIdempotencyKey() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -929,6 +958,11 @@
     });
 
     // ── Cash App Pay (one-time only) ─────────────────────────────────
+    function isEmbeddedFrame() {
+      try { return window.self !== window.top; }
+      catch (_) { return true; }
+    }
+
     // A Cash App payment is sent to Firebase ONLY when Square explicitly
     // returns tokenResult.status === 'OK'. A 'Cancel' result never calls
     // processGiving, which prevents the canceled-payment issue seen before.
@@ -946,6 +980,7 @@
       }
       const container = document.getElementById('cash-app-pay-container');
       if (container) container.innerHTML = '';
+      clearPendingCashAppAuthorization(false);
     }
 
     async function refreshCashAppPay() {
@@ -962,6 +997,17 @@
       }
 
       section.style.display = 'block';
+
+      const contextNote = document.getElementById('cash-app-context-note');
+      if (isEmbeddedFrame()) {
+        await destroyCashAppPay();
+        container.innerHTML = '';
+        note.textContent = 'For mobile Cash App Pay, open the secure giving page directly rather than from the embedded website.';
+        if (contextNote) contextNote.style.display = 'block';
+        reportHeight();
+        return;
+      }
+      if (contextNote) contextNote.style.display = 'none';
       note.textContent = 'Loading secure Cash App Pay…';
       const generation = ++cashAppGeneration;
 
@@ -985,7 +1031,7 @@
           }
         });
 
-        const redirectURL = window.location.origin + window.location.pathname;
+        const redirectURL = 'https://app.bethelamelancaster.com/give.html';
         const instance = await payments.cashAppPay(paymentRequest, {
           redirectURL,
           referenceId: ('bethel-' + attemptKey).slice(0, 40)
@@ -1004,7 +1050,7 @@
         });
 
         await instance.attach('#cash-app-pay-container');
-        note.textContent = 'One-time only. If you cancel in Cash App, no payment will be submitted.';
+        note.textContent = 'One-time only. Returning from Cash App will never charge automatically — you must confirm the gift again on this page.';
         reportHeight();
       } catch (err) {
         console.error('Cash App Pay initialization failed:', err);
@@ -1012,6 +1058,35 @@
         reportHeight();
       }
     }
+
+    function clearPendingCashAppAuthorization(showMessage) {
+      pendingCashAppToken = null;
+      pendingCashAppAttemptKey = null;
+      pendingCashAppAmount = null;
+
+      const panel = document.getElementById('cash-app-confirm-panel');
+      const confirmBtn = document.getElementById('cash-app-confirm-btn');
+      const cancelBtn = document.getElementById('cash-app-cancel-btn');
+
+      if (panel) panel.style.display = 'none';
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm Cash App Gift';
+      }
+      if (cancelBtn) cancelBtn.disabled = false;
+
+      if (showMessage) {
+        setMsg('Cash App gift canceled. No payment was submitted.', 'success');
+      }
+      reportHeight();
+    }
+
+    function cancelPendingCashAppPayment() {
+      if (cashAppPaymentInProgress) return;
+      clearPendingCashAppAuthorization(true);
+      scheduleCashAppRefresh();
+    }
+    window.cancelPendingCashAppPayment = cancelPendingCashAppPayment;
 
     async function handleCashAppTokenization(event, generation, attemptKey, amountForAttempt) {
       const detail = event && event.detail ? event.detail : {};
@@ -1025,42 +1100,98 @@
 
       if (eventError) {
         console.error('Cash App Pay tokenization error:', eventError);
-        setMsg('Cash App payment was not completed. Please try again.', 'error');
+        clearPendingCashAppAuthorization(false);
+        setMsg('Cash App authorization was not completed. No payment was submitted.', 'error');
         return;
       }
 
       if (tokenResult.status === 'Cancel') {
         // CRITICAL: no fetch(), no processGiving call, no Square payment.
-        cashAppPaymentInProgress = false;
+        clearPendingCashAppAuthorization(false);
         setMsg('Cash App payment canceled. No payment was submitted.', 'success');
         scheduleCashAppRefresh();
         return;
       }
 
       if (tokenResult.status !== 'OK' || !tokenResult.token) {
-        setMsg('Cash App payment was not completed. No payment was submitted.', 'error');
+        clearPendingCashAppAuthorization(false);
+        setMsg('Cash App authorization was not completed. No payment was submitted.', 'error');
         scheduleCashAppRefresh();
         return;
       }
 
-      if (cashAppPaymentInProgress) return;
-
-      // Revalidate after returning from Cash App. If anything changed, do not
-      // charge a stale amount/token.
+      // IMPORTANT:
+      // Even when Square returns OK, DO NOT CHARGE YET.
+      // The donor must explicitly confirm again on Bethel's page.
       const problem = validationError();
       if (problem) {
-        setMsg(problem + ' Cash App was not charged.', 'error');
-        scheduleCashAppRefresh();
-        return;
-      }
-      if (frequency !== 'once' || giveTotal.toFixed(2) !== amountForAttempt) {
-        setMsg('The giving amount changed. Cash App was not charged; please try again.', 'error');
+        clearPendingCashAppAuthorization(false);
+        setMsg(problem + ' No Cash App payment was submitted.', 'error');
         scheduleCashAppRefresh();
         return;
       }
 
+      if (frequency !== 'once' || giveTotal.toFixed(2) !== amountForAttempt) {
+        clearPendingCashAppAuthorization(false);
+        setMsg('The giving amount changed. No Cash App payment was submitted; please try again.', 'error');
+        scheduleCashAppRefresh();
+        return;
+      }
+
+      pendingCashAppToken = tokenResult.token;
+      pendingCashAppAttemptKey = attemptKey;
+      pendingCashAppAmount = amountForAttempt;
+
+      const panel = document.getElementById('cash-app-confirm-panel');
+      const textEl = document.getElementById('cash-app-confirm-text');
+
+      if (textEl) {
+        textEl.textContent =
+          'Cash App returned an authorization for $' + amountForAttempt +
+          '. No money has been charged yet. Select “Confirm Cash App Gift” below to submit the donation, or Cancel to discard it.';
+      }
+      if (panel) panel.style.display = 'block';
+
+      setMsg('Cash App is authorized, but your gift has NOT been submitted yet. Please confirm below.', 'success');
+      reportHeight();
+    }
+
+    async function confirmCashAppPayment() {
+      if (cashAppPaymentInProgress) return;
+
+      if (!pendingCashAppToken || !pendingCashAppAttemptKey || !pendingCashAppAmount) {
+        setMsg('There is no Cash App gift waiting for confirmation.', 'error');
+        return;
+      }
+
+      const problem = validationError();
+      if (problem) {
+        setMsg(problem + ' No Cash App payment was submitted.', 'error');
+        return;
+      }
+
+      if (frequency !== 'once' || giveTotal.toFixed(2) !== pendingCashAppAmount) {
+        clearPendingCashAppAuthorization(false);
+        setMsg('The giving amount changed. The Cash App authorization was discarded; please start again.', 'error');
+        scheduleCashAppRefresh();
+        return;
+      }
+
+      const token = pendingCashAppToken;
+      const attemptKey = pendingCashAppAttemptKey;
+      const amountForAttempt = pendingCashAppAmount;
+
+      const confirmBtn = document.getElementById('cash-app-confirm-btn');
+      const cancelBtn = document.getElementById('cash-app-cancel-btn');
+
       cashAppPaymentInProgress = true;
-      setMsg('Processing Cash App payment…', '');
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Submitting…';
+      }
+      if (cancelBtn) cancelBtn.disabled = true;
+
+      setMsg('Submitting your confirmed Cash App gift…', '');
 
       try {
         const items = getLineItems();
@@ -1073,8 +1204,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            sourceId: tokenResult.token,
-            amount: Math.round(giveTotal * 100),
+            sourceId: token,
+            amount: Math.round(Number(amountForAttempt) * 100),
             category,
             name: donor.name || null,
             email: donor.email || null,
@@ -1090,17 +1221,29 @@
           throw new Error(data.error || 'Cash App payment failed');
         }
 
+        // Clear the token immediately after a successful backend charge so it
+        // cannot be submitted again.
+        clearPendingCashAppAuthorization(false);
+
         showSuccess(
           'Your Cash App gift has been received. Thank you for your faithful generosity to Bethel AME Lancaster. May God bless you abundantly.'
         );
       } catch (err) {
         console.error('Cash App payment error:', err);
         setMsg('Cash App payment failed: ' + (err.message || 'Please try again.'), 'error');
-        scheduleCashAppRefresh();
+
+        // Keep the pending token/button available after a network failure.
+        // The same idempotency key is reused so a retry cannot double-charge.
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirm Cash App Gift';
+        }
+        if (cancelBtn) cancelBtn.disabled = false;
       } finally {
         cashAppPaymentInProgress = false;
       }
     }
+    window.confirmCashAppPayment = confirmCashAppPayment;
 
     // ── Category selection ───────────────────────────────────────────
     function toggleCat(row) {

@@ -817,22 +817,41 @@
 
     // ── Square init ──────────────────────────────────────────────────
     async function initSquare() {
-      payments = Square.payments('sq0idp-BD0PugOBs-UX_xEm8-FCYg', '1CQ4BCNZ6D7GM');
+      if (!window.Square) {
+        throw new Error('Square Web Payments SDK did not load.');
+      }
+
+      payments = Square.payments(
+        'sq0idp-BD0PugOBs-UX_xEm8-FCYg',
+        '1CQ4BCNZ6D7GM'
+      );
+
+      // Keep the Square styling deliberately conservative. Square only
+      // accepts its supported CardClassSelectors/properties; an unsupported
+      // style property can prevent the entire card form from attaching.
       card = await payments.card({
         style: {
           '.input-container': {
             borderColor: '#cfd4d9',
-            borderRadius: '8px',
-            borderWidth: '1px',
-            backgroundColor: '#ffffff'
+            borderRadius: '8px'
           },
           '.input-container.is-focus': {
-            borderColor: '#b77700',
-            borderWidth: '2px'
+            borderColor: '#b77700'
           },
           '.input-container.is-error': {
-            borderColor: '#c62828',
-            borderWidth: '2px'
+            borderColor: '#c62828'
+          },
+          '.message-text': {
+            color: '#6b7280'
+          },
+          '.message-icon': {
+            color: '#6b7280'
+          },
+          '.message-text.is-error': {
+            color: '#b91c1c'
+          },
+          '.message-icon.is-error': {
+            color: '#b91c1c'
           },
           input: {
             backgroundColor: '#ffffff',
@@ -841,40 +860,28 @@
             fontSize: '16px',
             fontWeight: '500'
           },
-          'input.is-focus': {
-            backgroundColor: '#ffffff',
-            color: '#111827'
-          },
           'input::placeholder': {
             color: '#6b7280'
           },
           'input.is-error': {
-            color: '#991b1b'
-          },
-          '.message-text': {
-            color: '#4b5563'
-          },
-          '.message-text.is-error': {
             color: '#b91c1c'
-          },
-          '.message-icon': {
-            color: '#6b7280'
-          },
-          '.message-icon.is-error': {
-            color: '#b91c1c'
-          },
-          '@media screen and (max-width: 600px)': {
-            input: {
-              fontSize: '16px'
-            }
           }
         }
       });
+
       await card.attach('#card-container');
     }
-    initSquare().catch(() => {
-      document.getElementById('card-container').innerHTML =
-        '<p style="color:#fc8181;font-size:13px;">Card form could not load. Please use Cash App or Square Link below.</p>';
+
+    initSquare().catch((err) => {
+      console.error('Square card initialization failed:', err);
+
+      const container = document.getElementById('card-container');
+      if (container) {
+        container.innerHTML =
+          '<p style="color:#fc8181;font-size:13px;line-height:1.5;margin:0;">' +
+          'Card form could not load. Please refresh the page. If it still does not load, use Cash App or Square Link below.' +
+          '</p>';
+      }
     });
 
     // ── Category selection ───────────────────────────────────────────

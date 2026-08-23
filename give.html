@@ -529,6 +529,26 @@
       border-color: rgba(247,191,91,.42);
     }
 
+
+    .payment-method-btn:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .payment-method-btn:disabled:hover {
+      transform: none !important;
+    }
+
+    .payment-unlock-note {
+      margin: 8px 0 0;
+      color: #aeb7be;
+      font-size: 10px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
     .payment-method-btn.selected {
       border-color: var(--gold);
       background: rgba(247,191,91,.10);
@@ -934,11 +954,11 @@
         <div class="donor-grid">
           <div class="form-group">
             <label class="form-label" for="donor-name">Full Name *</label>
-            <input class="form-input" type="text" id="donor-name" placeholder="Your full name" autocomplete="name">
+            <input class="form-input" type="text" id="donor-name" placeholder="Your full name" autocomplete="name" oninput="updateAlternativePaymentAvailability()">
           </div>
           <div class="form-group">
-            <label class="form-label" id="email-label" for="donor-email">Email Address</label>
-            <input class="form-input" type="email" id="donor-email" required aria-required="true" placeholder="your@email.com" autocomplete="email" inputmode="email">
+            <label class="form-label" id="email-label" for="donor-email">Email Address *</label>
+            <input class="form-input" type="email" id="donor-email" required aria-required="true" placeholder="your@email.com" autocomplete="email" inputmode="email" oninput="updateAlternativePaymentAvailability()">
           </div>
           <div class="form-group full-width">
             <label class="form-label" for="donor-note">Note (optional)</label>
@@ -988,6 +1008,9 @@
             <span class="payment-method-meta">Secure card payment through Square</span>
           </button>
         </div>
+        <p class="payment-unlock-note" id="payment-unlock-note">
+          Complete the giving amount, name, and email above to unlock bank and wallet payment options.
+        </p>
 
         <!-- ACH occupies the main payment area when selected -->
         <div class="payment-panel" id="ach-panel">
@@ -1264,6 +1287,7 @@
       await card.attach('#card-container');
       await detectDigitalWalletSupport();
       selectPaymentMethod('card', true);
+      updateAlternativePaymentAvailability();
       scheduleCashAppRefresh();
     }
 
@@ -1279,9 +1303,94 @@
       }
     });
 
+    // ── Payment prerequisites ─────────────────────────────────────────
+    // Bank/wallet methods can launch an external authorization sheet. Keep
+    // them locked until all required giving information is already complete,
+    // so donors are never sent out to Cash App / Apple Pay / Google Pay only
+    // to be returned to fix the form and repeat authorization.
+    function alternativePaymentPrerequisitesReady() {
+      const selectedRows = Array.from(document.querySelectorAll('.cat-row.selected'));
+
+      if (selectedRows.length === 0) return false;
+
+      for (const row of selectedRows) {
+        const amountInput = row.querySelector('.cat-amt');
+        const amount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+        if (amount <= 0) return false;
+      }
+
+      const otherInput = document.querySelector('.cat-amt[data-cat="Other"]');
+      const otherRow = otherInput ? otherInput.closest('.cat-row') : null;
+      if (otherRow && otherRow.classList.contains('selected')) {
+        const otherReason = document.getElementById('other-reason');
+        if (!otherReason || !otherReason.value.trim()) return false;
+      }
+
+      const name = document.getElementById('donor-name').value.trim();
+      if (!name) return false;
+
+      const emailInput = document.getElementById('donor-email');
+      if (!emailInput.value.trim() || !emailInput.validity.valid) return false;
+
+      return giveTotal > 0;
+    }
+
+    function updateAlternativePaymentAvailability() {
+      const ready = alternativePaymentPrerequisitesReady();
+      const oneTime = frequency === 'once';
+
+      const achButton = document.getElementById('method-ach');
+      const cashButton = document.getElementById('method-cashapp');
+      const appleButton = document.getElementById('method-applepay');
+      const googleButton = document.getElementById('method-googlepay');
+      const note = document.getElementById('payment-unlock-note');
+
+      // ACH and digital wallets all leave the normal card form, so lock all
+      // four until Steps 1 and 2 are complete.
+      if (achButton) achButton.disabled = !(oneTime && ready);
+      if (cashButton) cashButton.disabled = !(oneTime && ready);
+      if (appleButton) appleButton.disabled = !(oneTime && ready && applePaySupported);
+      if (googleButton) googleButton.disabled = !(oneTime && ready && googlePaySupported);
+
+      if (note) {
+        if (!oneTime) {
+          note.textContent =
+            'Recurring gifts are currently available by credit/debit card.';
+        } else if (!ready) {
+          note.textContent =
+            'Complete the giving amount, name, and email above to unlock bank and wallet payment options.';
+        } else {
+          note.textContent =
+            'Bank and wallet payment options are ready.';
+        }
+      }
+
+      // If required information is cleared after an alternative method was
+      // selected, return safely to Card before any external authorization can
+      // continue with stale/incomplete information.
+      if (!ready &&
+          ['ach', 'cashapp', 'applepay', 'googlepay'].includes(paymentMethod)) {
+        selectPaymentMethod('card', true);
+      }
+    }
+    window.updateAlternativePaymentAvailability = updateAlternativePaymentAvailability;
+
     // ── Payment method selector ───────────────────────────────────────
     function selectPaymentMethod(method, silent) {
       if (!['ach', 'cashapp', 'applepay', 'googlepay', 'card'].includes(method)) return;
+
+      const isAlternative = ['ach', 'cashapp', 'applepay', 'googlepay'].includes(method);
+
+      if (isAlternative && frequency === 'once' && !alternativePaymentPrerequisitesReady()) {
+        if (!silent) {
+          const problem = validationError();
+          setMsg(
+            problem || 'Please complete the giving amount, name, and email before choosing this payment method.',
+            'error'
+          );
+        }
+        return;
+      }
 
       // Wallets, Cash App, and ACH are one-time only in this integration.
       if (frequency !== 'once' &&
@@ -1334,6 +1443,8 @@
           method === 'card' && frequency !== 'once' ? 'flex' : 'none';
       }
 
+      updateAlternativePaymentAvailability();
+
       if (!silent) setMsg('');
       reportHeight();
     }
@@ -1383,6 +1494,8 @@
       const googleButton = document.getElementById('method-googlepay');
       if (appleButton) appleButton.hidden = !applePaySupported || frequency !== 'once';
       if (googleButton) googleButton.hidden = !googlePaySupported || frequency !== 'once';
+
+      updateAlternativePaymentAvailability();
     }
 
     function scheduleWalletRefresh() {
@@ -2511,6 +2624,7 @@
         scheduleWalletRefresh();
       }
 
+      updateAlternativePaymentAvailability();
       reportHeight();
     }
 
@@ -2567,6 +2681,7 @@
       if (['applepay', 'googlepay'].includes(paymentMethod)) {
         scheduleWalletRefresh();
       }
+      updateAlternativePaymentAvailability();
       reportHeight();
     }
     window.setFrequency = setFrequency;

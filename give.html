@@ -475,6 +475,165 @@
       color: var(--gold);
     }
 
+
+    .payment-method-title {
+      margin: 18px 0 9px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #cdd3d8;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .payment-method-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .payment-method-btn {
+      position: relative;
+      min-height: 76px;
+      padding: 12px 10px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.035);
+      color: #d5dade;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .payment-method-btn:hover {
+      border-color: rgba(247,191,91,.42);
+    }
+
+    .payment-method-btn.selected {
+      border-color: var(--gold);
+      background: rgba(247,191,91,.10);
+      color: var(--gold);
+    }
+
+    .payment-method-btn[hidden] { display: none; }
+
+    .payment-method-name {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .payment-method-meta {
+      display: block;
+      font-size: 10.5px;
+      line-height: 1.35;
+      color: #89939c;
+      font-weight: 600;
+    }
+
+    .payment-method-btn.selected .payment-method-meta {
+      color: #d1b877;
+    }
+
+    .payment-panel {
+      display: none;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      background: rgba(255,255,255,.025);
+      margin-bottom: 14px;
+    }
+
+    .payment-panel.visible { display: block; }
+
+    .payment-panel-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .payment-panel-heading strong {
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    .payment-panel-heading span {
+      color: #7e8991;
+      font-size: 10.5px;
+      text-align: right;
+    }
+
+    .ach-action {
+      display: block;
+      width: fit-content;
+      max-width: 100%;
+      min-width: 245px;
+      margin: 12px auto 0;
+      padding: 12px 22px;
+      border: 0;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #101820;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .ach-action:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .ach-note {
+      margin: 9px auto 0;
+      max-width: 620px;
+      color: #929ca4;
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .ach-confirm-panel {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(247,191,91,.35);
+      border-radius: 14px;
+      background: rgba(247,191,91,.07);
+    }
+
+    .ach-confirm-panel.visible { display: block; }
+
+    @media (max-width: 700px) {
+      .payment-method-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .payment-method-btn {
+        min-height: 0;
+        padding: 12px 14px;
+      }
+
+      .payment-method-name,
+      .payment-method-meta {
+        display: inline;
+      }
+
+      .payment-method-meta::before {
+        content: " · ";
+      }
+
+      .ach-action {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
     .cash-app-native {
       width: 100%;
       max-width: 360px;
@@ -736,42 +895,74 @@
       <div class="card">
         <div class="step-label">Step 3 of 3</div>
         <h2>&#128179; Payment</h2>
-        <p class="sub">Choose one-time or recurring, then enter your card. Processed securely by Square.</p>
+        <p class="sub">Choose a frequency and payment method. Bank account, Cash App Pay, and card payments are processed securely by Square.</p>
 
         <div class="freq-row">
           <button type="button" id="freq-once" class="freq-btn selected" onclick="setFrequency('once')">One-time</button>
           <button type="button" id="freq-weekly" class="freq-btn" onclick="setFrequency('weekly')">Weekly</button>
           <button type="button" id="freq-monthly" class="freq-btn" onclick="setFrequency('monthly')">Monthly</button>
         </div>
-        <p class="recurring-note" id="recurring-note">Recurring gifts use card-on-file. Cash App Pay is available for one-time gifts only. We'll email you a private link to change or cancel anytime.</p>
+        <p class="recurring-note" id="recurring-note">Recurring card gifts are enabled. Cash App Pay is one-time only. Recurring ACH will be added after the bank-link flow is verified.</p>
 
         <div class="summary-box" id="summary-box" style="display:none;">
           <div id="summary-lines"></div>
           <div class="summary-row total"><span>Total</span><span id="sum-total">$0.00</span></div>
         </div>
 
-        <div class="card-entry-label">
-          <div>Card details</div>
-          <span>Securely entered with Square</span>
+        <div class="payment-method-title">Choose payment method</div>
+        <div class="payment-method-grid" id="payment-method-grid">
+          <button type="button" class="payment-method-btn" id="method-ach" onclick="selectPaymentMethod('ach')">
+            <span class="payment-method-name">🏦 Bank account (ACH)</span>
+            <span class="payment-method-meta">1% via Square API · $1 minimum, $5 cap</span>
+          </button>
+          <button type="button" class="payment-method-btn" id="method-cashapp" onclick="selectPaymentMethod('cashapp')">
+            <span class="payment-method-name">$ Cash App Pay</span>
+            <span class="payment-method-meta">One-time gifts · confirm before charge</span>
+          </button>
+          <button type="button" class="payment-method-btn selected" id="method-card" onclick="selectPaymentMethod('card')">
+            <span class="payment-method-name">💳 Credit / debit card</span>
+            <span class="payment-method-meta">Secure card payment through Square</span>
+          </button>
         </div>
-        <div id="card-container"></div>
-        <p class="card-help">Your full card number and security code are handled inside Square's secure payment fields and are not exposed to this website.</p>
 
-        <label class="consent-row" id="consent-row">
-          <input type="checkbox" id="consent-check">
-          <span>I authorize Bethel AME to securely save my card with Square and charge this gift <strong id="consent-freq">every month</strong> until I cancel. I can cancel anytime using the link in my email receipt.</span>
-        </label>
+        <!-- ACH occupies the main payment area when selected -->
+        <div class="payment-panel" id="ach-panel">
+          <div class="payment-panel-heading">
+            <strong>Bank account (ACH)</strong>
+            <span>Secure bank linking powered by Square + Plaid</span>
+          </div>
+          <p class="ach-note" style="margin-top:0;">
+            Your routing and full account numbers are entered only in the secure bank-linking window and are not exposed to Bethel's website.
+          </p>
+          <button type="button" class="ach-action" id="ach-start-btn" onclick="startAchPayment()">Connect bank account</button>
+          <p class="ach-note" id="ach-note">One-time ACH test is enabled. Weekly/monthly bank giving will be added after this bank-link flow is verified.</p>
 
-        <div class="form-msg" id="form-msg" role="status" aria-live="polite"></div>
+          <div class="ach-confirm-panel" id="ach-confirm-panel">
+            <div style="font-size:13px;font-weight:800;color:#f7bf5b;margin-bottom:6px;">Bank authorization returned</div>
+            <div id="ach-confirm-text" style="font-size:12px;line-height:1.5;color:#cbd2d8;margin-bottom:12px;">
+              No ACH payment has been submitted yet.
+            </div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+              <button type="button" id="ach-confirm-btn" onclick="confirmAchPayment()"
+                style="border:0;border-radius:999px;padding:11px 18px;background:#f7bf5b;color:#01060b;font-weight:800;font-size:13px;cursor:pointer;">
+                Confirm Bank Gift
+              </button>
+              <button type="button" id="ach-cancel-btn" onclick="cancelPendingAchPayment()"
+                style="border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 18px;background:transparent;color:#d6dadd;font-weight:700;font-size:13px;cursor:pointer;">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <div class="preferred-label">Preferred giving method</div>
-        <button type="button" class="pay-btn" id="pay-btn" onclick="handlePayment()">&#128274; Give Securely</button>
-
-        <div id="alt-methods">
-          <div class="divider">Other ways to give</div>
+        <!-- Cash App occupies the same main payment area when selected -->
+        <div class="payment-panel" id="cashapp-panel">
+          <div class="payment-panel-heading">
+            <strong>Cash App Pay</strong>
+            <span>One-time gifts only</span>
+          </div>
 
           <div class="cash-app-native" id="cash-app-section" style="display:none;">
-            <div class="cash-app-native-label">Cash App Pay · one-time gifts</div>
             <div id="cash-app-pay-container"></div>
             <p class="cash-app-note" id="cash-app-note">Select a giving amount above to load Cash App Pay.</p>
             <p class="cash-app-note" id="cash-app-context-note" style="display:none;margin-top:8px;">
@@ -797,10 +988,30 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="alt-methods">
-            <a class="alt-btn" href="https://square.link/u/cGm3gcCe" target="_blank" rel="noopener">&#9633; Square Link</a>
+        <!-- Card fields appear only when Card is selected -->
+        <div class="payment-panel visible" id="card-panel">
+          <div class="payment-panel-heading">
+            <strong>Credit / debit card</strong>
+            <span>Securely entered with Square</span>
           </div>
+          <div id="card-container"></div>
+          <p class="card-help">Your full card number and security code are handled inside Square's secure payment fields and are not exposed to this website.</p>
+
+          <label class="consent-row" id="consent-row">
+            <input type="checkbox" id="consent-check">
+            <span>I authorize Bethel AME to securely save my card with Square and charge this gift <strong id="consent-freq">every month</strong> until I cancel. I can cancel anytime using the link in my email receipt.</span>
+          </label>
+
+          <div class="preferred-label">Card payment</div>
+          <button type="button" class="pay-btn" id="pay-btn" onclick="handlePayment()">&#128274; Give Securely</button>
+        </div>
+
+        <div class="form-msg" id="form-msg" role="status" aria-live="polite"></div>
+
+        <div style="margin-top:28px;text-align:center;">
+          <a class="alt-btn" style="display:inline-block;min-width:140px;" href="https://square.link/u/cGm3gcCe" target="_blank" rel="noopener">&#9633; Square Link</a>
         </div>
       </div>
 
@@ -828,8 +1039,10 @@
 
     let payments = null;
     let card = null;
+    let ach = null;
     let giveTotal = 0;
     let frequency = 'once';            // 'once' | 'weekly' | 'monthly'
+    let paymentMethod = 'card';         // 'ach' | 'cashapp' | 'card'
     let cashAppPay = null;
     let cashAppRefreshTimer = null;
     let cashAppGeneration = 0;
@@ -841,6 +1054,12 @@
     let pendingCashAppToken = null;
     let pendingCashAppAttemptKey = null;
     let pendingCashAppAmount = null;
+
+    let achPaymentInProgress = false;
+    let pendingAchToken = null;
+    let pendingAchAttemptKey = null;
+    let pendingAchAmount = null;
+    let pendingAchBankLabel = null;
 
     function newIdempotencyKey() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -942,6 +1161,7 @@
       });
 
       await card.attach('#card-container');
+      selectPaymentMethod('card', true);
       scheduleCashAppRefresh();
     }
 
@@ -956,6 +1176,276 @@
           '</p>';
       }
     });
+
+    // ── Payment method selector ───────────────────────────────────────
+    function selectPaymentMethod(method, silent) {
+      if (!['ach', 'cashapp', 'card'].includes(method)) return;
+
+      // Cash App cannot be used for recurring gifts.
+      if (frequency !== 'once' && method === 'cashapp') {
+        method = 'card';
+      }
+
+      // This test version enables ACH for one-time gifts first.
+      if (frequency !== 'once' && method === 'ach') {
+        setMsg('Recurring bank-account giving is not enabled in this test yet. Please use card for weekly/monthly giving.', 'error');
+        method = 'card';
+      }
+
+      paymentMethod = method;
+
+      ['ach', 'cashapp', 'card'].forEach(m => {
+        const button = document.getElementById('method-' + m);
+        const panel = document.getElementById(m === 'cashapp' ? 'cashapp-panel' : m + '-panel');
+        if (button) button.classList.toggle('selected', m === method);
+        if (panel) panel.classList.toggle('visible', m === method);
+      });
+
+      const cashButton = document.getElementById('method-cashapp');
+      if (cashButton) cashButton.hidden = frequency !== 'once';
+
+      if (method === 'cashapp') {
+        scheduleCashAppRefresh();
+      } else {
+        destroyCashAppPay();
+      }
+
+      if (method !== 'ach') {
+        clearPendingAchAuthorization(false);
+      }
+
+      if (!silent) setMsg('');
+      reportHeight();
+    }
+    window.selectPaymentMethod = selectPaymentMethod;
+
+    // ── ACH / bank payment (one-time test) ───────────────────────────
+    function clearPendingAchAuthorization(showMessage) {
+      pendingAchToken = null;
+      pendingAchAttemptKey = null;
+      pendingAchAmount = null;
+      pendingAchBankLabel = null;
+
+      const panel = document.getElementById('ach-confirm-panel');
+      const confirmBtn = document.getElementById('ach-confirm-btn');
+      const cancelBtn = document.getElementById('ach-cancel-btn');
+
+      if (panel) panel.classList.remove('visible');
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm Bank Gift';
+      }
+      if (cancelBtn) cancelBtn.disabled = false;
+
+      if (showMessage) {
+        setMsg('Bank-account gift canceled. No payment was submitted.', 'success');
+      }
+      reportHeight();
+    }
+
+    async function destroyAch() {
+      const old = ach;
+      ach = null;
+      if (old) {
+        try { await old.destroy(); } catch (_) {}
+      }
+    }
+
+    function cancelPendingAchPayment() {
+      if (achPaymentInProgress) return;
+      clearPendingAchAuthorization(true);
+    }
+    window.cancelPendingAchPayment = cancelPendingAchPayment;
+
+    async function startAchPayment() {
+      if (paymentMethod !== 'ach') return;
+
+      setMsg('');
+      const problem = validationError();
+      if (problem) {
+        setMsg(problem, 'error');
+        return;
+      }
+
+      if (frequency !== 'once') {
+        setMsg('Recurring ACH is not enabled in this test version yet.', 'error');
+        return;
+      }
+
+      if (!payments) {
+        setMsg('Secure payments are still loading. Please wait a moment.', 'error');
+        return;
+      }
+
+      const donor = getDonorDetails();
+      const amountForAttempt = giveTotal.toFixed(2);
+      const attemptKey = newIdempotencyKey();
+      const startBtn = document.getElementById('ach-start-btn');
+
+      clearPendingAchAuthorization(false);
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'Opening bank connection…';
+      }
+
+      try {
+        await destroyAch();
+
+        const instance = await payments.ach({
+          transactionId: ('bethel-' + attemptKey).slice(0, 40)
+        });
+        ach = instance;
+
+        instance.addEventListener('ontokenization', (event) => {
+          const detail = event && event.detail ? event.detail : {};
+          const tokenResult = detail.tokenResult || {};
+          const eventError = detail.error;
+
+          console.log('ACH tokenization status:', tokenResult.status || 'unknown');
+
+          if (eventError) {
+            console.error('ACH tokenization error:', eventError);
+            setMsg('Bank authorization was not completed. No payment was submitted.', 'error');
+            return;
+          }
+
+          if (tokenResult.status === 'Cancel') {
+            setMsg('Bank authorization canceled. No payment was submitted.', 'success');
+            return;
+          }
+
+          if (tokenResult.status !== 'OK' || !tokenResult.token) {
+            setMsg('Bank authorization was not completed. No payment was submitted.', 'error');
+            return;
+          }
+
+          // Never charge automatically after Plaid/Square returns.
+          pendingAchToken = tokenResult.token;
+          pendingAchAttemptKey = attemptKey;
+          pendingAchAmount = amountForAttempt;
+
+          const bank = tokenResult.details && tokenResult.details.bankAccount
+            ? tokenResult.details.bankAccount
+            : null;
+
+          pendingAchBankLabel = bank
+            ? [bank.bankName, bank.accountType, bank.accountNumberSuffix ? '•••' + bank.accountNumberSuffix : '']
+                .filter(Boolean).join(' · ')
+            : 'linked bank account';
+
+          const confirmText = document.getElementById('ach-confirm-text');
+          const confirmPanel = document.getElementById('ach-confirm-panel');
+
+          if (confirmText) {
+            confirmText.textContent =
+              'Square authorized ' + pendingAchBankLabel + ' for a $' + amountForAttempt +
+              ' gift. No payment has been submitted yet. Confirm below to continue.';
+          }
+          if (confirmPanel) confirmPanel.classList.add('visible');
+
+          setMsg('Bank account authorized, but your gift has NOT been submitted yet. Please confirm below.', 'success');
+          reportHeight();
+        });
+
+        await instance.tokenize({
+          intent: 'CHARGE',
+          accountHolderName: donor.name,
+          amount: amountForAttempt,
+          currency: 'USD'
+        });
+
+      } catch (err) {
+        console.error('ACH setup error:', err);
+        setMsg('Bank connection could not be completed: ' + (err.message || 'Please try again.'), 'error');
+      } finally {
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.textContent = 'Connect bank account';
+        }
+      }
+    }
+    window.startAchPayment = startAchPayment;
+
+    async function confirmAchPayment() {
+      if (achPaymentInProgress) return;
+
+      if (!pendingAchToken || !pendingAchAttemptKey || !pendingAchAmount) {
+        setMsg('There is no bank-account gift waiting for confirmation.', 'error');
+        return;
+      }
+
+      const problem = validationError();
+      if (problem) {
+        setMsg(problem + ' No ACH payment was submitted.', 'error');
+        return;
+      }
+
+      if (frequency !== 'once' || giveTotal.toFixed(2) !== pendingAchAmount) {
+        clearPendingAchAuthorization(false);
+        setMsg('The giving amount changed. The bank authorization was discarded; please start again.', 'error');
+        return;
+      }
+
+      const token = pendingAchToken;
+      const attemptKey = pendingAchAttemptKey;
+      const amountForAttempt = pendingAchAmount;
+
+      const confirmBtn = document.getElementById('ach-confirm-btn');
+      const cancelBtn = document.getElementById('ach-cancel-btn');
+
+      achPaymentInProgress = true;
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Submitting…';
+      }
+      if (cancelBtn) cancelBtn.disabled = true;
+
+      setMsg('Submitting your confirmed bank-account gift…', '');
+
+      try {
+        const items = getLineItems();
+        const category = items.map(i => i.category + ': $' + i.amount.toFixed(2)).join(', ');
+        const donor = getDonorDetails();
+
+        const response = await fetch(PROCESS_GIVING_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: token,
+            amount: Math.round(Number(amountForAttempt) * 100),
+            category,
+            name: donor.name || null,
+            email: donor.email || null,
+            note: donor.note || null,
+            idempotencyKey: attemptKey
+          })
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch (_) {}
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'ACH payment failed');
+        }
+
+        clearPendingAchAuthorization(false);
+        showSuccess(
+          'Your bank-account gift has been submitted. ACH gifts may take a few business days to fully settle. Thank you for supporting Bethel AME Lancaster.'
+        );
+      } catch (err) {
+        console.error('ACH payment error:', err);
+        setMsg('Bank-account payment failed: ' + (err.message || 'Please try again.'), 'error');
+
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirm Bank Gift';
+        }
+        if (cancelBtn) cancelBtn.disabled = false;
+      } finally {
+        achPaymentInProgress = false;
+      }
+    }
+    window.confirmAchPayment = confirmAchPayment;
 
     // ── Cash App Pay (one-time only) ─────────────────────────────────
     function isEmbeddedFrame() {
@@ -989,7 +1479,7 @@
       const container = document.getElementById('cash-app-pay-container');
       if (!section || !note || !container) return;
 
-      if (!payments || frequency !== 'once' || giveTotal <= 0) {
+      if (!payments || paymentMethod !== 'cashapp' || frequency !== 'once' || giveTotal <= 0) {
         section.style.display = 'none';
         await destroyCashAppPay();
         reportHeight();
@@ -1308,6 +1798,7 @@
       } else {
         box.style.display = 'none';
       }
+      if (pendingAchToken && pendingAchAmount !== total.toFixed(2)) clearPendingAchAuthorization(false);
       scheduleCashAppRefresh();
       reportHeight();
     }
@@ -1319,26 +1810,35 @@
         const b = document.getElementById('freq-' + f);
         if (b) b.classList.toggle('selected', f === freq);
       });
+
       const consentRow = document.getElementById('consent-row');
       const consentFreq = document.getElementById('consent-freq');
-      const altMethods = document.getElementById('alt-methods');
       const recurNote = document.getElementById('recurring-note');
       const emailLabel = document.getElementById('email-label');
       const btn = document.getElementById('pay-btn');
+      const cashButton = document.getElementById('method-cashapp');
+
+      if (cashButton) cashButton.hidden = freq !== 'once';
+
       if (freq === 'once') {
         consentRow.style.display = 'none';
-        altMethods.style.display = '';
         recurNote.style.display = 'none';
         emailLabel.textContent = 'Email Address';
         btn.innerHTML = '&#128274; Give Securely';
       } else {
         consentRow.style.display = 'flex';
         consentFreq.textContent = freq === 'weekly' ? 'every week' : 'every month';
-        altMethods.style.display = 'none';
         recurNote.style.display = 'block';
+        recurNote.textContent = 'Recurring card gifts are enabled. Recurring ACH will be added after the one-time bank-link test is verified.';
         emailLabel.textContent = 'Email Address * (for your receipt & manage link)';
         btn.innerHTML = '&#128257; Start Recurring Gift';
+
+        // Cash App is one-time only; ACH recurring is not enabled in this test.
+        if (paymentMethod !== 'card') {
+          selectPaymentMethod('card', true);
+        }
       }
+
       scheduleCashAppRefresh();
       reportHeight();
     }

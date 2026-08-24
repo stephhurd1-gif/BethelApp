@@ -387,6 +387,19 @@
       transition:transform .16s ease, border-color .16s ease;
     }
     .event-card:hover { transform:translateY(-2px); border-color:rgba(247,191,91,.28); }
+    .event-card.has-image {
+      grid-template-columns:78px minmax(0,1fr) 150px;
+    }
+    .event-card-image {
+      display:none;
+      grid-column:3;
+      grid-row:1;
+      min-height:100%;
+      background-size:cover;
+      background-position:center;
+      border-left:1px solid var(--border);
+    }
+    .event-card.has-image .event-card-image { display:block; }
     .date-rail {
       padding:16px 8px;
       text-align:center;
@@ -717,6 +730,26 @@
       .featured-side { min-height:180px; order:-1; }
       .event-grid { grid-template-columns:1fr; }
       .event-card { grid-template-columns:67px minmax(0,1fr); min-height:175px; }
+      .event-card.has-image {
+        grid-template-columns:67px minmax(0,1fr);
+        grid-template-rows:145px auto;
+      }
+      .event-card.has-image .event-card-image {
+        display:block;
+        grid-column:1 / -1;
+        grid-row:1;
+        min-height:145px;
+        border-left:0;
+        border-bottom:1px solid var(--border);
+      }
+      .event-card.has-image .date-rail {
+        grid-column:1;
+        grid-row:2;
+      }
+      .event-card.has-image .event-body {
+        grid-column:2;
+        grid-row:2;
+      }
       .date-rail .day { font-size:26px; }
       .cal-day { min-height:76px; padding:5px; }
       .cal-items { margin-top:3px; }
@@ -868,6 +901,11 @@
 
     const EVENTS_FEED_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
+
+    // One-time setup: paste the deployed Google Apps Script Web App URL here.
+    // Staff never need to touch this again. They simply attach a flyer image
+    // to the Google Calendar event.
+    const EVENT_IMAGE_FEED_URL = 'https://script.google.com/macros/s/AKfycbx_TICD7MK8tTZdPYCOyzQINqsN6G53utHKd9E0T4ddKwa83RJ9aftOwlkawh_CC6fc7A/exec';
 
     const state = {
       events: [],
@@ -1065,7 +1103,9 @@
     }
 
     function eventToDisplay(eventObj, startDate, endDate, recurring) {
-      const title = eventObj.summary || 'Bethel Event';
+      const rawTitle = eventObj.summary || 'Bethel Event';
+      const titleFeatured = /^\s*⭐/.test(rawTitle);
+      const title = rawTitle.replace(/^\s*⭐\s*/, '').trim() || 'Bethel Event';
       const rawDescription = eventObj.description || '';
       const meta = parseDescriptionMeta(rawDescription, title);
       const allDay = Boolean(eventObj.startDate && eventObj.startDate.isDate);
@@ -1087,7 +1127,9 @@
         allDay,
         recurring:Boolean(recurring),
         category:meta.category,
-        featured:meta.featured,
+        // The normal staff workflow is simply to start the Google Calendar
+        // event title with ⭐. Legacy [featured] descriptions still work.
+        featured:Boolean(titleFeatured || meta.featured),
         image:meta.image,
         linkLabel:meta.linkLabel,
         linkUrl:meta.linkUrl
@@ -1211,6 +1253,85 @@
       return { start:now, end:addDays(today, 90) };
     }
 
+    function loadCalendarAttachmentImages() {
+      return new Promise(resolve => {
+        if (!EVENT_IMAGE_FEED_URL ||
+            EVENT_IMAGE_FEED_URL.includes('PASTE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+          resolve({});
+          return;
+        }
+
+        const callbackName =
+          '__bethelEventImages_' + Math.random().toString(36).slice(2);
+
+        let finished = false;
+        const cleanup = () => {
+          try { delete window[callbackName]; } catch (_) {}
+          const node = document.getElementById(callbackName);
+          if (node) node.remove();
+        };
+
+        const timeout = setTimeout(() => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          console.warn('Event image feed timed out.');
+          resolve({});
+        }, 12000);
+
+        window[callbackName] = payload => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timeout);
+
+          const imageMap = {};
+          const rows = payload && Array.isArray(payload.events)
+            ? payload.events
+            : [];
+
+          rows.forEach(row => {
+            if (row && row.iCalUID && row.imageUrl) {
+              imageMap[String(row.iCalUID)] = String(row.imageUrl);
+            }
+          });
+
+          cleanup();
+          resolve(imageMap);
+        };
+
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.async = true;
+
+        const separator = EVENT_IMAGE_FEED_URL.includes('?') ? '&' : '?';
+        script.src =
+          EVENT_IMAGE_FEED_URL +
+          separator +
+          'callback=' + encodeURIComponent(callbackName) +
+          '&t=' + Date.now();
+
+        script.onerror = () => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timeout);
+          cleanup();
+          console.warn('Could not load event attachment images.');
+          resolve({});
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    function applyCalendarAttachmentImages(imageMap) {
+      if (!imageMap || typeof imageMap !== 'object') return;
+
+      state.events.forEach(ev => {
+        const attached = imageMap[String(ev.uid || '')];
+        if (attached) ev.image = attached;
+      });
+    }
+
     function filteredEvents() {
       const {start,end} = timeBounds(state.timeFilter);
       const q = state.search.toLowerCase().trim();
@@ -1265,7 +1386,8 @@
       const location = ev.location ? '⌖ ' + esc(ev.location) : 'Bethel AME Lancaster';
 
       return `
-        <article class="event-card">
+        <article class="event-card ${ev.image ? 'has-image' : ''}">
+          ${ev.image ? `<div class="event-card-image" style="background-image:url('${esc(ev.image)}')" aria-hidden="true"></div>` : ''}
           <div class="date-rail">
             <div class="month">${esc(month)}</div>
             <div class="day">${ev.start.getDate()}</div>
@@ -1645,6 +1767,12 @@
         }
 
         state.events = parseCalendar(text);
+
+        // Calendar event details come from the existing ICS feed. Flyer images
+        // come from the attached image on the same Google Calendar event.
+        const attachmentImages = await loadCalendarAttachmentImages();
+        applyCalendarAttachmentImages(attachmentImages);
+
         renderCategories();
         renderAll();
 
@@ -1663,7 +1791,7 @@
         content.style.display = 'none';
         error.style.display = 'block';
         document.getElementById('error-message').textContent =
-          err.message + ' If this is the first setup, deploy the getPublicCalendarIcs Firebase function and confirm the Google Calendar is public.';
+          'Please try again in a moment.';
         reportHeight();
       }
     }

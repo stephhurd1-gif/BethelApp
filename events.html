@@ -240,6 +240,76 @@
       color:var(--gold);
     }
 
+    /* Category color system */
+    .cat-worship       { --cat-color:#f7bf5b; --cat-soft:rgba(247,191,91,.14); --cat-border:rgba(247,191,91,.42); }
+    .cat-community     { --cat-color:#64c970; --cat-soft:rgba(100,201,112,.14); --cat-border:rgba(100,201,112,.42); }
+    .cat-faith-study   { --cat-color:#b56de0; --cat-soft:rgba(181,109,224,.14); --cat-border:rgba(181,109,224,.42); }
+    .cat-ministry      { --cat-color:#6ea8fe; --cat-soft:rgba(110,168,254,.14); --cat-border:rgba(110,168,254,.42); }
+    .cat-special-event { --cat-color:#ff7a8a; --cat-soft:rgba(255,122,138,.14); --cat-border:rgba(255,122,138,.42); }
+    .cat-youth         { --cat-color:#4fd1c5; --cat-soft:rgba(79,209,197,.14); --cat-border:rgba(79,209,197,.42); }
+    .cat-meetings      { --cat-color:#d9a45f; --cat-soft:rgba(217,164,95,.14); --cat-border:rgba(217,164,95,.42); }
+    .cat-other         { --cat-color:#aeb8bf; --cat-soft:rgba(174,184,191,.12); --cat-border:rgba(174,184,191,.34); }
+
+    .chip.category-chip {
+      border-color:var(--cat-border);
+      background:var(--cat-soft);
+      color:var(--cat-color);
+    }
+    .chip.category-chip:hover {
+      border-color:var(--cat-color);
+      filter:brightness(1.08);
+    }
+    .chip.category-chip.active {
+      border-color:var(--cat-color);
+      background:var(--cat-color);
+      color:#091016;
+    }
+
+    .category-accent {
+      --cat-color:#aeb8bf;
+      --cat-soft:rgba(174,184,191,.12);
+      --cat-border:rgba(174,184,191,.34);
+    }
+
+    .event-card.category-accent {
+      border-left:4px solid var(--cat-color);
+    }
+    .event-card.category-accent:hover {
+      border-left-color:var(--cat-color);
+      border-top-color:var(--cat-border);
+      border-right-color:var(--cat-border);
+      border-bottom-color:var(--cat-border);
+    }
+    .event-card.category-accent .date-rail .month {
+      color:var(--cat-color);
+    }
+
+    .badge.category-badge {
+      background:var(--cat-soft);
+      color:var(--cat-color);
+      border:1px solid var(--cat-border);
+    }
+
+    .featured.category-accent.visible {
+      border-left:4px solid var(--cat-color);
+    }
+    .featured.category-accent .featured-label {
+      background:var(--cat-color);
+      color:#091016;
+    }
+    .featured.category-accent .featured-date .m {
+      color:var(--cat-color);
+    }
+
+    .cal-item.category-accent {
+      background:var(--cat-soft);
+      color:var(--cat-color);
+      box-shadow:inset 3px 0 0 var(--cat-color);
+    }
+    .day-mini.category-accent {
+      border-left:3px solid var(--cat-color);
+    }
+
     .section {
       margin-top:15px;
     }
@@ -988,6 +1058,19 @@
       'Special Event': '✦'
     };
 
+    function categoryClass(category) {
+      const map = {
+        'Worship':'cat-worship',
+        'Community':'cat-community',
+        'Faith & Study':'cat-faith-study',
+        'Ministry':'cat-ministry',
+        'Special Event':'cat-special-event',
+        'Youth':'cat-youth',
+        'Meetings':'cat-meetings'
+      };
+      return map[category] || 'cat-other';
+    }
+
     function esc(s) {
       return String(s == null ? '' : s)
         .replace(/&/g,'&amp;')
@@ -1386,7 +1469,10 @@
     }
 
     function categoryBadge(ev) {
-      return '<span class="badge">' + esc((categoryIcons[ev.category] || '•') + ' ' + ev.category) + '</span>';
+      return '<span class="badge category-badge category-accent ' +
+        categoryClass(ev.category) + '">' +
+        esc((categoryIcons[ev.category] || '•') + ' ' + ev.category) +
+        '</span>';
     }
 
     function recurringBadge(ev) {
@@ -1405,7 +1491,7 @@
       const location = ev.location ? '⌖ ' + esc(ev.location) : 'Bethel AME Lancaster';
 
       return `
-        <article class="event-card ${ev.image ? 'has-image' : ''}">
+        <article class="event-card category-accent ${categoryClass(ev.category)} ${ev.image ? 'has-image' : ''}">
           ${ev.image ? `<div class="event-card-image" style="background-image:url('${esc(ev.image)}')" aria-hidden="true"></div>` : ''}
           <div class="date-rail">
             <div class="month">${esc(month)}</div>
@@ -1455,7 +1541,8 @@
         ? esc(ev.description.length > 260 ? ev.description.slice(0,257) + '…' : ev.description)
         : 'Join us at Bethel. Tap Event Details for everything you need to know.';
 
-      el.classList.toggle('no-image', !ev.image);
+      el.className = 'featured category-accent ' + categoryClass(ev.category) +
+        (ev.image ? '' : ' no-image');
 
       el.innerHTML = `
         <div class="featured-main">
@@ -1514,7 +1601,7 @@
       wrap.innerHTML =
         '<button class="chip active" type="button" data-category="All">All Categories</button>' +
         categories.map(cat =>
-          `<button class="chip" type="button" data-category="${esc(cat)}">${esc((categoryIcons[cat] || '•') + ' ' + cat)}</button>`
+          `<button class="chip category-chip category-accent ${categoryClass(cat)}" type="button" data-category="${esc(cat)}">${esc((categoryIcons[cat] || '•') + ' ' + cat)}</button>`
         ).join('');
 
       wrap.querySelectorAll('[data-category]').forEach(btn => {
@@ -1573,7 +1660,7 @@
                   type="button" data-cal-date="${key}">
             <span class="cal-num">${d.getDate()}</span>
             <span class="cal-items">
-              ${events.slice(0,3).map(ev => `<span class="cal-item">${esc(ev.title)}</span>`).join('')}
+              ${events.slice(0,3).map(ev => `<span class="cal-item category-accent ${categoryClass(ev.category)}">${esc(ev.title)}</span>`).join('')}
               ${events.length > 3 ? `<span class="cal-more">+${events.length-3} more</span>` : ''}
             </span>
           </button>`);
@@ -1616,7 +1703,7 @@
       }
 
       list.innerHTML = events.map(ev => `
-        <button class="day-mini" type="button" data-open-event="${ev.id}">
+        <button class="day-mini category-accent ${categoryClass(ev.category)}" type="button" data-open-event="${ev.id}">
           <strong>${esc(ev.title)}</strong>
           <span>${esc(ev.allDay ? 'All day' : formatTime(ev.start))}${ev.location ? ' · ' + esc(ev.location) : ''}</span>
         </button>`).join('');

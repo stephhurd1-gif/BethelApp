@@ -50,7 +50,7 @@
     }
 
     .back-to-app {
-      display:inline-flex;
+      display:none;
       align-items:center;
       gap:7px;
       margin:0 0 10px;
@@ -69,7 +69,32 @@
       outline:none;
       border-color:rgba(247,191,91,.38);
     }
+    body.app-mode .back-to-app { display:inline-flex; }
+    body.site-mode .back-to-app,
     body.embedded .back-to-app { display:none; }
+
+    /* Website/browser view uses the available screen instead of looking like
+       a narrow app card centered in a large desktop window. */
+    body.site-mode .page {
+      width:100%;
+      max-width:none;
+      margin:0;
+      padding:18px clamp(18px, 3vw, 54px) 56px;
+    }
+
+    body.site-mode .hero,
+    body.site-mode .toolbar,
+    body.site-mode main,
+    body.site-mode .footer {
+      width:100%;
+      max-width:none;
+    }
+
+    @media (min-width:1450px) {
+      body.site-mode .event-grid {
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+    }
 
     .hero {
       position:relative;
@@ -723,6 +748,7 @@
 
     @media (max-width:760px) {
       .page { padding:9px 9px 36px; }
+      body.site-mode .page { padding:10px 10px 38px; }
       .hero { border-radius:18px; padding:24px 16px; }
       .toolbar { top:5px; border-radius:15px; }
       .toolbar-top { grid-template-columns:1fr; }
@@ -792,6 +818,20 @@
 </head>
 
 <body>
+  <script>
+    (function () {
+      var standalone =
+        (window.matchMedia &&
+         window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+
+      var embedded = window.self !== window.top;
+
+      document.body.classList.add(standalone && !embedded ? 'app-mode' : 'site-mode');
+      if (embedded) document.body.classList.add('embedded');
+    })();
+  </script>
+
   <div class="page">
     <a class="back-to-app" href="/" aria-label="Back to Bethel App">&#8592; Back to Bethel App</a>
 
@@ -947,10 +987,6 @@
       'Ministry': '●',
       'Special Event': '✦'
     };
-
-    if (window.self !== window.top) {
-      document.body.classList.add('embedded');
-    }
 
     function esc(s) {
       return String(s == null ? '' : s)

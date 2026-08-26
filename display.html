@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#01060b">
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display</title>
+  <style>
+    :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+    body{background:radial-gradient(circle at 12% 10%,rgba(190,138,255,.24),transparent 26%),radial-gradient(circle at 88% 8%,rgba(255,209,102,.10),transparent 18%),radial-gradient(circle at 82% 82%,rgba(143,197,255,.10),transparent 22%),radial-gradient(circle at 55% 52%,rgba(162,109,245,.08),transparent 34%),linear-gradient(145deg,#241245 0%,#1a1030 24%,#140b28 54%,#10081e 78%,#09050f 100%)}
+    .screen{width:100vw;height:100vh;padding:18px 22px 16px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px}
+    .topbar{min-height:102px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:14px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%)}
+    .brand{display:flex;align-items:center;gap:16px;min-width:0}.logo-wrap{width:86px;height:86px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),transparent 46%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.15);box-shadow:0 10px 24px rgba(10,0,28,.28), inset 0 1px 0 rgba(255,255,255,.08)}.logo{width:68px;height:68px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+    .brand-copy{min-width:0}.church-name{font-size:clamp(25px,2.35vw,43px);font-weight:950;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .church-line{margin-top:5px;color:#efe3ff;font-size:clamp(12px,1vw,18px);font-weight:700}.clockbox{text-align:right;flex:0 0 auto}
+    .time{font-size:clamp(34px,4vw,68px);font-weight:950;line-height:.95;letter-spacing:-.035em}.date{margin-top:8px;color:var(--gold);font-size:clamp(13px,1.15vw,20px);font-weight:900;text-transform:uppercase;letter-spacing:.055em}
+    .main{min-height:0;display:grid;grid-template-columns:minmax(0,2.05fr) minmax(320px,.95fr);gap:14px}
+    .panel{min-width:0;min-height:0;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(145deg,rgba(56,33,95,.95) 0%,rgba(38,22,68,.98) 48%,rgba(22,12,42,.995) 100%);overflow:hidden}.panel{box-shadow:0 18px 34px rgba(3,0,12,.42), inset 0 1px 0 rgba(255,255,255,.03)}
+    .events-panel{position:relative;padding:0}.events-frame{width:100%;height:100%;border:0;display:block;background:#0f081d}
+    .side{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px}.weather{padding:18px 20px}
+    .panel-title{margin:0 0 12px;font-size:clamp(12px,.9vw,16px);letter-spacing:.11em;text-transform:uppercase;color:var(--gold);font-weight:950}
+    .current-weather{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:15px;margin-bottom:14px}.weather-icon{font-size:clamp(44px,4vw,72px);line-height:1}
+    .temp-row{display:flex;align-items:baseline;gap:10px;min-width:0}.temp{font-size:clamp(36px,3.4vw,58px);font-weight:950;line-height:1}.condition{font-size:clamp(13px,1vw,17px);font-weight:800;color:#dce2e7}
+    .weather-detail{color:var(--muted);font-size:clamp(11px,.8vw,14px);margin-top:5px}.forecast{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    .forecast-day{text-align:center;padding:9px 4px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.04)}
+    .forecast-day .day{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}.forecast-day .ico{font-size:23px;margin:5px 0}.forecast-day .temps{font-size:12px;font-weight:900}.forecast-day .lo{color:var(--muted);font-weight:700}
+    .verse{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
+    .verse-mark{font-family:Georgia,serif;font-size:45px;color:var(--gold);line-height:.65;opacity:.9}.verse-text{margin:8px 0 12px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(18px,1.55vw,29px);line-height:1.35;font-weight:600}
+    .verse-ref{color:var(--gold);font-size:clamp(13px,1vw,17px);font-weight:950}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
+    .info{padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .info-value{margin-top:4px;font-size:clamp(12px,.9vw,15px);font-weight:900;line-height:1.25}.info-value.gold{color:var(--gold)}
+
+    .info-copy{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+    .website-row{
+      grid-column:1/-1;
+      padding-top:9px;
+      margin-top:2px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+    .website-address{
+      margin-top:4px;
+      font-size:clamp(14px,1.05vw,19px);
+      font-weight:950;
+      color:#d8f1df;
+      letter-spacing:.01em;
+    }
+    .giving-qr{
+      width:138px;
+      min-width:138px;
+      text-align:center;
+      padding:9px 9px 8px;
+      border-radius:16px;
+      background:linear-gradient(145deg,#f8f5ff,#ffffff);
+      border:2px solid rgba(255,255,255,.30);
+      box-shadow:0 10px 24px rgba(0,0,0,.28);
+    }
+    .giving-qr img{
+      display:block;
+      width:116px;
+      height:116px;
+      margin:0 auto 5px;
+      border-radius:5px;
+      image-rendering:pixelated;
+    }
+    .giving-qr-title{
+      color:#26133e;
+      font-size:11px;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .giving-qr-sub{
+      margin-top:2px;
+      color:#5f526b;
+      font-size:8px;
+      font-weight:800;
+    }
+
+    .newsbar{min-height:70px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:11px 18px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%);overflow:hidden}
+    .news-label{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#f3c65e,#ffd979);color:#220f44;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px rgba(255,209,102,.25)}
+    .ticker-viewport{min-width:0;overflow:hidden}.ticker-track{display:flex;align-items:center;gap:38px;width:max-content;animation:ticker 48s linear infinite;will-change:transform}
+    .ticker-item{white-space:nowrap;font-size:clamp(13px,1vw,18px);font-weight:800;color:#e7edf2}.ticker-item::after{content:"◆";margin-left:38px;color:var(--gold);font-size:9px}
+    .updated{color:var(--muted);font-size:10px;font-weight:800;white-space:nowrap;text-align:right}
+    @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media(prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+    .status{position:absolute;inset:auto 16px 14px auto;padding:6px 9px;border-radius:999px;background:rgba(14,8,29,.82);border:1px solid rgba(255,255,255,.1);color:var(--muted);font-size:10px;font-weight:800;pointer-events:none}
+    
+    /* Distinct module colors for quicker visual scanning */
+    .topbar{
+      background:
+        linear-gradient(135deg,rgba(58,31,92,.98) 0%,rgba(35,18,61,.99) 58%,rgba(19,10,35,1) 100%);
+      border-color:rgba(224,197,255,.20);
+    }
+    .events-panel{
+      background:
+        radial-gradient(circle at 12% 8%,rgba(176,105,240,.12),transparent 28%),
+        linear-gradient(145deg,#2b1647 0%,#1d102f 52%,#130a22 100%);
+      border-color:rgba(187,132,235,.24);
+    }
+    .weather{
+      background:
+        radial-gradient(circle at 86% 8%,rgba(109,168,254,.14),transparent 28%),
+        linear-gradient(145deg,#18234d 0%,#151936 52%,#101025 100%);
+      border-color:rgba(110,168,254,.24);
+    }
+    .verse{
+      background:
+        radial-gradient(circle at 84% 12%,rgba(220,102,173,.15),transparent 34%),
+        linear-gradient(145deg,#421936 0%,#2b132c 50%,#1a0d20 100%);
+      border-color:rgba(224,123,185,.24);
+    }
+    .info{
+      background:
+        radial-gradient(circle at 10% 12%,rgba(99,201,112,.10),transparent 30%),
+        linear-gradient(145deg,#17352e 0%,#152821 52%,#101b18 100%);
+      border-color:rgba(100,201,112,.22);
+    }
+    .newsbar{
+      background:
+        linear-gradient(135deg,#3b1a3e 0%,#28142f 46%,#17101f 100%);
+      border-color:rgba(255,122,138,.22);
+    }
+    .weather .panel-title{color:#8fc5ff}
+    .verse .panel-title{color:#f0a6cf}
+    .info .info-label{color:#a8d9b2}
+    .info .info-value.gold{color:#d5f0da}
+    .news-label{
+      background:linear-gradient(135deg,#ff9db1,#ffd0da);
+      color:#34111c;
+      box-shadow:0 4px 12px rgba(255,157,177,.18);
+    }
+
+
+    /* Burn-in reduction: rotate layouts and move content every 90 seconds */
+    body{transition:background 1.2s ease}
+    .topbar,.main,.newsbar,.events-panel,.weather,.verse,.info{
+      transition:
+        opacity .8s ease,
+        transform .8s ease,
+        background 1.2s ease,
+        border-color 1.2s ease;
+    }
+
+    .view-indicator{
+      position:absolute;
+      left:50%;
+      bottom:8px;
+      transform:translateX(-50%);
+      display:flex;
+      gap:7px;
+      z-index:40;
+      pointer-events:none;
+    }
+    .view-dot{
+      width:7px;height:7px;border-radius:50%;
+      background:rgba(255,255,255,.22);
+      box-shadow:0 0 0 1px rgba(255,255,255,.08);
+      transition:all .5s ease;
+    }
+    .view-dot.active{
+      width:22px;border-radius:999px;
+      background:rgba(255,255,255,.76);
+    }
+
+    /* VIEW 1 — Overview */
+    body.view-overview .screen{
+      grid-template-rows:auto minmax(0,1fr) auto;
+    }
+
+    /* VIEW 2 — Events spotlight */
+    body.view-events{
+      background:
+        radial-gradient(circle at 82% 12%,rgba(188,120,255,.22),transparent 24%),
+        radial-gradient(circle at 14% 82%,rgba(255,209,102,.10),transparent 26%),
+        linear-gradient(145deg,#160a27 0%,#0f071c 52%,#09040f 100%);
+    }
+    body.view-events .screen{
+      grid-template-rows:auto minmax(0,1fr) auto;
+    }
+    body.view-events .topbar{
+      min-height:78px;
+      transform:translateY(-3px);
+    }
+    body.view-events .church-line{display:none}
+    body.view-events .main{
+      grid-template-columns:minmax(0,1fr);
+    }
+    body.view-events .events-panel{
+      grid-column:1;
+      transform:scale(.995);
+      border-color:rgba(211,156,255,.34);
+    }
+    body.view-events .side{display:none}
+    body.view-events .newsbar{
+      transform:translateY(2px);
+    }
+
+    /* VIEW 3 — Verse + weather */
+    body.view-inspire{
+      background:
+        radial-gradient(circle at 16% 18%,rgba(240,166,207,.20),transparent 26%),
+        radial-gradient(circle at 82% 76%,rgba(143,197,255,.16),transparent 30%),
+        linear-gradient(155deg,#24102d 0%,#18102a 45%,#0d0a1b 100%);
+    }
+    body.view-inspire .screen{
+      grid-template-rows:auto minmax(0,1fr) auto;
+    }
+    body.view-inspire .main{
+      grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);
+    }
+    body.view-inspire .events-panel{display:none}
+    body.view-inspire .side{
+      grid-column:1/-1;
+      display:grid;
+      grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);
+      grid-template-rows:minmax(0,1fr) auto;
+      gap:14px;
+    }
+    body.view-inspire .verse{
+      grid-column:1;
+      grid-row:1/-1;
+      padding:clamp(28px,3vw,58px);
+      justify-content:center;
+      transform:translateX(6px);
+    }
+    body.view-inspire .verse .panel-title{
+      font-size:clamp(15px,1.25vw,22px);
+    }
+    body.view-inspire .verse-mark{font-size:82px}
+    body.view-inspire .verse-text{
+      font-size:clamp(30px,3vw,58px);
+      line-height:1.28;
+      max-width:95%;
+    }
+    body.view-inspire .verse-ref{
+      font-size:clamp(17px,1.4vw,25px);
+    }
+    body.view-inspire .weather{
+      grid-column:2;
+      grid-row:1;
+      transform:translateX(-4px);
+    }
+    body.view-inspire .info{
+      grid-column:2;
+      grid-row:2;
+    }
+
+    /* VIEW 4 — Connect / giving */
+    body.view-connect{
+      background:
+        radial-gradient(circle at 78% 20%,rgba(100,201,112,.17),transparent 28%),
+        radial-gradient(circle at 15% 75%,rgba(255,122,138,.12),transparent 25%),
+        linear-gradient(145deg,#10261f 0%,#15132b 48%,#0a0814 100%);
+    }
+    body.view-connect .screen{
+      grid-template-rows:auto minmax(0,1fr) auto;
+    }
+    body.view-connect .main{
+      grid-template-columns:minmax(0,1fr);
+    }
+    body.view-connect .events-panel{display:none}
+    body.view-connect .side{
+      grid-column:1;
+      display:grid;
+      grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);
+      grid-template-rows:minmax(0,1fr);
+      gap:14px;
+    }
+    body.view-connect .weather{
+      grid-column:1;
+      grid-row:1;
+      align-self:stretch;
+      padding:clamp(24px,2.4vw,44px);
+      transform:translateX(5px);
+    }
+    body.view-connect .verse{display:none}
+    body.view-connect .info{
+      grid-column:2;
+      grid-row:1;
+      padding:clamp(24px,2.6vw,48px);
+      grid-template-columns:minmax(0,1fr) auto;
+      align-self:stretch;
+      transform:translateX(-5px);
+    }
+    body.view-connect .info-copy{
+      grid-template-columns:1fr;
+      align-content:center;
+      gap:18px;
+    }
+    body.view-connect .info-label{
+      font-size:clamp(12px,1vw,17px);
+    }
+    body.view-connect .info-value{
+      font-size:clamp(18px,1.65vw,30px);
+    }
+    body.view-connect .website-address{
+      font-size:clamp(24px,2.2vw,40px);
+    }
+    body.view-connect .giving-qr{
+      width:clamp(210px,18vw,300px);
+      min-width:clamp(210px,18vw,300px);
+      padding:18px;
+      border-radius:24px;
+      align-self:center;
+    }
+    body.view-connect .giving-qr img{
+      width:100%;
+      height:auto;
+      margin-bottom:10px;
+    }
+    body.view-connect .giving-qr-title{
+      font-size:clamp(15px,1.15vw,21px);
+    }
+    body.view-connect .giving-qr-sub{
+      font-size:clamp(10px,.75vw,13px);
+    }
+
+    @media(max-width:900px){
+      .view-indicator{display:none}
+      body.view-events .side,
+      body.view-inspire .events-panel,
+      body.view-connect .events-panel,
+      body.view-connect .verse{display:initial}
+      body.view-events .main,
+      body.view-inspire .main,
+      body.view-connect .main{grid-template-columns:1fr}
+      body.view-inspire .side,
+      body.view-connect .side{display:grid;grid-template-columns:1fr;grid-template-rows:auto}
+      body.view-inspire .verse,
+      body.view-inspire .weather,
+      body.view-inspire .info,
+      body.view-connect .weather,
+      body.view-connect .info{
+        grid-column:auto;grid-row:auto;transform:none;
+      }
+    }
+
+        @media(max-aspect-ratio:4/3){html,body{overflow:auto}.screen{height:auto;min-height:100vh}.main{grid-template-columns:1fr}.events-panel{height:660px}.side{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}.weather{grid-column:1}.verse{grid-column:2;grid-row:1}.info{grid-column:1/-1}}
+    @media(max-width:760px){html,body{overflow:auto}.screen{height:auto;min-height:100vh;padding:10px}.topbar{grid-template-columns:1fr;padding:14px}.clockbox{text-align:left}.logo-wrap{width:72px;height:72px}.logo{width:56px;height:56px}.church-name{white-space:normal}.main{grid-template-columns:1fr}.events-panel{height:620px}.side{display:grid;grid-template-columns:1fr;grid-template-rows:auto}.weather,.verse,.info{grid-column:auto;grid-row:auto}.info{grid-template-columns:1fr}.info-copy{grid-template-columns:1fr}.giving-qr{justify-self:start}.website-row{grid-column:auto}.newsbar{grid-template-columns:1fr;gap:8px}.updated{text-align:left}}
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-wrap"><img class="logo" src="logo.png" alt="Bethel AME Lancaster logo" onerror="if(this.dataset.fallback!=='1'){this.dataset.fallback='1';this.src='https://app.bethelamelancaster.com/logo.png';}"></div>
+        <div class="brand-copy">
+          <div class="church-name">Bethel AME Lancaster</div>
+          <div class="church-line">450 E Strawberry St, Lancaster, PA &nbsp;•&nbsp; Sunday Worship 9:30 AM</div>
+        </div>
+      </div>
+      <div class="clockbox">
+        <div class="time" id="time">--:--</div>
+        <div class="date" id="date">Loading date…</div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="panel events-panel" aria-label="Upcoming events">
+        <iframe class="events-frame" src="home-events.html?display=1" title="Upcoming Bethel events" loading="eager"></iframe>
+        <div class="status">Calendar-powered events</div>
+      </section>
+
+      <aside class="side">
+        <section class="panel weather">
+          <h2 class="panel-title">Lancaster Weather</h2>
+          <div class="current-weather">
+            <div class="weather-icon" id="weather-icon">☀️</div>
+            <div>
+              <div class="temp-row">
+                <div class="temp" id="temperature">--°</div>
+                <div class="condition" id="condition">Loading…</div>
+              </div>
+              <div class="weather-detail" id="weather-detail">Lancaster, Pennsylvania</div>
+            </div>
+          </div>
+          <div class="forecast" id="forecast"></div>
+        </section>
+
+        <section class="panel verse">
+          <h2 class="panel-title">Verse of the Day</h2>
+          <div class="verse-mark">“</div>
+          <div class="verse-text" id="verse-text">Loading today’s verse…</div>
+          <div class="verse-ref"><span id="verse-ref"></span><span class="verse-version">KJV</span></div>
+        </section>
+
+        <section class="panel info">
+          <div class="info-copy">
+            <div class="info-item"><div class="info-label">Sunday Worship</div><div class="info-value gold">9:30 AM</div></div>
+            <div class="info-item"><div class="info-label">Events & Updates</div><div class="info-value">bethelamelancaster.com/events</div></div>
+            <div class="info-item"><div class="info-label">Wednesday Bible Study</div><div class="info-value">12:00 PM In Person • 6:30 PM Zoom</div></div>
+            <div class="info-item"><div class="info-label">Stay Connected</div><div class="info-value">Bethel App • Website • Cultural Center</div></div>
+            <div class="website-row">
+              <div class="info-label">Visit Us Online</div>
+              <div class="website-address">bethelamelancaster.com</div>
+            </div>
+          </div>
+          <div class="giving-qr" aria-label="QR code for online giving">
+            <img src="bethel-giving-qr.png" alt="Scan to give online">
+            <div class="giving-qr-title">Give Online</div>
+            <div class="giving-qr-sub">Scan with your phone</div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <div class="view-indicator" aria-hidden="true">
+      <span class="view-dot active"></span>
+      <span class="view-dot"></span>
+      <span class="view-dot"></span>
+      <span class="view-dot"></span>
+    </div>
+
+    <footer class="newsbar">
+      <div class="news-label">Local News</div>
+      <div class="ticker-viewport"><div class="ticker-track" id="ticker"><span class="ticker-item">Loading Lancaster-area headlines…</span></div></div>
+      <div class="updated" id="news-updated">Updating…</div>
+    </footer>
+  </div>
+
+  <script>
+    const TZ='America/New_York';
+    const WEATHER_URL='https://api.open-meteo.com/v1/forecast?latitude=40.0379&longitude=-76.3055&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=5';
+    const NEWS_RSS='https://news.google.com/rss/search?q='+encodeURIComponent('Lancaster Pennsylvania local news')+'&hl=en-US&gl=US&ceid=US:en';
+    const NEWS_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS);
+
+    const VERSES=[
+      {ref:'Psalm 118:24',text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'},
+      {ref:'Philippians 4:13',text:'I can do all things through Christ which strengtheneth me.'},
+      {ref:'Proverbs 3:5-6',text:'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.'},
+      {ref:'Isaiah 40:31',text:'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles.'},
+      {ref:'Psalm 46:10',text:'Be still, and know that I am God.'},
+      {ref:'Romans 8:28',text:'And we know that all things work together for good to them that love God.'},
+      {ref:'Joshua 1:9',text:'Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.'},
+      {ref:'Psalm 23:1',text:'The LORD is my shepherd; I shall not want.'},
+      {ref:'1 Corinthians 16:14',text:'Let all your things be done with charity.'},
+      {ref:'Matthew 5:16',text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.'},
+      {ref:'Psalm 34:8',text:'O taste and see that the LORD is good: blessed is the man that trusteth in him.'},
+      {ref:'Jeremiah 29:11',text:'For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil.'},
+      {ref:'Galatians 6:9',text:'And let us not be weary in well doing: for in due season we shall reap, if we faint not.'},
+      {ref:'Psalm 37:4',text:'Delight thyself also in the LORD; and he shall give thee the desires of thine heart.'},
+      {ref:'Micah 6:8',text:'What doth the LORD require of thee, but to do justly, and to love mercy, and to walk humbly with thy God?'},
+      {ref:'John 14:27',text:'Peace I leave with you, my peace I give unto you: let not your heart be troubled, neither let it be afraid.'},
+      {ref:'Psalm 121:1-2',text:'I will lift up mine eyes unto the hills, from whence cometh my help. My help cometh from the LORD.'},
+      {ref:'Hebrews 11:1',text:'Now faith is the substance of things hoped for, the evidence of things not seen.'},
+      {ref:'Romans 12:12',text:'Rejoicing in hope; patient in tribulation; continuing instant in prayer.'},
+      {ref:'Psalm 100:4',text:'Enter into his gates with thanksgiving, and into his courts with praise.'},
+      {ref:'Ephesians 4:32',text:'And be ye kind one to another, tenderhearted, forgiving one another.'},
+      {ref:'Psalm 19:14',text:'Let the words of my mouth, and the meditation of my heart, be acceptable in thy sight, O LORD.'},
+      {ref:'Colossians 3:23',text:'And whatsoever ye do, do it heartily, as to the Lord, and not unto men.'},
+      {ref:'James 1:5',text:'If any of you lack wisdom, let him ask of God, that giveth to all men liberally.'},
+      {ref:'Psalm 55:22',text:'Cast thy burden upon the LORD, and he shall sustain thee.'},
+      {ref:'Matthew 11:28',text:'Come unto me, all ye that labour and are heavy laden, and I will give you rest.'},
+      {ref:'2 Corinthians 5:7',text:'For we walk by faith, not by sight.'},
+      {ref:'Psalm 150:6',text:'Let every thing that hath breath praise the LORD. Praise ye the LORD.'},
+      {ref:'1 Thessalonians 5:16-18',text:'Rejoice evermore. Pray without ceasing. In every thing give thanks.'},
+      {ref:'John 13:34',text:'A new commandment I give unto you, That ye love one another; as I have loved you.'},
+      {ref:'Psalm 133:1',text:'Behold, how good and how pleasant it is for brethren to dwell together in unity!'}
+    ];
+
+    function updateClock(){
+      const now=new Date();
+      document.getElementById('time').textContent=new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(now);
+      document.getElementById('date').textContent=new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(now);
+    }
+    function weatherMeta(code){
+      if(code===0)return['☀️','Clear'];
+      if([1,2].includes(code))return['🌤️','Mostly Clear'];
+      if(code===3)return['☁️','Cloudy'];
+      if([45,48].includes(code))return['🌫️','Foggy'];
+      if([51,53,55,56,57].includes(code))return['🌦️','Drizzle'];
+      if([61,63,65,66,67,80,81,82].includes(code))return['🌧️','Rain'];
+      if([71,73,75,77,85,86].includes(code))return['🌨️','Snow'];
+      if([95,96,99].includes(code))return['⛈️','Thunderstorms'];
+      return['🌤️','Mixed Conditions'];
+    }
+    function cacheGet(key,maxAge){
+      try{const raw=localStorage.getItem(key);if(!raw)return null;const obj=JSON.parse(raw);if(!obj.savedAt||Date.now()-obj.savedAt>maxAge)return null;return obj.data}catch(_){return null}
+    }
+    function cacheSet(key,data){try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
+    function renderWeather(data){
+      if(!data||!data.current||!data.daily)return;
+      const [ico,label]=weatherMeta(Number(data.current.weather_code));
+      document.getElementById('weather-icon').textContent=ico;
+      document.getElementById('temperature').textContent=Math.round(data.current.temperature_2m)+'°';
+      document.getElementById('condition').textContent=label;
+      document.getElementById('weather-detail').textContent='Feels like '+Math.round(data.current.apparent_temperature)+'°  •  Wind '+Math.round(data.current.wind_speed_10m)+' mph';
+      document.getElementById('forecast').innerHTML=data.daily.time.slice(0,5).map((d,i)=>{
+        const dt=new Date(d+'T12:00:00');
+        const day=new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(dt);
+        const [di]=weatherMeta(Number(data.daily.weather_code[i]));
+        return '<div class="forecast-day"><div class="day">'+day+'</div><div class="ico">'+di+'</div><div class="temps">'+Math.round(data.daily.temperature_2m_max[i])+'° <span class="lo">'+Math.round(data.daily.temperature_2m_min[i])+'°</span></div></div>';
+      }).join('');
+    }
+    async function loadWeather(){
+      const cached=cacheGet('bethel_display_weather',30*60*1000);
+      if(cached)renderWeather(cached);
+      try{
+        const r=await fetch(WEATHER_URL,{cache:'default'});
+        if(!r.ok)throw new Error('weather request');
+        const data=await r.json();
+        renderWeather(data);
+        cacheSet('bethel_display_weather',data);
+      }catch(err){
+        console.warn('Weather unavailable:',err);
+        if(!cached)document.getElementById('condition').textContent='Weather unavailable';
+      }
+    }
+    function dayOfYearInET(){
+      const parts=new Intl.DateTimeFormat('en-US',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).reduce((o,p)=>(o[p.type]=p.value,o),{});
+      const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day);
+      return Math.floor((Date.UTC(y,m-1,d)-Date.UTC(y,0,1))/86400000)+1;
+    }
+    function loadVerse(){
+      const verse=VERSES[(dayOfYearInET()-1)%VERSES.length];
+      document.getElementById('verse-text').textContent=verse.text;
+      document.getElementById('verse-ref').textContent=verse.ref;
+    }
+    function cleanHeadline(title){return String(title||'').replace(/\s+-\s+[^-]+$/,'').replace(/\s+/g,' ').trim()}
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+    function renderNews(items,stamp){
+      const headlines=(Array.isArray(items)?items:[]).map(x=>cleanHeadline(x.title)).filter(Boolean).slice(0,8);
+      if(!headlines.length)return false;
+      document.getElementById('ticker').innerHTML=[...headlines,...headlines].map(h=>'<span class="ticker-item">'+escapeHtml(h)+'</span>').join('');
+      document.getElementById('news-updated').textContent='Updated '+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(stamp||new Date());
+      return true;
+    }
+    async function loadNews(){
+      const cached=cacheGet('bethel_display_news',60*60*1000);
+      if(cached)renderNews(cached.items,new Date(cached.updatedAt));
+      try{
+        const r=await fetch(NEWS_URL,{cache:'default'});
+        if(!r.ok)throw new Error('news request');
+        const data=await r.json();
+        if(data.status!=='ok'||!Array.isArray(data.items))throw new Error('news response');
+        const payload={items:data.items,updatedAt:new Date().toISOString()};
+        renderNews(payload.items,new Date(payload.updatedAt));
+        cacheSet('bethel_display_news',payload);
+      }catch(err){
+        console.warn('News unavailable:',err);
+        if(!cached){
+          document.getElementById('ticker').innerHTML='<span class="ticker-item">Lancaster-area headlines are temporarily unavailable.</span>';
+          document.getElementById('news-updated').textContent='';
+        }
+      }
+    }
+
+    updateClock();
+    setInterval(updateClock,1000);
+    loadVerse();
+    loadWeather();
+    loadNews();
+    setInterval(loadWeather,15*60*1000);
+    setInterval(loadNews,20*60*1000);
+
+    // Rotate the entire layout every 90 seconds so the same bright/static
+    // elements do not remain in the same screen position all day.
+    const DISPLAY_VIEWS=['view-overview','view-events','view-inspire','view-connect'];
+    const VIEW_INTERVAL_MS=90*1000;
+    let currentView=0;
+
+    function setDisplayView(index){
+      currentView=(index+DISPLAY_VIEWS.length)%DISPLAY_VIEWS.length;
+      document.body.classList.remove(...DISPLAY_VIEWS);
+      document.body.classList.add(DISPLAY_VIEWS[currentView]);
+
+      document.querySelectorAll('.view-dot').forEach((dot,i)=>{
+        dot.classList.toggle('active',i===currentView);
+      });
+    }
+
+    setDisplayView(0);
+    setInterval(()=>setDisplayView(currentView+1),VIEW_INTERVAL_MS);
+
+        setTimeout(()=>location.reload(),6*60*60*1000);
+  </script>
+</body>
+</html>

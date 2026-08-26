@@ -531,7 +531,9 @@
     }
 
     function selectCarouselEvents(events){
-      // Keep only one upcoming occurrence from each recurring series first.
+      // Keep only one upcoming occurrence from each recurring series.
+      // The incoming events are already sorted chronologically, so preserving
+      // that order keeps the homepage carousel in true date/time order.
       const unique=[],seenRecurring=new Set();
 
       for(const ev of events){
@@ -541,16 +543,10 @@
           seenRecurring.add(key);
         }
         unique.push(ev);
+        if(unique.length>=7)break;
       }
 
-      // Homepage priority:
-      // 1) upcoming events that have attached flyers
-      // 2) upcoming events without flyers
-      // Each group stays in chronological order.
-      const withFlyers=unique.filter(ev=>Boolean(ev.image));
-      const withoutFlyers=unique.filter(ev=>!ev.image);
-
-      return [...withFlyers,...withoutFlyers].slice(0,7);
+      return unique;
     }
 
     function slideMarkup(ev){

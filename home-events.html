@@ -35,12 +35,26 @@
       background:linear-gradient(145deg,var(--panel2),var(--panel));
       box-shadow:0 16px 38px rgba(0,0,0,.22)
     }
-    .track{display:flex;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
-    .slide{flex:0 0 100%;min-width:0}
+    .track{
+      --visible:3;
+      display:flex;
+      align-items:stretch;
+      transition:transform .55s cubic-bezier(.2,.8,.2,1)
+    }
+    .slide{
+      flex:0 0 calc(100% / var(--visible));
+      min-width:0;
+      padding:0 7px;
+    }
     .event{
       --cat-color:#aeb8bf;--cat-soft:rgba(174,184,191,.12);--cat-border:rgba(174,184,191,.34);
-      display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);
-      min-height:355px;border-left:5px solid var(--cat-color)
+      height:100%;
+      min-height:470px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border-left:5px solid var(--cat-color);
+      background:linear-gradient(145deg,#101922,#0b1218);
     }
     .cat-worship{--cat-color:#f7bf5b;--cat-soft:rgba(247,191,91,.14);--cat-border:rgba(247,191,91,.42)}
     .cat-community{--cat-color:#64c970;--cat-soft:rgba(100,201,112,.14);--cat-border:rgba(100,201,112,.42)}
@@ -50,7 +64,7 @@
     .cat-youth{--cat-color:#4fd1c5;--cat-soft:rgba(79,209,197,.14);--cat-border:rgba(79,209,197,.42)}
     .cat-meetings{--cat-color:#d9a45f;--cat-soft:rgba(217,164,95,.14);--cat-border:rgba(217,164,95,.42)}
     .cat-other{--cat-color:#aeb8bf;--cat-soft:rgba(174,184,191,.12);--cat-border:rgba(174,184,191,.34)}
-    .copy{padding:clamp(24px,4vw,46px);display:flex;flex-direction:column;justify-content:center;min-width:0}
+    .copy{padding:20px 20px 22px;display:flex;flex:1;flex-direction:column;min-width:0}
     .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
     .badge{
       display:inline-flex;align-items:center;min-height:24px;padding:5px 9px;border-radius:999px;
@@ -58,13 +72,13 @@
     }
     .badge.category{background:var(--cat-soft);color:var(--cat-color);border:1px solid var(--cat-border)}
     .badge.relative{background:rgba(247,191,91,.12);color:var(--gold)}
-    .event h3{margin:0;font-size:clamp(26px,4vw,44px);line-height:1.05;letter-spacing:-.025em;max-width:800px}
-    .meta{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:14px;color:#e7edf1;font-size:13px;font-weight:700}
+    .event h3{margin:0;font-size:clamp(20px,2vw,28px);line-height:1.08;letter-spacing:-.02em}
+    .meta{display:flex;flex-direction:column;gap:6px;margin-top:12px;color:#e7edf1;font-size:12px;font-weight:700}
     .desc{
-      margin:16px 0 0;max-width:760px;color:#c9d1d6;font-size:14px;line-height:1.55;
+      margin:13px 0 0;color:#c9d1d6;font-size:13px;line-height:1.5;
       display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden
     }
-    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:18px}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
       border:1px solid var(--border);border-radius:10px;padding:10px 14px;
@@ -72,8 +86,16 @@
     }
     .btn.primary{background:var(--cat-color);border-color:var(--cat-color);color:#071015}
     .visual{
-      position:relative;min-height:355px;background:#101820;overflow:hidden;
-      border-left:1px solid var(--border);display:grid;place-items:center
+      order:-1;
+      position:relative;
+      height:215px;
+      min-height:215px;
+      background:#101820;
+      overflow:hidden;
+      border-left:0;
+      border-bottom:1px solid var(--border);
+      display:grid;
+      place-items:center
     }
     .visual img{width:100%;height:100%;object-fit:contain;display:block}
     .date-card{
@@ -96,20 +118,27 @@
       min-height:250px;display:grid;place-items:center;text-align:center;border:1px solid var(--border);
       border-radius:22px;background:linear-gradient(145deg,var(--panel2),var(--panel));color:var(--muted);padding:28px
     }
-    @media(max-width:760px){
+    @media(max-width:1050px){
+      .track{--visible:2}
+      .visual{height:230px;min-height:230px}
+      .event{min-height:485px}
+    }
+    @media(max-width:650px){
+      .track{--visible:1}
       .heading-row{align-items:center}
       .sub{display:none}
-      .event{grid-template-columns:1fr;min-height:0}
-      .visual{grid-row:1;min-height:260px;border-left:0;border-bottom:1px solid var(--border)}
-      .copy{grid-row:2;padding:22px}
+      .slide{padding:0}
+      .event{min-height:0}
+      .visual{height:270px;min-height:270px}
+      .copy{padding:22px}
       .event h3{font-size:28px}
       .desc{-webkit-line-clamp:2}
+      .meta{font-size:12px}
     }
     @media(max-width:480px){
       .all-link{font-size:11px;padding:8px 10px}
-      .visual{min-height:230px}
+      .visual{height:235px;min-height:235px}
       .copy{padding:18px}
-      .meta{font-size:12px}
     }
     @media(prefers-reduced-motion:reduce){.track{transition:none}}
   </style>
@@ -335,16 +364,43 @@
     const pauseBtn=document.getElementById('pause');
     const prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
+    function visibleCount(){
+      if(window.innerWidth<=650)return 1;
+      if(window.innerWidth<=1050)return 2;
+      return 3;
+    }
+
+    function maxIndex(){
+      return Math.max(0,slides.length-visibleCount());
+    }
+
+    function renderDots(){
+      const count=maxIndex()+1;
+      dots.innerHTML=Array.from({length:count},(_,i)=>
+        `<button class="dot ${i===index?'active':''}" type="button" data-index="${i}" aria-label="Show events starting at item ${i+1}"></button>`
+      ).join('');
+      dots.querySelectorAll('[data-index]').forEach(btn=>
+        btn.addEventListener('click',()=>{
+          show(Number(btn.dataset.index));
+          restart();
+        })
+      );
+    }
+
     function show(i){
       if(!slides.length)return;
-      index=(i+slides.length)%slides.length;
-      track.style.transform=`translateX(-${index*100}%)`;
+      const max=maxIndex();
+      if(i>max)i=0;
+      if(i<0)i=max;
+      index=i;
+      track.style.transform=`translateX(-${index*(100/visibleCount())}%)`;
       dots.querySelectorAll('.dot').forEach((d,n)=>d.classList.toggle('active',n===index));
     }
+
     function restart(){
       clearInterval(timer);
-      if(paused||prefersReduced||slides.length<2)return;
-      timer=setInterval(()=>show(index+1),7000);
+      if(paused||prefersReduced||maxIndex()===0)return;
+      timer=setInterval(()=>show(index+1),5000);
     }
     function setPaused(value){
       paused=value;pauseBtn.textContent=paused?'▶':'Ⅱ';
@@ -370,12 +426,12 @@
         if(!slides.length)throw new Error('empty');
 
         track.innerHTML=slides.map(slideMarkup).join('');
-        dots.innerHTML=slides.map((_,i)=>`<button class="dot ${i===0?'active':''}" type="button" data-index="${i}" aria-label="Show event ${i+1}"></button>`).join('');
-        dots.querySelectorAll('[data-index]').forEach(btn=>btn.addEventListener('click',()=>{show(Number(btn.dataset.index));restart()}));
+        renderDots();
+        show(0);
 
         document.getElementById('loading').style.display='none';
         document.getElementById('carousel').style.display='block';
-        document.getElementById('controls').style.display=slides.length>1?'flex':'none';
+        document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
 
         restart();
         reportHeight();
@@ -392,6 +448,19 @@
     document.getElementById('carousel').addEventListener('mouseenter',()=>{clearInterval(timer)});
     document.getElementById('carousel').addEventListener('mouseleave',restart);
     document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(timer):restart());
+
+    let resizeTimer;
+    window.addEventListener('resize',()=>{
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(()=>{
+        index=Math.min(index,maxIndex());
+        renderDots();
+        show(index);
+        document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
+        restart();
+        reportHeight();
+      },120);
+    });
 
     function reportHeight(){
       try{window.parent.postMessage({type:'bethel-home-events-height',height:document.documentElement.scrollHeight},'*')}catch(_){}

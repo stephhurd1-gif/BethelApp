@@ -64,47 +64,168 @@
     .cat-youth{--cat-color:#4fd1c5;--cat-soft:rgba(79,209,197,.14);--cat-border:rgba(79,209,197,.42)}
     .cat-meetings{--cat-color:#d9a45f;--cat-soft:rgba(217,164,95,.14);--cat-border:rgba(217,164,95,.42)}
     .cat-other{--cat-color:#aeb8bf;--cat-soft:rgba(174,184,191,.12);--cat-border:rgba(174,184,191,.34)}
-    .copy{padding:20px 20px 22px;display:flex;flex:1;flex-direction:column;min-width:0}
-    .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
-    .badge{
-      display:inline-flex;align-items:center;min-height:24px;padding:5px 9px;border-radius:999px;
-      font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.05em
+    .event-link{
+      color:inherit;
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      min-height:0;
     }
-    .badge.category{background:var(--cat-soft);color:var(--cat-color);border:1px solid var(--cat-border)}
-    .badge.relative{background:rgba(247,191,91,.12);color:var(--gold)}
-    .event h3{margin:0;font-size:clamp(20px,2vw,28px);line-height:1.08;letter-spacing:-.02em}
-    .meta{display:flex;flex-direction:column;gap:6px;margin-top:12px;color:#e7edf1;font-size:12px;font-weight:700}
-    .desc{
-      margin:13px 0 0;color:#c9d1d6;font-size:13px;line-height:1.5;
-      display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden
+    .event.has-flyer{
+      min-height:520px;
     }
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:18px}
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
-      border:1px solid var(--border);border-radius:10px;padding:10px 14px;
-      color:#eef3f6;background:rgba(255,255,255,.035);font-size:12px;font-weight:900
+    .event.no-flyer{
+      min-height:390px;
     }
-    .btn.primary{background:var(--cat-color);border-color:var(--cat-color);color:#071015}
-    .visual{
-      order:-1;
-      position:relative;
-      height:215px;
-      min-height:215px;
-      background:#101820;
-      overflow:hidden;
-      border-left:0;
-      border-bottom:1px solid var(--border);
+    .flyer-visual{
+      flex:1;
+      min-height:430px;
       display:grid;
-      place-items:center
+      place-items:center;
+      padding:10px;
+      background:#060b10;
+      border-bottom:1px solid var(--border);
+      overflow:hidden;
     }
-    .visual img{width:100%;height:100%;object-fit:contain;display:block}
-    .date-card{
-      width:126px;border:1px solid var(--cat-border);border-radius:18px;overflow:hidden;
-      background:rgba(0,0,0,.18);box-shadow:0 12px 32px rgba(0,0,0,.22);text-align:center
+    .flyer-visual img{
+      width:100%;
+      height:100%;
+      max-height:460px;
+      object-fit:contain;
+      display:block;
     }
-    .date-card .month{padding:9px;background:var(--cat-color);color:#071015;font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
-    .date-card .day{padding:14px 10px 5px;font-size:52px;line-height:1;font-weight:950}
-    .date-card .dow{padding:0 10px 14px;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
+    .flyer-caption{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:13px 15px 14px;
+      background:linear-gradient(145deg,#101922,#0b1218);
+      border-top:1px solid rgba(255,255,255,.03);
+    }
+    .flyer-caption-text{
+      min-width:0;
+    }
+    .flyer-caption h3{
+      margin:0;
+      font-size:15px;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .flyer-caption .mini-meta{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.3;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .flyer-caption .view-cue{
+      flex:0 0 auto;
+      color:var(--cat-color);
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .no-flyer-body{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+      padding:26px 24px 28px;
+      background:
+        radial-gradient(circle at 85% 10%, var(--cat-soft), transparent 35%),
+        linear-gradient(145deg,#101922,#0b1218);
+    }
+    .no-flyer .badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:5px 9px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      background:var(--cat-soft);
+      color:var(--cat-color);
+      border:1px solid var(--cat-border);
+      margin-bottom:18px;
+    }
+    .no-flyer .date-block{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .no-flyer .date-card{
+      width:104px;
+      flex:0 0 104px;
+      border:1px solid var(--cat-border);
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(0,0,0,.18);
+      text-align:center;
+    }
+    .date-card .month{
+      padding:8px;
+      background:var(--cat-color);
+      color:#071015;
+      font-size:11px;
+      font-weight:950;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .date-card .day{
+      padding:12px 8px 4px;
+      font-size:44px;
+      line-height:1;
+      font-weight:950;
+    }
+    .date-card .dow{
+      padding:0 8px 11px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+    }
+    .no-flyer h3{
+      margin:0;
+      font-size:clamp(22px,2.2vw,31px);
+      line-height:1.08;
+      letter-spacing:-.02em;
+    }
+    .no-flyer .meta{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-top:15px;
+      color:#e7edf1;
+      font-size:13px;
+      font-weight:700;
+    }
+    .no-flyer .view-cue{
+      margin-top:22px;
+      color:var(--cat-color);
+      font-size:12px;
+      font-weight:900;
+    }
+    .event-link:focus-visible{
+      outline:2px solid var(--cat-color);
+      outline-offset:-3px;
+      border-radius:18px;
+    }
+    @media (hover:hover) and (pointer:fine){
+      .event-link:hover .flyer-visual img{transform:scale(1.012)}
+      .flyer-visual img{transition:transform .25s ease}
+      .event-link:hover .view-cue{text-decoration:underline}
+    }
     .controls{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
     .arrow,.pause,.dot{
       border:1px solid var(--border);background:rgba(255,255,255,.035);color:#dfe6ea;
@@ -120,25 +241,31 @@
     }
     @media(max-width:1050px){
       .track{--visible:2}
-      .visual{height:230px;min-height:230px}
-      .event{min-height:485px}
+      .event.has-flyer{min-height:535px}
+      .flyer-visual{min-height:445px}
+      .flyer-visual img{max-height:475px}
     }
     @media(max-width:650px){
       .track{--visible:1}
       .heading-row{align-items:center}
       .sub{display:none}
       .slide{padding:0}
-      .event{min-height:0}
-      .visual{height:270px;min-height:270px}
-      .copy{padding:22px}
-      .event h3{font-size:28px}
-      .desc{-webkit-line-clamp:2}
-      .meta{font-size:12px}
+      .event.has-flyer{min-height:0}
+      .flyer-visual{min-height:430px}
+      .flyer-visual img{max-height:455px}
+      .event.no-flyer{min-height:350px}
+      .no-flyer-body{padding:24px 22px 26px}
+      .no-flyer h3{font-size:28px}
     }
     @media(max-width:480px){
       .all-link{font-size:11px;padding:8px 10px}
-      .visual{height:235px;min-height:235px}
-      .copy{padding:18px}
+      .flyer-visual{min-height:365px;padding:8px}
+      .flyer-visual img{max-height:390px}
+      .flyer-caption{padding:11px 12px 12px}
+      .flyer-caption h3{font-size:14px}
+      .flyer-caption .mini-meta{font-size:10px}
+      .flyer-caption .view-cue{font-size:10px}
+      .no-flyer-body{padding:22px 18px 24px}
     }
     @media(prefers-reduced-motion:reduce){.track{transition:none}}
   </style>
@@ -320,40 +447,54 @@
     }
 
     function slideMarkup(ev){
-      const rel=relativeBadge(ev);
       const month=new Intl.DateTimeFormat('en-US',{month:'short'}).format(ev.start);
       const dow=new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(ev.start);
       const time=ev.allDay?'All day':formatTime(ev.start);
       const href='https://bethelamelancaster.com/events?event='+encodeURIComponent(ev.id);
-      const desc=ev.description||'Join us at Bethel. View the event for complete details.';
+      const dateText=formatDate(ev.start)+(ev.allDay?'':' · '+time);
+      const locationText=ev.location||'Bethel AME Lancaster';
+
+      if(ev.image){
+        return`
+          <div class="slide">
+            <article class="event has-flyer ${categoryClass(ev.category)}">
+              <a class="event-link" href="${href}" target="_top" aria-label="View ${esc(ev.title)} event details">
+                <div class="flyer-visual">
+                  <img src="${esc(ev.image)}" alt="${esc(ev.title+' event flyer')}" loading="lazy">
+                </div>
+                <div class="flyer-caption">
+                  <div class="flyer-caption-text">
+                    <h3>${esc(ev.title)}</h3>
+                    <div class="mini-meta">${esc(dateText)}</div>
+                  </div>
+                  <span class="view-cue">View Event →</span>
+                </div>
+              </a>
+            </article>
+          </div>`;
+      }
+
       return`
         <div class="slide">
-          <article class="event ${categoryClass(ev.category)}">
-            <div class="copy">
-              <div class="badges">
-                ${rel?`<span class="badge relative">${esc(rel)}</span>`:''}
-                <span class="badge category">${esc((categoryIcons[ev.category]||'•')+' '+ev.category)}</span>
-              </div>
-              <h3>${esc(ev.title)}</h3>
-              <div class="meta">
-                <span>◷ ${esc(formatDate(ev.start))} · ${esc(time)}</span>
-                ${ev.location?`<span>⌖ ${esc(ev.location)}</span>`:''}
-              </div>
-              <p class="desc">${esc(desc)}</p>
-              <div class="actions">
-                <a class="btn primary" href="${href}" target="_top">View Event</a>
-                <a class="btn" href="https://bethelamelancaster.com/events" target="_top">All Events</a>
-              </div>
-            </div>
-            <div class="visual">
-              ${ev.image
-                ? `<img src="${esc(ev.image)}" alt="${esc(ev.title+' event flyer')}" loading="lazy">`
-                : `<div class="date-card">
+          <article class="event no-flyer ${categoryClass(ev.category)}">
+            <a class="event-link" href="${href}" target="_top" aria-label="View ${esc(ev.title)} event details">
+              <div class="no-flyer-body">
+                <span class="badge">${esc((categoryIcons[ev.category]||'•')+' '+ev.category)}</span>
+                <div class="date-block">
+                  <div class="date-card">
                     <div class="month">${esc(month)}</div>
                     <div class="day">${ev.start.getDate()}</div>
                     <div class="dow">${esc(dow)}</div>
-                   </div>`}
-            </div>
+                  </div>
+                </div>
+                <h3>${esc(ev.title)}</h3>
+                <div class="meta">
+                  <span>◷ ${esc(dateText)}</span>
+                  <span>⌖ ${esc(locationText)}</span>
+                </div>
+                <span class="view-cue">View Event →</span>
+              </div>
+            </a>
           </article>
         </div>`;
     }
@@ -400,7 +541,7 @@
     function restart(){
       clearInterval(timer);
       if(paused||prefersReduced||maxIndex()===0)return;
-      timer=setInterval(()=>show(index+1),5000);
+      timer=setInterval(()=>show(index+1),7000);
     }
     function setPaused(value){
       paused=value;pauseBtn.textContent=paused?'▶':'Ⅱ';

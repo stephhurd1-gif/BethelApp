@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#01060b">
-  <title>Bethel AME Lancaster — Rotating Cultural Center Display</title>
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display v3</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
     *{box-sizing:border-box}
@@ -12,7 +12,7 @@
     body{background:radial-gradient(circle at 12% 10%,rgba(190,138,255,.24),transparent 26%),radial-gradient(circle at 88% 8%,rgba(255,209,102,.10),transparent 18%),radial-gradient(circle at 82% 82%,rgba(143,197,255,.10),transparent 22%),radial-gradient(circle at 55% 52%,rgba(162,109,245,.08),transparent 34%),linear-gradient(145deg,#241245 0%,#1a1030 24%,#140b28 54%,#10081e 78%,#09050f 100%)}
     .screen{width:100vw;height:100vh;padding:18px 22px 16px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px}
     .topbar{min-height:102px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:14px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%)}
-    .brand{display:flex;align-items:center;gap:16px;min-width:0}.logo-wrap{width:86px;height:86px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),transparent 46%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.15);box-shadow:0 10px 24px rgba(10,0,28,.28), inset 0 1px 0 rgba(255,255,255,.08)}.logo{width:68px;height:68px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+    .brand{display:flex;align-items:center;gap:16px;min-width:0}.logo-wrap{width:86px;height:86px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),transparent 46%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.15);box-shadow:0 10px 24px rgba(10,0,28,.28), inset 0 1px 0 rgba(255,255,255,.08)}.logo{width:100%;height:100%;padding:10px;object-fit:contain;display:block;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
     .brand-copy{min-width:0}.church-name{font-size:clamp(25px,2.35vw,43px);font-weight:950;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .church-line{margin-top:5px;color:#efe3ff;font-size:clamp(12px,1vw,18px);font-weight:700}.clockbox{text-align:right;flex:0 0 auto}
     .time{font-size:clamp(34px,4vw,68px);font-weight:950;line-height:.95;letter-spacing:-.035em}.date{margin-top:8px;color:var(--gold);font-size:clamp(13px,1.15vw,20px);font-weight:900;text-transform:uppercase;letter-spacing:.055em}
@@ -26,9 +26,9 @@
     .weather-detail{color:var(--muted);font-size:clamp(11px,.8vw,14px);margin-top:5px}.forecast{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
     .forecast-day{text-align:center;padding:9px 4px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.04)}
     .forecast-day .day{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}.forecast-day .ico{font-size:23px;margin:5px 0}.forecast-day .temps{font-size:12px;font-weight:900}.forecast-day .lo{color:var(--muted);font-weight:700}
-    .verse{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
-    .verse-mark{font-family:Georgia,serif;font-size:45px;color:var(--gold);line-height:.65;opacity:.9}.verse-text{margin:8px 0 12px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(18px,1.55vw,29px);line-height:1.35;font-weight:600}
-    .verse-ref{color:var(--gold);font-size:clamp(13px,1vw,17px);font-weight:950}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
+    .verse{padding:18px 20px;display:flex;flex-direction:column;justify-content:flex-start;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
+    .verse-mark{font-family:Georgia,serif;font-size:45px;color:var(--gold);line-height:.65;opacity:.9}.verse-text{margin:8px 0 12px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(18px,1.45vw,27px);line-height:1.32;font-weight:600}
+    .verse-ref{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);color:var(--gold);font-size:clamp(14px,1.05vw,18px);font-weight:950}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
     .info{padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
     .info-value{margin-top:4px;font-size:clamp(12px,.9vw,15px);font-weight:900;line-height:1.25}.info-value.gold{color:var(--gold)}
 
@@ -77,6 +77,56 @@
       font-size:8px;
       font-weight:800;
     }
+
+
+    .week-panel,.month-panel{display:none;padding:16px 18px 14px}
+    .week-panel{background:radial-gradient(circle at 86% 8%,rgba(143,197,255,.12),transparent 28%),linear-gradient(145deg,#181f46 0%,#151633 50%,#101226 100%);border-color:rgba(143,197,255,.22)}
+    .month-panel{background:radial-gradient(circle at 12% 10%,rgba(100,201,112,.11),transparent 28%),linear-gradient(145deg,#17362f 0%,#132822 52%,#0e1c18 100%);border-color:rgba(100,201,112,.22)}
+    .calendar-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .calendar-title{font-size:clamp(18px,1.45vw,28px);font-weight:950;letter-spacing:-.02em}
+    .calendar-sub{font-size:clamp(11px,.82vw,14px);color:var(--muted);font-weight:700}
+    .calendar-range{font-size:clamp(11px,.84vw,15px);color:var(--gold);font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+    .week-list{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:8px;height:100%}
+    .week-day-card{border:1px solid rgba(255,255,255,.08);border-left:4px solid rgba(255,255,255,.12);border-radius:16px;padding:9px 10px;background:rgba(255,255,255,.045);display:grid;grid-template-rows:auto 1fr;gap:6px;min-height:0}
+    .week-day-card.today{background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.24);border-left-color:var(--gold)}
+    .week-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+    .week-day-name{font-size:15px;font-weight:950;color:#f2f6fb}
+    .week-day-date{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .week-day-events{display:grid;gap:5px;align-content:start;min-height:0}
+    .week-event{padding:6px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);display:grid;gap:2px}
+    .week-event-time{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--gold)}
+    .week-event-title{font-size:12px;font-weight:900;line-height:1.15}
+    .week-event-loc{font-size:10px;color:var(--muted);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .empty-day{font-size:11px;color:var(--muted);font-weight:700;font-style:italic;padding:4px 0 0}
+    .month-wrap{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
+    .month-weekdays,.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+    .month-weekdays{margin-bottom:8px}
+    .month-weekday{padding:0 2px 2px;text-align:center;font-size:11px;font-weight:900;color:#c7ecd0;text-transform:uppercase;letter-spacing:.08em}
+    .month-grid{grid-auto-rows:minmax(0,1fr);height:100%}
+    .month-cell{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px 8px 7px;background:rgba(255,255,255,.045);display:grid;grid-template-rows:auto 1fr;gap:6px;min-height:0}
+    .month-cell.other-month{opacity:.42}
+    .month-cell.today{background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.22)}
+    .month-date{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:950}
+    .month-date .num{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:999px}
+    .month-cell.today .month-date .num{background:var(--gold);color:#2d1438}
+    .month-events{display:grid;align-content:start;gap:4px;min-height:0;overflow:hidden}
+    .month-event{padding:4px 6px;border-radius:10px;font-size:10px;font-weight:800;line-height:1.15;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.05);overflow:hidden}
+    .month-event-time{display:block;font-size:9px;color:rgba(255,255,255,.72);font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+    .month-more{font-size:10px;color:var(--muted);font-weight:800;padding:2px 2px 0}
+    .cat-worship{border-left-color:#ffd166}
+    .cat-faith-study{border-left-color:#c78dff}
+    .cat-community{border-left-color:#6dde82}
+    .cat-ministry{border-left-color:#73d2ff}
+    .cat-special-event{border-left-color:#ff8097}
+    .cat-youth{border-left-color:#9cb6ff}
+    .cat-meetings{border-left-color:#a3a9bb}
+    .week-event.cat-worship,.month-event.cat-worship{box-shadow:inset 3px 0 0 #ffd166}
+    .week-event.cat-faith-study,.month-event.cat-faith-study{box-shadow:inset 3px 0 0 #c78dff}
+    .week-event.cat-community,.month-event.cat-community{box-shadow:inset 3px 0 0 #6dde82}
+    .week-event.cat-ministry,.month-event.cat-ministry{box-shadow:inset 3px 0 0 #73d2ff}
+    .week-event.cat-special-event,.month-event.cat-special-event{box-shadow:inset 3px 0 0 #ff8097}
+    .week-event.cat-youth,.month-event.cat-youth{box-shadow:inset 3px 0 0 #9cb6ff}
+    .week-event.cat-meetings,.month-event.cat-meetings{box-shadow:inset 3px 0 0 #a3a9bb}
 
     .newsbar{min-height:70px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:11px 18px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%);overflow:hidden}
     .news-label{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#f3c65e,#ffd979);color:#220f44;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px rgba(255,209,102,.25)}
@@ -317,12 +367,37 @@
       font-size:clamp(10px,.75vw,13px);
     }
 
+
+    /* VIEW 2 — Weekly calendar + carousel */
+    body.view-week{
+      background:
+        radial-gradient(circle at 80% 18%,rgba(143,197,255,.14),transparent 28%),
+        radial-gradient(circle at 16% 84%,rgba(255,209,102,.08),transparent 22%),
+        linear-gradient(145deg,#150d28 0%,#10081e 55%,#09050f 100%);
+    }
+    body.view-week .main{grid-template-columns:minmax(0,1.45fr) minmax(360px,.95fr)}
+    body.view-week .side, body.view-week .month-panel{display:none}
+    body.view-week .week-panel{display:block}
+
+    /* VIEW 3 — Monthly calendar */
+    body.view-month{
+      background:
+        radial-gradient(circle at 16% 14%,rgba(100,201,112,.14),transparent 26%),
+        radial-gradient(circle at 83% 82%,rgba(188,120,255,.13),transparent 28%),
+        linear-gradient(150deg,#111b18 0%,#121127 48%,#0a0915 100%);
+    }
+    body.view-month .main{grid-template-columns:minmax(0,1fr)}
+    body.view-month .events-panel, body.view-month .side, body.view-month .week-panel{display:none}
+    body.view-month .month-panel{display:block}
+
     @media(max-width:900px){
       .view-indicator{display:none}
       body.view-events .side,
       body.view-inspire .events-panel,
       body.view-connect .events-panel,
       body.view-connect .verse{display:initial}
+      body.view-week .main,
+      body.view-month .main{grid-template-columns:1fr}
       body.view-events .main,
       body.view-inspire .main,
       body.view-connect .main{grid-template-columns:1fr}
@@ -363,6 +438,37 @@
         <div class="status">Calendar-powered events</div>
       </section>
 
+      <section class="panel week-panel" aria-label="This week's calendar">
+        <div class="calendar-head">
+          <div>
+            <div class="calendar-title">This Week at Bethel</div>
+            <div class="calendar-sub">A quick look at this week’s calendar alongside upcoming highlights.</div>
+          </div>
+          <div class="calendar-range" id="week-range">Loading…</div>
+        </div>
+        <div class="week-list" id="week-list">
+          <div class="empty-day">Loading this week’s events…</div>
+        </div>
+      </section>
+
+      <section class="panel month-panel" aria-label="This month's calendar">
+        <div class="calendar-head">
+          <div>
+            <div class="calendar-title" id="month-title">This Month at Bethel</div>
+            <div class="calendar-sub">The calendar is fed directly from Google Calendar.</div>
+          </div>
+          <div class="calendar-range" id="month-range">Loading…</div>
+        </div>
+        <div class="month-wrap">
+          <div class="month-weekdays">
+            <div class="month-weekday">Sun</div><div class="month-weekday">Mon</div><div class="month-weekday">Tue</div><div class="month-weekday">Wed</div><div class="month-weekday">Thu</div><div class="month-weekday">Fri</div><div class="month-weekday">Sat</div>
+          </div>
+          <div class="month-grid" id="month-grid">
+            <div class="empty-day">Loading this month’s calendar…</div>
+          </div>
+        </div>
+      </section>
+
       <aside class="side">
         <section class="panel weather">
           <h2 class="panel-title">Lancaster Weather</h2>
@@ -390,7 +496,7 @@
           <div class="info-copy">
             <div class="info-item"><div class="info-label">Sunday Worship</div><div class="info-value gold">9:30 AM</div></div>
             <div class="info-item"><div class="info-label">Events & Updates</div><div class="info-value">bethelamelancaster.com/events</div></div>
-            <div class="info-item"><div class="info-label">Wednesday Bible Study</div><div class="info-value">12:00 PM In Person • 6:30 PM Zoom</div></div>
+            <div class="info-item"><div class="info-label">Wednesday Bible Study</div><div class="info-value">Wednesdays starting Sept 9 • 6:30 PM • In Person &amp; Zoom • Sanctuary</div></div>
             <div class="info-item"><div class="info-label">Stay Connected</div><div class="info-value">Bethel App • Website • Cultural Center</div></div>
             <div class="website-row">
               <div class="info-label">Visit Us Online</div>
@@ -411,6 +517,8 @@
       <span class="view-dot"></span>
       <span class="view-dot"></span>
       <span class="view-dot"></span>
+      <span class="view-dot"></span>
+      <span class="view-dot"></span>
     </div>
 
     <footer class="newsbar">
@@ -420,11 +528,16 @@
     </footer>
   </div>
 
-  <script>
+  <script type="module">
+    import ICAL from 'https://cdn.jsdelivr.net/npm/ical.js@2.2.1/dist/ical.min.js';
+
     const TZ='America/New_York';
     const WEATHER_URL='https://api.open-meteo.com/v1/forecast?latitude=40.0379&longitude=-76.3055&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=5';
     const NEWS_RSS='https://news.google.com/rss/search?q='+encodeURIComponent('Lancaster Pennsylvania local news')+'&hl=en-US&gl=US&ceid=US:en';
     const NEWS_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS);
+    const EVENTS_FEED_URL='https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
+    const CALENDAR_CACHE_KEY='bethel_display_calendar_v2';
+    const CALENDAR_CACHE_MS=15*60*1000;
 
     const VERSES=[
       {ref:'Psalm 118:24',text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'},
@@ -516,8 +629,150 @@
     function loadVerse(){
       const verse=VERSES[(dayOfYearInET()-1)%VERSES.length];
       document.getElementById('verse-text').textContent=verse.text;
-      document.getElementById('verse-ref').textContent=verse.ref;
+      document.getElementById('verse-ref').textContent=verse.ref+' • ';
     }
+
+    function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
+    function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+    function startOfWeek(d){const x=startOfDay(d);x.setDate(x.getDate()-x.getDay());return x}
+    function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+    function formatTime(d){return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(d)}
+    function formatDayShort(d){return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric'}).format(d)}
+    function formatMonthLabel(d){return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}).format(d)}
+    function categoryClass(category){
+      return ({
+        'Worship':'cat-worship','Community':'cat-community',
+        'Faith & Study':'cat-faith-study','Ministry':'cat-ministry',
+        'Special Event':'cat-special-event','Youth':'cat-youth',
+        'Meetings':'cat-meetings'
+      })[category] || 'cat-special-event';
+    }
+    function inferCategory(title,description){
+      const s=(title+' '+description).toLowerCase();
+      if(/\b(ypd|youth|young people|children|kids|teen)\b/.test(s))return'Youth';
+      if(/\b(outreach|community|food|camp|school supply|back.to.school|neighborhood|service project)\b/.test(s))return'Community';
+      if(/\b(bible study|prayer|sunday school|study|class meeting)\b/.test(s))return'Faith & Study';
+      if(/\b(worship|service|sunday service|communion|revival)\b/.test(s))return'Worship';
+      if(/\b(meeting|board|committee|conference|lay organization|trustee|steward)\b/.test(s))return'Meetings';
+      if(/\b(women|men|missionary|choir|ministry|usher|music)\b/.test(s))return'Ministry';
+      return'Special Event';
+    }
+    function parseDescriptionMeta(raw,title){
+      const meta={category:'',clean:''};
+      const clean=[];
+      String(raw||'').split(/\r?\n/).forEach(line=>{
+        const t=line.trim();
+        let m=t.match(/^\[category:\s*(.+?)\]$/i);
+        if(m){meta.category=m[1].trim();return}
+        if(/^\[(featured|image|link):?/i.test(t)||/^\[featured\]$/i.test(t))return;
+        clean.push(line);
+      });
+      meta.clean=clean.join('\n').trim();
+      if(!meta.category)meta.category=inferCategory(title,meta.clean);
+      return meta;
+    }
+    function eventId(uid,start){
+      const base=uid+'|'+start.toISOString();let hash=0;
+      for(let i=0;i<base.length;i++){hash=((hash<<5)-hash)+base.charCodeAt(i);hash|=0}
+      return'e'+Math.abs(hash).toString(36);
+    }
+    function eventToDisplay(obj,startDate,endDate,recurring){
+      const rawTitle=obj.summary||'Bethel Event';
+      const title=rawTitle.replace(/^\s*⭐\s*/,'').trim()||'Bethel Event';
+      const meta=parseDescriptionMeta(obj.description||'',title);
+      const allDay=Boolean(obj.startDate&&obj.startDate.isDate);
+      const start=startDate;
+      let end=endDate;
+      if(!end||Number.isNaN(end.getTime()))end=new Date(start.getTime()+(allDay?86400000:3600000));
+      return{ id:eventId(obj.uid||title,start),uid:obj.uid||title,title,description:meta.clean,location:obj.location||'',start,end,allDay,recurring:Boolean(recurring),category:meta.category };
+    }
+    function parseCalendar(icsText){
+      const root=new ICAL.Component(ICAL.parse(icsText));
+      try{root.getAllSubcomponents('vtimezone').forEach(c=>{try{ICAL.TimezoneService.register(new ICAL.Timezone(c))}catch(_){}})}catch(_){ }
+      const objs=root.getAllSubcomponents('vevent').map(c=>new ICAL.Event(c));
+      const bases=new Map(),exceptions=[];
+      objs.forEach(ev=>{ const rid=ev.component.getFirstPropertyValue('recurrence-id'); if(rid)exceptions.push(ev); else bases.set(ev.uid,ev); });
+      exceptions.forEach(ex=>{const base=bases.get(ex.uid); if(base){try{base.relateException(ex)}catch(_){}}});
+      const rangeStart=addDays(startOfDay(new Date()),-1);
+      const rangeEnd=addDays(rangeStart,180);
+      const results=[];
+      bases.forEach(ev=>{
+        if(!ev.isRecurring()){
+          const s=ev.startDate.toJSDate(),e=ev.endDate?ev.endDate.toJSDate():null;
+          if((!e || e>=rangeStart) && s<=rangeEnd)results.push(eventToDisplay(ev,s,e,false));
+          return;
+        }
+        const it=ev.iterator(); let next=null, safety=0;
+        while(safety++<4000 && (next=it.next())){
+          const rough=next.toJSDate(); if(rough>rangeEnd)break; if(rough<rangeStart)continue;
+          try{
+            const d=ev.getOccurrenceDetails(next), source=d.item||ev;
+            const s=d.startDate.toJSDate(), e=d.endDate?d.endDate.toJSDate():null;
+            if((!e || e>=rangeStart) && s<=rangeEnd)results.push(eventToDisplay(source,s,e,true));
+          }catch(_){
+            const dur=Math.max(0,ev.endDate.toJSDate().getTime()-ev.startDate.toJSDate().getTime());
+            results.push(eventToDisplay(ev,rough,new Date(rough.getTime()+dur),true));
+          }
+        }
+      });
+      const dedup=new Map(); results.forEach(ev=>dedup.set(ev.id,ev));
+      return Array.from(dedup.values()).filter(ev=>ev.end>=new Date()).sort((a,b)=>a.start-b.start||String(a.title).localeCompare(String(b.title)));
+    }
+    function readCalendarCache(){
+      try{ const raw=localStorage.getItem(CALENDAR_CACHE_KEY); if(!raw)return[]; const saved=JSON.parse(raw); if(!saved||!saved.savedAt||Date.now()-saved.savedAt>CALENDAR_CACHE_MS)return[]; return (saved.events||[]).map(ev=>({...ev,start:new Date(ev.start),end:new Date(ev.end)})).filter(ev=>!Number.isNaN(ev.start)&&!Number.isNaN(ev.end)); }catch(_){ return[] }
+    }
+    function writeCalendarCache(events){
+      try{ localStorage.setItem(CALENDAR_CACHE_KEY, JSON.stringify({savedAt:Date.now(), events:events.map(ev=>({...ev,start:ev.start.toISOString(),end:ev.end.toISOString()}))})); }catch(_){ }
+    }
+    function renderWeekCalendar(events){
+      const start=startOfWeek(new Date()); const end=addDays(start,7);
+      document.getElementById('week-range').textContent = formatDayShort(start)+' – '+formatDayShort(addDays(end,-1));
+      const days=[];
+      for(let i=0;i<7;i++){
+        const day=addDays(start,i);
+        const items=events.filter(ev=>startOfDay(ev.start).getTime()===day.getTime()).sort((a,b)=>a.start-b.start);
+        const eventsHtml=items.length ? items.map(ev=>`<div class="week-event ${categoryClass(ev.category)}"><div class="week-event-time">${ev.allDay?'All day':formatTime(ev.start)}</div><div class="week-event-title">${escapeHtml(ev.title)}</div>${ev.location?`<div class="week-event-loc">${escapeHtml(ev.location)}</div>`:''}</div>`).join('') : '<div class="empty-day">No scheduled events</div>';
+        days.push(`<div class="week-day-card ${sameDay(day,new Date())?'today':''}"><div class="week-day-head"><div class="week-day-name">${new Intl.DateTimeFormat('en-US',{weekday:'long'}).format(day)}</div><div class="week-day-date">${formatDayShort(day)}</div></div><div class="week-day-events">${eventsHtml}</div></div>`);
+      }
+      document.getElementById('week-list').innerHTML=days.join('');
+    }
+    function renderMonthCalendar(events){
+      const now=new Date(); const monthStart=new Date(now.getFullYear(), now.getMonth(), 1); const monthEnd=new Date(now.getFullYear(), now.getMonth()+1, 0);
+      const gridStart=startOfWeek(monthStart); const gridEnd=addDays(startOfWeek(addDays(monthEnd,1)),6);
+      document.getElementById('month-title').textContent=formatMonthLabel(monthStart);
+      document.getElementById('month-range').textContent='Monthly Calendar';
+      const byDay=new Map();
+      events.forEach(ev=>{
+        const key=startOfDay(ev.start).toISOString().slice(0,10);
+        if(!byDay.has(key))byDay.set(key,[]);
+        byDay.get(key).push(ev);
+      });
+      for(const arr of byDay.values())arr.sort((a,b)=>a.start-b.start);
+      const cells=[];
+      for(let d=new Date(gridStart); d<=gridEnd; d=addDays(d,1)){
+        const key=startOfDay(d).toISOString().slice(0,10); const items=(byDay.get(key)||[]);
+        const shown=items.slice(0,3).map(ev=>`<div class="month-event ${categoryClass(ev.category)}"><span class="month-event-time">${ev.allDay?'All day':formatTime(ev.start)}</span>${escapeHtml(ev.title)}</div>`).join('');
+        const more=items.length>3 ? `<div class="month-more">+${items.length-3} more</div>` : '';
+        cells.push(`<div class="month-cell ${d.getMonth()!==monthStart.getMonth()?'other-month':''} ${sameDay(d,new Date())?'today':''}"><div class="month-date"><span>${new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(d)}</span><span class="num">${d.getDate()}</span></div><div class="month-events">${shown||'<div class="empty-day">&nbsp;</div>'}${more}</div></div>`);
+      }
+      document.getElementById('month-grid').innerHTML=cells.join('');
+    }
+    async function loadCalendar(){
+      const cached=readCalendarCache();
+      if(cached.length){ renderWeekCalendar(cached); renderMonthCalendar(cached); }
+      try{
+        const r=await fetch(EVENTS_FEED_URL,{cache:'default'}); if(!r.ok) throw new Error('calendar request');
+        const ics=await r.text(); if(!ics.includes('BEGIN:VCALENDAR')) throw new Error('calendar response');
+        const events=parseCalendar(ics); writeCalendarCache(events); renderWeekCalendar(events); renderMonthCalendar(events);
+      }catch(err){
+        console.warn('Calendar unavailable:',err);
+        if(!cached.length){
+          document.getElementById('week-list').innerHTML='<div class="empty-day">Weekly calendar is temporarily unavailable.</div>';
+          document.getElementById('month-grid').innerHTML='<div class="empty-day">Monthly calendar is temporarily unavailable.</div>';
+        }
+      }
+    }
+
     function cleanHeadline(title){return String(title||'').replace(/\s+-\s+[^-]+$/,'').replace(/\s+/g,' ').trim()}
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
     function renderNews(items,stamp){
@@ -552,12 +807,14 @@
     loadVerse();
     loadWeather();
     loadNews();
+    loadCalendar();
     setInterval(loadWeather,15*60*1000);
     setInterval(loadNews,20*60*1000);
+    setInterval(loadCalendar,20*60*1000);
 
     // Rotate the entire layout every 90 seconds so the same bright/static
     // elements do not remain in the same screen position all day.
-    const DISPLAY_VIEWS=['view-overview','view-events','view-inspire','view-connect'];
+    const DISPLAY_VIEWS=['view-overview','view-week','view-month','view-inspire','view-connect','view-events'];
     const VIEW_INTERVAL_MS=90*1000;
     let currentView=0;
 

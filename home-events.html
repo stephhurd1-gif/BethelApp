@@ -95,6 +95,24 @@
       object-fit:contain;
       display:block;
     }
+    .flyer-visual.image-error{
+      min-height:430px;
+      padding:24px;
+      text-align:center;
+      color:var(--muted);
+    }
+    .flyer-visual.image-error::before{
+      content:"Flyer unavailable";
+      display:grid;
+      place-items:center;
+      width:100%;
+      min-height:180px;
+      border:1px dashed var(--cat-border);
+      border-radius:14px;
+      color:var(--cat-color);
+      font-size:13px;
+      font-weight:900;
+    }
     .flyer-caption{
       display:flex;
       align-items:center;
@@ -433,7 +451,9 @@
     }
 
     function selectCarouselEvents(events){
+      // Keep only one upcoming occurrence from each recurring series first.
       const unique=[],seenRecurring=new Set();
+
       for(const ev of events){
         if(ev.recurring){
           const key=String(ev.uid||ev.title).toLowerCase();
@@ -441,9 +461,16 @@
           seenRecurring.add(key);
         }
         unique.push(ev);
-        if(unique.length>=7)break;
       }
-      return unique;
+
+      // Homepage priority:
+      // 1) upcoming events that have attached flyers
+      // 2) upcoming events without flyers
+      // Each group stays in chronological order.
+      const withFlyers=unique.filter(ev=>Boolean(ev.image));
+      const withoutFlyers=unique.filter(ev=>!ev.image);
+
+      return [...withFlyers,...withoutFlyers].slice(0,7);
     }
 
     function slideMarkup(ev){
@@ -460,7 +487,13 @@
             <article class="event has-flyer ${categoryClass(ev.category)}">
               <a class="event-link" href="${href}" target="_top" aria-label="View ${esc(ev.title)} event details">
                 <div class="flyer-visual">
-                  <img src="${esc(ev.image)}" alt="${esc(ev.title+' event flyer')}" loading="lazy">
+                  <img
+                    src="${esc(ev.image)}"
+                    alt="${esc(ev.title+' event flyer')}"
+                    loading="eager"
+                    fetchpriority="high"
+                    referrerpolicy="no-referrer"
+                  >
                 </div>
                 <div class="flyer-caption">
                   <div class="flyer-caption-text">
@@ -567,6 +600,19 @@
         if(!slides.length)throw new Error('empty');
 
         track.innerHTML=slides.map(slideMarkup).join('');
+
+        // If a Google Drive thumbnail ever fails to load, keep the card usable
+        // and make the failure visible instead of leaving an unexplained blank box.
+        track.querySelectorAll('.flyer-visual img').forEach(img=>{
+          img.addEventListener('error',()=>{
+            const visual=img.closest('.flyer-visual');
+            if(visual){
+              img.remove();
+              visual.classList.add('image-error');
+            }
+          },{once:true});
+        });
+
         renderDots();
         show(0);
 

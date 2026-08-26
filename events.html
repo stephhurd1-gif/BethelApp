@@ -285,17 +285,15 @@
       font-size:13px;
     }
     .featured-side {
-      min-height:260px;
+      min-height:300px;
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
       padding:22px;
-      background:
-        radial-gradient(circle at 80% 20%, rgba(247,191,91,.22), transparent 45%),
-        radial-gradient(circle at 20% 80%, rgba(134,35,156,.38), transparent 55%),
-        #111a20;
-      background-size:cover;
-      background-position:center;
+      background-color:#111a20;
+      background-repeat:no-repeat;
+      background-size:contain;
+      background-position:center center;
     }
     .featured-side.has-image::before {
       content:"";
@@ -395,8 +393,10 @@
       grid-column:3;
       grid-row:1;
       min-height:100%;
-      background-size:cover;
-      background-position:center;
+      background-color:#111a20;
+      background-repeat:no-repeat;
+      background-size:contain;
+      background-position:center center;
       border-left:1px solid var(--border);
     }
     .event-card.has-image .event-card-image { display:block; }
@@ -647,9 +647,11 @@
     }
     .modal-image {
       display:none;
-      min-height:210px;
-      background-size:cover;
-      background-position:center;
+      min-height:360px;
+      background-color:#111a20;
+      background-repeat:no-repeat;
+      background-size:contain;
+      background-position:center center;
     }
     .modal-image.visible { display:block; }
     .modal-content { padding:20px; }
@@ -727,20 +729,30 @@
       .view-switch { width:100%; }
       .view-btn { flex:1; }
       .featured.visible { grid-template-columns:1fr; }
-      .featured-side { min-height:180px; order:-1; }
+      .featured-side {
+        min-height:320px;
+        order:-1;
+        background-size:contain;
+        background-position:center center;
+        background-repeat:no-repeat;
+      }
       .event-grid { grid-template-columns:1fr; }
       .event-card { grid-template-columns:67px minmax(0,1fr); min-height:175px; }
       .event-card.has-image {
         grid-template-columns:67px minmax(0,1fr);
-        grid-template-rows:145px auto;
+        grid-template-rows:240px auto;
       }
       .event-card.has-image .event-card-image {
         display:block;
         grid-column:1 / -1;
         grid-row:1;
-        min-height:145px;
+        min-height:240px;
         border-left:0;
         border-bottom:1px solid var(--border);
+        background-color:#111a20;
+        background-size:contain;
+        background-position:center center;
+        background-repeat:no-repeat;
       }
       .event-card.has-image .date-rail {
         grid-column:1;
@@ -757,6 +769,14 @@
       .cal-items { display:flex; flex-wrap:wrap; gap:3px; }
       .cal-more { width:100%; font-size:7px; }
       .detail-grid { grid-template-columns:1fr; }
+    }
+
+    @media (max-width:520px) {
+      .modal-image {
+        min-height:300px;
+        background-size:contain;
+        background-position:center center;
+      }
     }
 
     @media (max-width:390px) {
@@ -1720,7 +1740,7 @@
       content.style.display = 'none';
 
       try {
-        const url = EVENTS_FEED_URL + (force ? '?refresh=' + Date.now() : '');
+        const url = EVENTS_FEED_URL + (force ? '?refresh=1' : '');
         const response = await fetch(url, { cache: force ? 'no-store' : 'default' });
         if (!response.ok) throw new Error('Calendar feed returned HTTP ' + response.status + '.');
 
@@ -1810,7 +1830,7 @@
       renderCalendar();
     });
 
-    document.getElementById('retry-btn').addEventListener('click',() => loadEvents(true));
+    document.getElementById('retry-btn').addEventListener('click',() => loadEvents(false));
     document.getElementById('modal-close').addEventListener('click',closeModal);
     document.getElementById('event-modal').addEventListener('click',e => {
       if (e.target.id === 'event-modal') closeModal();

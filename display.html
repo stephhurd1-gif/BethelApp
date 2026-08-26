@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#01060b">
-  <title>Bethel AME Lancaster — Rotating Cultural Center Display v8</title>
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display v9</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
     *{box-sizing:border-box}
@@ -19,21 +19,21 @@
     .main{min-height:0;display:grid;grid-template-columns:minmax(0,2.05fr) minmax(320px,.95fr);gap:14px}
     .panel{min-width:0;min-height:0;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(145deg,rgba(56,33,95,.95) 0%,rgba(38,22,68,.98) 48%,rgba(22,12,42,.995) 100%);overflow:hidden}.panel{box-shadow:0 18px 34px rgba(3,0,12,.42), inset 0 1px 0 rgba(255,255,255,.03)}
     .events-panel{position:relative;padding:0}.events-frame{width:100%;height:100%;border:0;display:block;background:#0f081d}
-    .side{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px}.weather{padding:18px 20px}
+    .side{min-height:0;display:grid;grid-template-rows:minmax(0,.9fr) minmax(0,1fr) minmax(0,1.15fr);gap:14px}.weather{padding:16px 18px}
     .panel-title{margin:0 0 12px;font-size:clamp(12px,.9vw,16px);letter-spacing:.11em;text-transform:uppercase;color:var(--gold);font-weight:950}
-    .current-weather{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:15px;margin-bottom:14px}.weather-icon{font-size:clamp(44px,4vw,72px);line-height:1}
-    .temp-row{display:flex;align-items:baseline;gap:10px;min-width:0}.temp{font-size:clamp(36px,3.4vw,58px);font-weight:950;line-height:1}.condition{font-size:clamp(13px,1vw,17px);font-weight:800;color:#dce2e7}
+    .current-weather{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:13px;margin-bottom:10px}.weather-icon{font-size:clamp(40px,3.4vw,62px);line-height:1}
+    .temp-row{display:flex;align-items:baseline;gap:10px;min-width:0}.temp{font-size:clamp(34px,3vw,52px);font-weight:950;line-height:1}.condition{font-size:clamp(13px,1vw,17px);font-weight:800;color:#dce2e7}
     .weather-detail{color:var(--muted);font-size:clamp(11px,.8vw,14px);margin-top:5px}.forecast{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-    .forecast-day{text-align:center;padding:9px 4px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.04)}
+    .forecast-day{text-align:center;padding:6px 4px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.04)}
     .forecast-day .day{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}.forecast-day .ico{font-size:23px;margin:5px 0}.forecast-day .temps{font-size:12px;font-weight:900}.forecast-day .lo{color:var(--muted);font-weight:700}
-    .verse{padding:16px 18px;display:flex;flex-direction:column;justify-content:flex-start;min-height:0;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
-    .verse-mark{font-family:Georgia,serif;font-size:38px;color:var(--gold);line-height:.58;opacity:.9}.verse-text{margin:6px 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(15px,1.16vw,22px);line-height:1.22;font-weight:600}
-    .verse-ref{margin-top:auto;padding-top:9px;border-top:1px solid rgba(255,255,255,.12);color:var(--gold);font-size:clamp(12px,.9vw,15px);font-weight:950;line-height:1.2}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
-    .info{padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) 116px;gap:12px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .verse{padding:14px 18px 15px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;align-content:start;min-height:0;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
+    .verse-mark{font-family:Georgia,serif;font-size:32px;color:var(--gold);line-height:.55;opacity:.9}.verse-text{margin:4px 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(14px,1.02vw,19px);line-height:1.2;font-weight:600}
+    .verse-ref{margin-top:4px;padding-top:7px;border-top:1px solid rgba(255,255,255,.12);color:var(--gold);font-size:clamp(12px,.9vw,15px);font-weight:950;line-height:1.2}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
+    .info{padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:10px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
     .info-value{margin-top:4px;font-size:clamp(12px,.88vw,15px);font-weight:900;line-height:1.22;overflow-wrap:anywhere}.info-value.gold{color:var(--gold)}
     .info-value.events-link{font-size:clamp(11px,.76vw,13px);letter-spacing:-.01em}
 
-    .info-copy{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}.info-item.events-update{grid-column:1/-1}
+    .info-copy{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;min-width:0}.info-item.events-update{grid-column:1/-1}
     .website-row{
       grid-column:1/-1;
       padding-top:9px;
@@ -522,7 +522,7 @@
             </div>
           </div>
           <div class="giving-qr" aria-label="QR code for online giving">
-            <img src="bethel-giving-qr.png" alt="Scan to give online">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhwAAAIcAQAAAACVhUrRAAADk0lEQVR4nO2dTY4jIQyFn0ezhxv0/Y/VN4ATvFkY81dZTSfpingoKhWEfIKFZWMbx4gft/rn5wxAEEEEEUQQQQQRRBBBBBHkJRDrLU/dDDPzLqoBWL6NyTfcjiCCvA+S6A1o8sICFpBENRYg0ce3yc9fiSCCfBpk0iNgCRXjI4n+wm+7Tr7ndgQR5MWQvw/GUrFEAKjZTTUArMaa7cHsZ61EEEE+H1IN1cwMic1s6y0U0JtWIogg94UMvTMkJBWLD4D2BJoy2iY/bSWCCPKZkNo8Z9vX9kX4qSfFy4PJ99uOIIK8HNL0zqxHWA3xYTX6Yce/q4Zd6TxrJYII8qkQy6FQchuZXdZwJ1tiPw1J7whyNgQtUpMIoHsGSHp8p42TLACAxBbciS5JlvtsRxBB3gZBj3IOSSkhLKnJlDvcXFK86z+U7AhyMGTITuuWeIbUNJGZBKelHJT2W8mOIEdCpthoKs0RXTMSrRprBkDAwl3A1Vnt7us7bUcQQd4G6brj8hLdNq1g6foRSTabIOdChq9g9gbM3V1qym7OSXYEORIybDZLtIjdtGfNrMaw0NxgQ+S2cQR67rMdQQR5G2SYakPjhD0GTNcNujLqXmv52QQ5GjJON+hhnetJZ/rMDmrJjiAHQybZmcM38b5EeUKOWpPsCHI05IGW6RHSvZu4y5HiO4KcC5k80mUZbG9pWHFdasa9HukdQc6FLGEddKlZPQbdflsS3iQ7ghwNWXVKt8cuvoIxmKbcNsmOIIIAfr+gSUpdL1wnkuz1cyyD39ZLGdx0O4II8lrIbrNhOwFFWGc21S55O/fZjiCC/BLE9UsG4no1v21xSq9NtQ0FORiy3N8h1+SBGAFGlGdPe5PeEeRQyKhX0PLZqqEntsULo1BbVzysRp13BBGkFyVItC968U8vRr1oGQA1ClZ/8Qp5ykoEEeRDIOupf/JXz76CefKWriObTZDDIctfG7gxVqeK7gXA8BVcVM/ttiOIIK+HxP2ddnu639DJhnbeQTv7FAMQt7AxF2270XYEEeQXIL0y20geqDZMuO6sjlLVU23qO25HEEF+ARJO6VG23U891cb1hDpX3733dgQR5F0Q97BZRlc0cEfcGt9RXVBBzoY8+B+EXksK/kwFNSP+E8FHpsPOs1YiiCCfBdlrG85p0kviNB5dTJCPWpBzIbbnqP1Hq/fZjiCCCCKIIIIIIogggggiSG//ABMSU6e+5m2PAAAAAElFTkSuQmCC" alt="Scan to give online">
             <div class="giving-qr-title">Give Online</div>
             <div class="giving-qr-sub">Scan with your phone</div>
           </div>

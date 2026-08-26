@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#01060b">
-  <title>Bethel AME Lancaster — Rotating Cultural Center Display v4</title>
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display v8</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
     *{box-sizing:border-box}
@@ -29,11 +29,11 @@
     .verse{padding:16px 18px;display:flex;flex-direction:column;justify-content:flex-start;min-height:0;background:radial-gradient(circle at 88% 15%,rgba(191,138,255,.18),transparent 36%),linear-gradient(145deg,rgba(71,41,117,.98) 0%,rgba(46,26,82,.99) 52%,rgba(24,14,46,1) 100%)}
     .verse-mark{font-family:Georgia,serif;font-size:38px;color:var(--gold);line-height:.58;opacity:.9}.verse-text{margin:6px 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(15px,1.16vw,22px);line-height:1.22;font-weight:600}
     .verse-ref{margin-top:auto;padding-top:9px;border-top:1px solid rgba(255,255,255,.12);color:var(--gold);font-size:clamp(12px,.9vw,15px);font-weight:950;line-height:1.2}.verse-version{margin-left:7px;color:var(--muted);font-weight:700;font-size:.8em}
-    .info{padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .info{padding:15px 18px;display:grid;grid-template-columns:minmax(0,1fr) 116px;gap:12px;align-items:center}.info-item{min-width:0}.info-label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
     .info-value{margin-top:4px;font-size:clamp(12px,.88vw,15px);font-weight:900;line-height:1.22;overflow-wrap:anywhere}.info-value.gold{color:var(--gold)}
     .info-value.events-link{font-size:clamp(11px,.76vw,13px);letter-spacing:-.01em}
 
-    .info-copy{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+    .info-copy{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}.info-item.events-update{grid-column:1/-1}
     .website-row{
       grid-column:1/-1;
       padding-top:9px;
@@ -48,8 +48,8 @@
       letter-spacing:.01em;
     }
     .giving-qr{
-      width:126px;
-      min-width:126px;
+      width:116px;
+      min-width:116px;
       text-align:center;
       padding:8px 8px 7px;
       border-radius:16px;
@@ -59,8 +59,8 @@
     }
     .giving-qr img{
       display:block;
-      width:104px;
-      height:104px;
+      width:94px;
+      height:94px;
       margin:0 auto 5px;
       border-radius:5px;
       image-rendering:pixelated;
@@ -87,18 +87,18 @@
     .calendar-title{font-size:clamp(18px,1.45vw,28px);font-weight:950;letter-spacing:-.02em}
     .calendar-sub{font-size:clamp(11px,.82vw,14px);color:var(--muted);font-weight:700}
     .calendar-range{font-size:clamp(11px,.84vw,15px);color:var(--gold);font-weight:900;text-transform:uppercase;letter-spacing:.06em}
-    .week-list{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:8px;height:100%}
-    .week-day-card{border:1px solid rgba(255,255,255,.08);border-left:4px solid rgba(255,255,255,.12);border-radius:16px;padding:9px 10px;background:rgba(255,255,255,.045);display:grid;grid-template-rows:auto 1fr;gap:6px;min-height:0}
+    .week-list{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:6px;height:100%;min-height:0}
+    .week-day-card{border:1px solid rgba(255,255,255,.08);border-left:4px solid rgba(255,255,255,.12);border-radius:14px;padding:7px 9px;background:rgba(255,255,255,.045);display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:10px;min-height:0;overflow:hidden}
     .week-day-card.today{background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.24);border-left-color:var(--gold)}
-    .week-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-    .week-day-name{font-size:15px;font-weight:950;color:#f2f6fb}
-    .week-day-date{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-    .week-day-events{display:grid;gap:5px;align-content:start;min-height:0}
-    .week-event{padding:6px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);display:grid;gap:2px}
-    .week-event-time{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--gold)}
-    .week-event-title{font-size:12px;font-weight:900;line-height:1.15}
-    .week-event-loc{font-size:10px;color:var(--muted);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .empty-day{font-size:11px;color:var(--muted);font-weight:700;font-style:italic;padding:4px 0 0}
+    .week-day-head{display:grid;gap:2px;align-content:center;min-width:0}
+    .week-day-name{font-size:13px;font-weight:950;color:#f2f6fb;line-height:1.05}
+    .week-day-date{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .week-day-events{display:flex;gap:6px;align-items:stretch;min-width:0;min-height:0;overflow:hidden}
+    .week-event{padding:5px 7px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);display:grid;gap:1px;min-width:0;flex:1 1 0;overflow:hidden}
+    .week-event-time{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);white-space:nowrap}
+    .week-event-title{font-size:10px;font-weight:900;line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .week-event-loc{font-size:8px;color:var(--muted);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .empty-day{font-size:9px;color:var(--muted);font-weight:700;font-style:italic;padding:0;align-self:center}
     .month-wrap{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
     .month-weekdays,.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
     .month-weekdays{margin-bottom:8px}
@@ -131,7 +131,7 @@
 
     .newsbar{min-height:70px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:11px 18px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%);overflow:hidden}
     .news-label{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#f3c65e,#ffd979);color:#220f44;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px rgba(255,209,102,.25)}
-    .ticker-viewport{min-width:0;overflow:hidden}.ticker-track{display:flex;align-items:center;gap:38px;width:max-content;animation:ticker 48s linear infinite;will-change:transform}
+    .ticker-viewport{min-width:0;overflow:hidden}.ticker-track{display:flex;align-items:center;gap:38px;width:max-content;animation:ticker 105s linear infinite;will-change:transform}
     .ticker-item{white-space:nowrap;font-size:clamp(13px,1vw,18px);font-weight:800;color:#e7edf2}.ticker-item::after{content:"◆";margin-left:38px;color:var(--gold);font-size:9px}
     .updated{color:var(--muted);font-size:10px;font-weight:800;white-space:nowrap;text-align:right}
     @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -218,6 +218,23 @@
     /* VIEW 1 — Overview */
     body.view-overview .screen{
       grid-template-rows:auto minmax(0,1fr) auto;
+    }
+
+
+    /* Hide the top header/time/date on every view except Overview */
+    body.view-events .topbar,
+    body.view-inspire .topbar,
+    body.view-connect .topbar,
+    body.view-week .topbar,
+    body.view-month .topbar{
+      display:none;
+    }
+    body.view-events .screen,
+    body.view-inspire .screen,
+    body.view-connect .screen,
+    body.view-week .screen,
+    body.view-month .screen{
+      grid-template-rows:minmax(0,1fr) auto;
     }
 
     /* VIEW 2 — Events spotlight */
@@ -435,7 +452,7 @@
 
     <main class="main">
       <section class="panel events-panel" aria-label="Upcoming events">
-        <iframe class="events-frame" src="home-events.html?display=1" title="Upcoming Bethel events" loading="eager"></iframe>
+        <iframe id="events-frame" class="events-frame" src="home-events.html?display=1" title="Upcoming Bethel events" loading="eager"></iframe>
         <div class="status">Calendar-powered events</div>
       </section>
 
@@ -496,7 +513,7 @@
         <section class="panel info">
           <div class="info-copy">
             <div class="info-item"><div class="info-label">Sunday Worship</div><div class="info-value gold">9:30 AM</div></div>
-            <div class="info-item"><div class="info-label">Events & Updates</div><div class="info-value events-link">bethelamelancaster.com/events</div></div>
+            <div class="info-item events-update"><div class="info-label">Events & Updates</div><div class="info-value events-link">bethelamelancaster.com/events</div></div>
             <div class="info-item"><div class="info-label">Wednesday Bible Study</div><div class="info-value">Wednesdays starting Sept 9 • 6:30 PM • In Person &amp; Zoom • Sanctuary</div></div>
             <div class="info-item"><div class="info-label">Stay Connected</div><div class="info-value">Bethel App • Website • Cultural Center</div></div>
             <div class="website-row">
@@ -732,7 +749,8 @@
       for(let i=0;i<7;i++){
         const day=addDays(start,i);
         const items=events.filter(ev=>startOfDay(ev.start).getTime()===day.getTime()).sort((a,b)=>a.start-b.start);
-        const eventsHtml=items.length ? items.map(ev=>`<div class="week-event ${categoryClass(ev.category)}"><div class="week-event-time">${ev.allDay?'All day':formatTime(ev.start)}</div><div class="week-event-title">${escapeHtml(ev.title)}</div>${ev.location?`<div class="week-event-loc">${escapeHtml(ev.location)}</div>`:''}</div>`).join('') : '<div class="empty-day">No scheduled events</div>';
+        const shownItems=items.slice(0,3);
+        const eventsHtml=shownItems.length ? shownItems.map(ev=>`<div class="week-event ${categoryClass(ev.category)}"><div class="week-event-time">${ev.allDay?'All day':formatTime(ev.start)}</div><div class="week-event-title">${escapeHtml(ev.title)}</div>${ev.location?`<div class="week-event-loc">${escapeHtml(ev.location)}</div>`:''}</div>`).join('') + (items.length>3?`<div class="week-event"><div class="week-event-title">+${items.length-3} more</div></div>`:'') : '<div class="empty-day">No scheduled events</div>';
         days.push(`<div class="week-day-card ${sameDay(day,new Date())?'today':''}"><div class="week-day-head"><div class="week-day-name">${new Intl.DateTimeFormat('en-US',{weekday:'long'}).format(day)}</div><div class="week-day-date">${formatDayShort(day)}</div></div><div class="week-day-events">${eventsHtml}</div></div>`);
       }
       document.getElementById('week-list').innerHTML=days.join('');
@@ -802,6 +820,39 @@
         }
       }
     }
+
+    function tuneEmbeddedEvents(){
+      const frame=document.getElementById('events-frame');
+      if(!frame)return;
+      try{
+        const doc=frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+        if(!doc)return;
+
+        let style=doc.getElementById('bethel-display-overrides');
+        if(!style){
+          style=doc.createElement('style');
+          style.id='bethel-display-overrides';
+          style.textContent=`
+            .all-link{display:none !important;visibility:hidden !important}
+            .heading-row{grid-template-columns:1fr !important;gap:0 !important}
+            .heading-row > div{min-width:0 !important}
+          `;
+          doc.head.appendChild(style);
+        }
+
+        const allLink=doc.querySelector('.all-link');
+        if(allLink){
+          allLink.style.setProperty('display','none','important');
+          allLink.setAttribute('aria-hidden','true');
+          allLink.tabIndex=-1;
+        }
+      }catch(err){
+        console.warn('Could not tune embedded events:',err);
+      }
+    }
+
+    const eventsFrame=document.getElementById('events-frame');
+    if(eventsFrame)eventsFrame.addEventListener('load',tuneEmbeddedEvents);
 
     updateClock();
     setInterval(updateClock,1000);

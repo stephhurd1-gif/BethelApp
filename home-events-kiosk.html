@@ -101,7 +101,10 @@
       display:grid;
       place-items:center
     }
-    .visual img{width:100%;height:100%;object-fit:contain;display:block}
+    .visual img{
+      position:absolute;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;
+      object-fit:contain;object-position:center center;display:block
+    }
     .date-card{
       width:126px;border:1px solid var(--cat-border);border-radius:18px;overflow:hidden;
       background:rgba(0,0,0,.18);box-shadow:0 12px 32px rgba(0,0,0,.22);text-align:center
@@ -165,6 +168,54 @@
       .actions{padding-top:7px;gap:5px}
       .btn{padding:6px 8px;border-radius:7px;font-size:8px}
     }
+    html.week-mode .heading-row{margin-bottom:8px}
+    html.week-mode .viewport{height:calc(100vh - 68px)}
+    html.week-mode .track{
+      display:grid;
+      grid-template-columns:1fr;
+      grid-auto-rows:minmax(0,1fr);
+      gap:6px;
+      height:100%;
+      transform:none !important;
+    }
+    html.week-mode .slide{
+      width:100%;
+      min-height:0;
+      padding:0 8px;
+    }
+    html.week-mode .event{
+      height:100%;
+      min-height:0;
+      display:grid;
+      grid-template-columns:clamp(74px,11vw,96px) minmax(0,1fr);
+      grid-template-rows:minmax(0,1fr);
+      border-radius:13px;
+    }
+    html.week-mode .visual{
+      order:0;
+      grid-column:1;
+      grid-row:1;
+      width:100%;
+      height:100%;
+      min-height:0;
+      border:0;
+      border-right:1px solid var(--border);
+    }
+    html.week-mode .copy{
+      grid-column:2;
+      grid-row:1;
+      padding:7px 12px;
+      justify-content:center;
+    }
+    html.week-mode .badges{margin-bottom:4px}
+    html.week-mode .badge{min-height:16px;padding:2px 6px;font-size:7px}
+    html.week-mode .event h3{font-size:clamp(15px,1.2vw,20px)}
+    html.week-mode .meta{gap:2px;margin-top:4px;font-size:9px}
+    html.week-mode .desc,html.week-mode .actions{display:none}
+    html.week-mode .date-card{width:58px;border-radius:10px}
+    html.week-mode .date-card .month{padding:3px;font-size:8px}
+    html.week-mode .date-card .day{padding:4px 6px 1px;font-size:27px}
+    html.week-mode .date-card .dow{padding:0 6px 4px;font-size:7px}
     @media(prefers-reduced-motion:reduce){.track{transition:none}}
   </style>
 </head>
@@ -204,8 +255,9 @@
     const WEEK_MODE = QUERY.get('range') === 'week';
 
     if(WEEK_MODE){
+      document.documentElement.classList.add('week-mode');
       document.getElementById('events-heading').textContent='This Week at Bethel';
-      document.getElementById('events-subheading').textContent='Website-style event cards for the current week.';
+      document.getElementById('events-subheading').textContent='Events scheduled over the next seven days.';
       document.getElementById('loading').textContent='Loading this week\u2019s events\u2026';
       document.getElementById('carousel').setAttribute('aria-label','This week at Bethel');
     }
@@ -342,10 +394,10 @@
     }
 
     function selectCarouselEvents(events){
-      const weekStart=startOfWeek(new Date());
-      const weekEnd=endOfDay(addDays(weekStart,6));
+      const sevenDayStart=startOfDay(new Date());
+      const sevenDayEnd=endOfDay(addDays(sevenDayStart,6));
       const source=WEEK_MODE
-        ? events.filter(ev=>ev.end>=new Date()&&ev.start<=weekEnd)
+        ? events.filter(ev=>ev.end>=new Date()&&ev.start<=sevenDayEnd)
         : events;
       const unique=[],seenRecurring=new Set();
       for(const ev of source){
@@ -355,7 +407,7 @@
           seenRecurring.add(key);
         }
         unique.push(ev);
-        if(unique.length>=(WEEK_MODE?14:7))break;
+        if(unique.length>=7)break;
       }
       return unique;
     }
@@ -387,7 +439,7 @@
               </div>
             </div>
             <div class="visual">
-              ${ev.image
+              ${ev.image&&!WEEK_MODE
                 ? `<img src="${esc(ev.image)}" alt="${esc(ev.title+' event flyer')}" loading="lazy">`
                 : `<div class="date-card">
                     <div class="month">${esc(month)}</div>
@@ -406,6 +458,7 @@
     const prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
     function visibleCount(){
+      if(WEEK_MODE)return Math.max(1,slides.length);
       if(window.innerWidth<=650)return 1;
       if(window.innerWidth<=1050)return 2;
       return 3;
@@ -434,13 +487,15 @@
       if(i>max)i=0;
       if(i<0)i=max;
       index=i;
-      track.style.transform=`translateX(-${index*(100/visibleCount())}%)`;
+      const visible=visibleCount();
+      track.style.setProperty('--visible',String(visible));
+      track.style.transform=WEEK_MODE?'none':`translateX(-${index*(100/visible)}%)`;
       dots.querySelectorAll('.dot').forEach((d,n)=>d.classList.toggle('active',n===index));
     }
 
     function restart(){
       clearInterval(timer);
-      if(paused||prefersReduced||maxIndex()===0)return;
+      if(WEEK_MODE||paused||prefersReduced||maxIndex()===0)return;
       timer=setInterval(()=>show(index+1),7000);
     }
     function setPaused(value){

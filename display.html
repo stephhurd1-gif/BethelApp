@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#01060b">
+  <meta name="theme-color" content="#3a1f5c">
   <title>Bethel AME Lancaster — Rotating Cultural Center Display v16</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
@@ -11,8 +11,8 @@
     html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;overflow:hidden}
     body{background:radial-gradient(circle at 12% 10%,rgba(190,138,255,.24),transparent 26%),radial-gradient(circle at 88% 8%,rgba(255,209,102,.10),transparent 18%),radial-gradient(circle at 82% 82%,rgba(143,197,255,.10),transparent 22%),radial-gradient(circle at 55% 52%,rgba(162,109,245,.08),transparent 34%),linear-gradient(145deg,#241245 0%,#1a1030 24%,#140b28 54%,#10081e 78%,#09050f 100%)}
     .screen{width:100vw;height:100vh;padding:18px 22px 16px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:14px}
-    .topbar{min-height:102px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:14px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%)}
-    .brand{display:flex;align-items:center;gap:16px;min-width:0}.logo-wrap{width:86px;height:86px;flex:0 0 auto;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:transparent;border:none;box-shadow:none}.logo{width:100%;height:100%;padding:0;object-fit:contain;display:block;flex:0 0 auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))}
+    .topbar{min-height:126px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:10px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%)}
+    .brand{display:flex;align-items:center;gap:18px;min-width:0}.logo-wrap{width:110px;height:110px;flex:0 0 auto;display:grid;place-items:center;border-radius:14px;overflow:hidden;background:transparent;border:none;box-shadow:none}.logo{width:100%;height:100%;padding:0;object-fit:contain;display:block;flex:0 0 auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))}
     .brand-copy{min-width:0}.church-name{font-size:clamp(25px,2.35vw,43px);font-weight:950;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .church-line{margin-top:5px;color:#efe3ff;font-size:clamp(12px,1vw,18px);font-weight:700}.clockbox{text-align:right;flex:0 0 auto}
     .time{font-size:clamp(34px,4vw,68px);font-weight:950;line-height:.95;letter-spacing:-.035em}.date{margin-top:8px;color:var(--gold);font-size:clamp(13px,1.15vw,20px);font-weight:900;text-transform:uppercase;letter-spacing:.055em}
@@ -299,7 +299,7 @@
     }
 
 
-    /* Burn-in reduction: rotate layouts and move content every 90 seconds */
+    /* Burn-in reduction: rotate layouts and move content every three minutes */
     body{transition:background 1.2s ease}
     .topbar,.main,.newsbar,.events-panel,.weather,.verse,.info{
       transition:
@@ -436,20 +436,37 @@
     }
 
 
-    /* Hide the top header/time/date on every view except Overview */
+    /* Keep the larger logo header visible on every rotating view. */
     body.view-events .topbar,
     body.view-inspire .topbar,
     body.view-connect .topbar,
     body.view-week .topbar,
     body.view-month .topbar{
-      display:none;
+      display:grid;
     }
     body.view-events .screen,
     body.view-inspire .screen,
     body.view-connect .screen,
     body.view-week .screen,
     body.view-month .screen{
-      grid-template-rows:minmax(0,1fr) auto;
+      grid-template-rows:auto minmax(0,1fr) auto;
+    }
+    body.view-events .topbar,
+    body.view-inspire .topbar,
+    body.view-connect .topbar,
+    body.view-week .topbar,
+    body.view-month .topbar{
+      min-height:102px;
+      padding:14px 20px;
+    }
+    body.view-events .logo-wrap,
+    body.view-inspire .logo-wrap,
+    body.view-connect .logo-wrap,
+    body.view-week .logo-wrap,
+    body.view-month .logo-wrap{
+      width:86px;
+      height:86px;
+      border-radius:12px;
     }
 
     /* VIEW 2 — Events spotlight */
@@ -489,7 +506,7 @@
         linear-gradient(155deg,#24102d 0%,#18102a 45%,#0d0a1b 100%);
     }
     body.view-inspire .screen{
-      grid-template-rows:minmax(0,1fr);
+      grid-template-rows:auto minmax(0,1fr);
     }
     body.view-inspire .main{
       display:grid;
@@ -660,8 +677,40 @@
     body.view-month .events-panel, body.view-month .side, body.view-month .week-panel{display:none}
     body.view-month .month-panel{display:block}
 
+    /* Unified purple display theme; weather intentionally remains blue. */
+    body,
+    body.view-overview,
+    body.view-events,
+    body.view-week,
+    body.view-month,
+    body.view-inspire,
+    body.view-connect{
+      background:linear-gradient(135deg,#3a1f5c 0%,#23123d 58%,#130a23 100%);
+    }
+    .panel,
+    .events-panel,
+    .week-panel,
+    .month-panel,
+    .verse,
+    .info,
+    .overview-news,
+    .daily-card,
+    .newsbar{
+      background:
+        radial-gradient(circle at 84% 12%,rgba(220,102,173,.15),transparent 34%),
+        linear-gradient(145deg,#421936 0%,#2b132c 50%,#1a0d20 100%);
+      border-color:rgba(224,123,185,.24);
+    }
+    .weather{
+      background:
+        radial-gradient(circle at 86% 8%,rgba(109,168,254,.14),transparent 28%),
+        linear-gradient(145deg,#18234d 0%,#151936 52%,#101025 100%);
+      border-color:rgba(110,168,254,.24);
+    }
+    .events-frame,.week-events-frame{background:transparent}
 
-    body.view-inspire .screen{grid-template-rows:minmax(0,1fr) !important}
+
+    body.view-inspire .screen{grid-template-rows:auto minmax(0,1fr) !important}
     body.view-inspire .newsbar{display:none !important}
 
     @media(max-width:900px){
@@ -1387,10 +1436,10 @@
     setInterval(loadNews,20*60*1000);
     setInterval(loadCalendar,20*60*1000);
 
-    // Rotate the entire layout every 90 seconds so the same bright/static
+    // Rotate the entire layout every three minutes so the same bright/static
     // elements do not remain in the same screen position all day.
-    const DISPLAY_VIEWS=['view-overview','view-week','view-month','view-inspire'];
-    const VIEW_INTERVAL_MS=90*1000;
+    const DISPLAY_VIEWS=['view-overview','view-week','view-inspire'];
+    const VIEW_INTERVAL_MS=3*60*1000;
     let currentView=0;
 
     function setDisplayView(index){

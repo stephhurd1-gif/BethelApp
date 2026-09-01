@@ -6,6 +6,7 @@
   <title>Events — Bethel AME Lancaster</title>
   <meta name="description" content="Upcoming worship, ministry, community, youth, and special events at Bethel AME Lancaster.">
   <meta name="theme-color" content="#01060b">
+  <meta name="bethel-events-build" content="safe-header-v2-preview-visible">
 
   <style>
     :root {
@@ -884,6 +885,244 @@
     @media (prefers-reduced-motion:reduce) {
       *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
     }
+  
+    /* =========================================================
+       BETHEL MAIN-SITE STYLE HEADER
+       Shown only in normal browser/site mode. The installed app
+       and iframe/embed modes keep their existing compact layout.
+       ========================================================= */
+    .site-header {
+      display:block;
+      width:100%;
+      background:#000;
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    body.app-mode .site-header { display:none; }
+
+    .site-header-inner {
+      width:100%;
+      min-height:144px;
+      padding:20px clamp(32px, 4.2vw, 78px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:36px;
+    }
+
+    .site-brand {
+      display:flex;
+      align-items:center;
+      flex:0 0 auto;
+      text-decoration:none;
+    }
+    .site-brand img {
+      display:block;
+      width:74px;
+      height:92px;
+      object-fit:contain;
+    }
+    .site-brand-fallback {
+      display:none;
+      color:#fff;
+      font-weight:900;
+      line-height:1.05;
+      letter-spacing:.02em;
+      font-size:14px;
+      text-transform:uppercase;
+    }
+
+    .site-nav {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:30px;
+      margin-left:auto;
+    }
+
+    .site-nav-item {
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .site-nav-link,
+    .site-nav-toggle {
+      appearance:none;
+      border:0;
+      background:transparent;
+      color:#fff;
+      text-decoration:none;
+      padding:10px 0 9px;
+      font-size:18px;
+      font-weight:400;
+      letter-spacing:.01em;
+      line-height:1.2;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .site-nav-link:hover,
+    .site-nav-link:focus-visible,
+    .site-nav-toggle:hover,
+    .site-nav-toggle:focus-visible {
+      color:#f7bf5b;
+      outline:none;
+    }
+
+    .site-nav-link.active {
+      border-bottom:1px solid rgba(255,255,255,.82);
+    }
+
+    .site-nav-toggle::after {
+      content:"⌄";
+      display:inline-block;
+      margin-left:5px;
+      transform:translateY(-1px);
+      font-size:14px;
+    }
+
+    .site-dropdown {
+      display:none;
+      position:absolute;
+      right:-12px;
+      top:calc(100% + 7px);
+      width:245px;
+      padding:8px;
+      background:#0b0b0b;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      box-shadow:0 18px 40px rgba(0,0,0,.42);
+      z-index:100;
+    }
+
+    .site-nav-item.open .site-dropdown,
+    .site-nav-item:focus-within .site-dropdown {
+      display:block;
+    }
+
+    .site-dropdown a {
+      display:block;
+      padding:10px 11px;
+      border-radius:7px;
+      color:#eee;
+      text-decoration:none;
+      font-size:14px;
+      line-height:1.25;
+    }
+    .site-dropdown a:hover,
+    .site-dropdown a:focus-visible {
+      background:rgba(255,255,255,.08);
+      color:#f7bf5b;
+      outline:none;
+    }
+
+    .site-menu-button {
+      display:none;
+      width:46px;
+      height:42px;
+      padding:0;
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:9px;
+      background:#080808;
+      color:#fff;
+      font-size:24px;
+      cursor:pointer;
+    }
+
+    /* The public Events subdomain should use the whole browser width. */
+    body:not(.app-mode) .page {
+      width:100%;
+      max-width:none;
+      margin:0;
+      padding:28px clamp(28px, 4vw, 72px) 64px;
+    }
+
+    @media (max-width:1180px) {
+      .site-header-inner {
+        min-height:116px;
+        padding:14px 24px;
+      }
+      .site-brand img {
+        width:62px;
+        height:78px;
+      }
+      .site-nav { gap:20px; }
+      .site-nav-link,
+      .site-nav-toggle { font-size:16px; }
+    }
+
+    @media (max-width:900px) {
+      .site-header-inner {
+        min-height:88px;
+        padding:10px 16px;
+        position:relative;
+      }
+      .site-brand img {
+        width:52px;
+        height:64px;
+      }
+      .site-menu-button {
+        display:block;
+        margin-left:auto;
+      }
+      .site-nav {
+        display:none;
+        position:absolute;
+        top:100%;
+        left:0;
+        right:0;
+        margin:0;
+        padding:8px 16px 16px;
+        flex-direction:column;
+        align-items:stretch;
+        gap:0;
+        background:#000;
+        border-top:1px solid rgba(255,255,255,.08);
+        border-bottom:1px solid rgba(255,255,255,.12);
+        box-shadow:0 18px 30px rgba(0,0,0,.35);
+        z-index:99;
+      }
+      .site-header.menu-open .site-nav { display:flex; }
+      .site-nav-item { width:100%; }
+      .site-nav-link,
+      .site-nav-toggle {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        width:100%;
+        padding:13px 4px;
+        border-bottom:1px solid rgba(255,255,255,.08);
+        font-size:16px;
+        text-align:left;
+      }
+      .site-nav-link.active {
+        border-bottom-color:#f7bf5b;
+        color:#f7bf5b;
+      }
+      .site-dropdown {
+        position:static;
+        width:100%;
+        margin:0;
+        padding:2px 0 6px 12px;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+        background:#000;
+      }
+      .site-nav-item:not(.open) .site-dropdown { display:none; }
+      .site-nav-item.open .site-dropdown { display:block; }
+      .site-dropdown a {
+        padding:10px 8px;
+        color:#cbd1d5;
+      }
+    }
+
+    @media (max-width:520px) {
+      body:not(.app-mode) .page {
+        padding:14px 10px 42px;
+      }
+    }
+
   </style>
 </head>
 
@@ -901,6 +1140,76 @@
       if (embedded) document.body.classList.add('embedded');
     })();
   </script>
+
+
+  <header class="site-header" id="bethel-site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="https://bethelamelancaster.com/" aria-label="Bethel AME Lancaster home">
+        <img src="/logo.png" alt="Bethel AME Lancaster"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <span class="site-brand-fallback">Bethel AME<br>Lancaster</span>
+      </a>
+
+      <button class="site-menu-button" id="site-menu-button" type="button"
+              aria-label="Open website navigation" aria-expanded="false">☰</button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Bethel website navigation">
+        <div class="site-nav-item">
+          <a class="site-nav-link" href="https://bethelamelancaster.com/">Home</a>
+        </div>
+
+        <div class="site-nav-item has-dropdown">
+          <button class="site-nav-toggle" type="button" aria-expanded="false">About</button>
+          <div class="site-dropdown">
+            <a href="https://bethelamelancaster.com/about-our-pastor">About Our Pastor</a>
+            <a href="https://bethelamelancaster.com/our-church-leaders">Our Church Leaders</a>
+            <a href="https://bethelamelancaster.com/our-mission">Our Mission</a>
+            <a href="https://bethelamelancaster.com/our-local-church-history">Our Local Church History</a>
+            <a href="https://bethelamelancaster.com/ame-denomination-history">AME Denomination History</a>
+          </div>
+        </div>
+
+        <div class="site-nav-item has-dropdown">
+          <button class="site-nav-toggle" type="button" aria-expanded="false">Visit</button>
+          <div class="site-dropdown">
+            <a href="https://bethelamelancaster.com/services">Our Services</a>
+            <a href="https://bethelamelancaster.com/watch-live">Watch Live</a>
+            <a href="https://bethelamelancaster.com/food-bank">Food Bank</a>
+            <a href="https://bethelamelancaster.com/contact-us">Directions & Contact</a>
+          </div>
+        </div>
+
+        <div class="site-nav-item">
+          <a class="site-nav-link" href="https://bethelamelancaster.com/living-the-experience">LTE</a>
+        </div>
+
+        <div class="site-nav-item has-dropdown">
+          <button class="site-nav-toggle" type="button" aria-expanded="false">Ministries</button>
+          <div class="site-dropdown">
+            <a href="https://bethelamelancaster.com/services">Worship & Church School</a>
+            <a href="https://bethelamelancaster.com/food-bank">Jean Polite Food Bank</a>
+          </div>
+        </div>
+
+        <div class="site-nav-item">
+          <a class="site-nav-link" href="https://bethelamelancaster.com/contact-us">Contact Us</a>
+        </div>
+
+        <div class="site-nav-item">
+          <a class="site-nav-link active" href="https://events.bethelamelancaster.com/" aria-current="page">Events</a>
+        </div>
+
+        <div class="site-nav-item has-dropdown">
+          <button class="site-nav-toggle" type="button" aria-expanded="false">More</button>
+          <div class="site-dropdown">
+            <a href="https://bethelamelancaster.com/donate">Give</a>
+            <a href="https://bethelamelancaster.com/app">Bethel App</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
 
   <div class="page">
     <a class="back-to-app" href="/" aria-label="Back to Bethel App">&#8592; Back to Bethel App</a>
@@ -1965,5 +2274,57 @@
     new ResizeObserver(reportHeight).observe(document.body);
     loadEvents();
   </script>
+
+  <script>
+    (function () {
+      const header = document.getElementById('bethel-site-header');
+      const menuButton = document.getElementById('site-menu-button');
+      if (!header || !menuButton) return;
+
+      menuButton.addEventListener('click', function () {
+        const open = header.classList.toggle('menu-open');
+        menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuButton.textContent = open ? '✕' : '☰';
+      });
+
+      header.querySelectorAll('.site-nav-toggle').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const item = button.closest('.site-nav-item');
+          const willOpen = !item.classList.contains('open');
+
+          header.querySelectorAll('.site-nav-item.open').forEach(function (other) {
+            if (other !== item) {
+              other.classList.remove('open');
+              const otherButton = other.querySelector('.site-nav-toggle');
+              if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
+            }
+          });
+
+          item.classList.toggle('open', willOpen);
+          button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!header.contains(event.target)) {
+          header.querySelectorAll('.site-nav-item.open').forEach(function (item) {
+            item.classList.remove('open');
+            const button = item.querySelector('.site-nav-toggle');
+            if (button) button.setAttribute('aria-expanded', 'false');
+          });
+        }
+      });
+
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 900) {
+          header.classList.remove('menu-open');
+          menuButton.setAttribute('aria-expanded', 'false');
+          menuButton.textContent = '☰';
+        }
+      });
+    })();
+  </script>
+
 </body>
 </html>

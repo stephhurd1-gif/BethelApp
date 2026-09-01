@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#01060b">
-  <title>Bethel AME Lancaster — Rotating Cultural Center Display v11</title>
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display v14</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
     *{box-sizing:border-box}
@@ -129,6 +129,120 @@
     .week-event.cat-youth,.month-event.cat-youth{box-shadow:inset 3px 0 0 #9cb6ff}
     .week-event.cat-meetings,.month-event.cat-meetings{box-shadow:inset 3px 0 0 #a3a9bb}
 
+
+    /* Daily content blocks used on the Verse + Weather screen */
+    .daily-extras{
+      display:none;
+      min-height:0;
+      grid-template-columns:minmax(0,1.35fr) minmax(260px,.72fr) minmax(300px,.93fr);
+      gap:14px;
+    }
+    .daily-card{
+      min-width:0;
+      min-height:0;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--radius);
+      padding:18px 20px;
+      overflow:hidden;
+      box-shadow:0 18px 34px rgba(3,0,12,.34), inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .daily-headlines{
+      background:
+        radial-gradient(circle at 10% 10%,rgba(143,197,255,.13),transparent 30%),
+        linear-gradient(145deg,#15264c 0%,#121a38 50%,#0e1128 100%);
+      border-color:rgba(143,197,255,.24);
+    }
+    .daily-word{
+      background:
+        radial-gradient(circle at 84% 12%,rgba(255,209,102,.12),transparent 30%),
+        linear-gradient(145deg,#42331a 0%,#2f2718 52%,#211a12 100%);
+      border-color:rgba(255,209,102,.22);
+    }
+    .daily-joke{
+      background:
+        radial-gradient(circle at 86% 12%,rgba(255,122,138,.13),transparent 30%),
+        linear-gradient(145deg,#431c35 0%,#2f182d 52%,#211122 100%);
+      border-color:rgba(255,122,138,.22);
+    }
+    .daily-card-title{
+      margin:0 0 12px;
+      font-size:clamp(13px,1vw,18px);
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+    }
+    .daily-headlines .daily-card-title{color:#9fd0ff}
+    .daily-word .daily-card-title{color:#ffe39a}
+    .daily-joke .daily-card-title{color:#ffb4c1}
+    .headline-list{
+      margin:0;
+      padding-left:22px;
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+    .headline-list li{
+      padding-left:4px;
+      font-size:clamp(15px,1.12vw,21px);
+      line-height:1.25;
+      font-weight:800;
+      color:#f2f6fb;
+    }
+    .headline-list li::marker{color:#9fd0ff}
+    .daily-updated{
+      margin-top:12px;
+      font-size:10px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .word-main{
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:clamp(28px,2.3vw,44px);
+      font-weight:800;
+      color:#fff5cf;
+      line-height:1.05;
+    }
+    .word-pos{
+      margin-top:5px;
+      color:#d7c892;
+      font-size:12px;
+      font-weight:900;
+      font-style:italic;
+    }
+    .word-definition{
+      margin-top:14px;
+      font-size:clamp(15px,1.05vw,19px);
+      line-height:1.38;
+      font-weight:700;
+      color:#fffaf0;
+    }
+    .word-example{
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      color:#e1d9c4;
+      font-size:clamp(12px,.84vw,15px);
+      line-height:1.35;
+      font-style:italic;
+    }
+    .joke-text{
+      font-size:clamp(18px,1.5vw,28px);
+      line-height:1.35;
+      font-weight:900;
+      color:#fff4f7;
+    }
+    .joke-punchline{
+      margin-top:18px;
+      padding-top:15px;
+      border-top:1px solid rgba(255,255,255,.10);
+      font-size:clamp(17px,1.32vw,24px);
+      line-height:1.32;
+      font-weight:900;
+      color:#ffd4dd;
+    }
+
     .newsbar{min-height:70px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:11px 18px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,rgba(61,35,101,.97) 0%,rgba(43,25,74,.98) 45%,rgba(22,12,42,.995) 100%);overflow:hidden}
     .news-label{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#f3c65e,#ffd979);color:#220f44;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px rgba(255,209,102,.25)}
     .ticker-viewport{min-width:0;overflow:hidden}.ticker-track{display:flex;align-items:center;gap:38px;width:max-content;animation:ticker 105s linear infinite;will-change:transform}
@@ -215,6 +329,115 @@
       background:rgba(255,255,255,.76);
     }
 
+
+    /* Overview: tighter events area + bullet-style local headlines underneath */
+    .overview-news{
+      display:none;
+      min-width:0;
+      min-height:0;
+      padding:16px 20px;
+      border:1px solid rgba(143,197,255,.20);
+      border-radius:var(--radius);
+      background:
+        radial-gradient(circle at 10% 12%,rgba(143,197,255,.10),transparent 28%),
+        linear-gradient(145deg,#172342 0%,#141931 50%,#101124 100%);
+      box-shadow:0 18px 34px rgba(3,0,12,.34), inset 0 1px 0 rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .overview-news-head{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .overview-news-title{
+      margin:0;
+      color:#9fd0ff;
+      font-size:clamp(14px,1.05vw,19px);
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+    }
+    .overview-news-updated{
+      color:var(--muted);
+      font-size:10px;
+      font-weight:800;
+      white-space:nowrap;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+    .overview-headline-list{
+      margin:0;
+      padding-left:24px;
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+    .overview-headline-list li{
+      padding-left:4px;
+      font-size:clamp(14px,1.05vw,19px);
+      line-height:1.25;
+      font-weight:800;
+      color:#f2f6fb;
+    }
+    .overview-headline-list li::marker{color:#9fd0ff}
+
+    body.view-overview .screen{
+      grid-template-rows:auto minmax(0,1fr);
+    }
+    body.view-overview .main{
+      display:grid;
+      grid-template-columns:minmax(0,2.05fr) minmax(320px,.95fr);
+      grid-template-rows:minmax(0,.62fr) minmax(0,.38fr);
+      gap:14px;
+    }
+    body.view-overview .events-panel{
+      grid-column:1;
+      grid-row:1;
+    }
+    body.view-overview .overview-news{
+      display:block;
+      grid-column:1;
+      grid-row:2;
+    }
+    body.view-overview .side{
+      grid-column:2;
+      grid-row:1/-1;
+      grid-template-rows:minmax(0,.72fr) minmax(0,.82fr) minmax(0,1.66fr);
+    }
+    body.view-overview .newsbar{display:none}
+
+    /* Church information card */
+    .info-title{
+      grid-column:1/-1;
+      margin:0 0 2px;
+      color:#baf3c7;
+      font-size:clamp(13px,1vw,18px);
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+    }
+    .info-copy.compact-info{
+      grid-template-columns:1fr 1fr;
+      gap:8px 12px;
+      align-content:start;
+    }
+    .info-copy.compact-info .info-label{font-size:9px}
+    .info-copy.compact-info .info-value{
+      font-size:clamp(10px,.72vw,13px);
+      line-height:1.2;
+    }
+    .info-copy.compact-info .info-item.wide{grid-column:1/-1}
+    .info-copy.compact-info .website-row{
+      grid-column:1/-1;
+      padding-top:7px;
+      margin-top:0;
+    }
+    .info-copy.compact-info .website-address{
+      font-size:clamp(12px,.9vw,16px);
+    }
+
     /* VIEW 1 — Overview */
     body.view-overview .screen{
       grid-template-rows:auto minmax(0,1fr) auto;
@@ -252,6 +475,7 @@
       transform:translateY(-3px);
     }
     body.view-events .church-line{display:none}
+    body.view-events .overview-news, body.view-week .overview-news, body.view-month .overview-news, body.view-inspire .overview-news, body.view-connect .overview-news{display:none !important}
     body.view-events .main{
       grid-template-columns:minmax(0,1fr);
     }
@@ -273,19 +497,32 @@
         linear-gradient(155deg,#24102d 0%,#18102a 45%,#0d0a1b 100%);
     }
     body.view-inspire .screen{
-      grid-template-rows:auto minmax(0,1fr) auto;
+      grid-template-rows:minmax(0,1fr);
     }
     body.view-inspire .main{
-      grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      grid-template-rows:minmax(0,1.05fr) minmax(0,.72fr);
+      gap:14px;
     }
-    body.view-inspire .events-panel{display:none}
+    body.view-inspire .events-panel,
+    body.view-inspire .week-panel,
+    body.view-inspire .month-panel{display:none}
     body.view-inspire .side{
-      grid-column:1/-1;
+      grid-column:1;
+      grid-row:1;
       display:grid;
       grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);
       grid-template-rows:minmax(0,1fr) auto;
       gap:14px;
     }
+    body.view-inspire .daily-extras{
+      display:grid;
+      grid-column:1;
+      grid-row:2;
+    }
+    body.view-inspire .newsbar{display:none}
+
     body.view-inspire .verse{
       grid-column:1;
       grid-row:1/-1;
@@ -408,6 +645,10 @@
     body.view-month .events-panel, body.view-month .side, body.view-month .week-panel{display:none}
     body.view-month .month-panel{display:block}
 
+
+    body.view-inspire .screen{grid-template-rows:minmax(0,1fr) !important}
+    body.view-inspire .newsbar{display:none !important}
+
     @media(max-width:900px){
       .view-indicator{display:none}
       body.view-events .side,
@@ -428,6 +669,8 @@
       body.view-connect .info{
         grid-column:auto;grid-row:auto;transform:none;
       }
+      body.view-inspire .main{grid-template-rows:auto auto}
+      body.view-inspire .daily-extras{grid-template-columns:1fr}
     }
 
         @media(max-aspect-ratio:4/3){html,body{overflow:auto}.screen{height:auto;min-height:100vh}.main{grid-template-columns:1fr}.events-panel{height:660px}.side{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}.weather{grid-column:1}.verse{grid-column:2;grid-row:1}.info{grid-column:1/-1}}
@@ -454,6 +697,16 @@
       <section class="panel events-panel" aria-label="Upcoming events">
         <iframe id="events-frame" class="events-frame" src="home-events.html?display=1" title="Upcoming Bethel events" loading="eager"></iframe>
         <div class="status">Calendar-powered events</div>
+      </section>
+
+      <section class="overview-news" aria-label="Lancaster local headlines">
+        <div class="overview-news-head">
+          <h2 class="overview-news-title">Lancaster Local Headlines</h2>
+          <div class="overview-news-updated" id="overview-news-updated"></div>
+        </div>
+        <ul class="overview-headline-list" id="overview-headline-list">
+          <li>Loading local headlines…</li>
+        </ul>
       </section>
 
       <section class="panel week-panel" aria-label="This week's calendar">
@@ -511,16 +764,51 @@
         </section>
 
         <section class="panel info">
-          <div class="info-copy">
-            <div class="info-item"><div class="info-label">Sunday Worship</div><div class="info-value gold">9:30 AM</div></div>
-            <div class="info-item events-update"><div class="info-label">Events & Updates</div><div class="info-value events-link">bethelamelancaster.com/events</div></div>
-            <div class="info-item"><div class="info-label">Wednesday Bible Study</div><div class="info-value">Wednesdays starting Sept 9 • 6:30 PM • In Person &amp; Zoom • Sanctuary</div></div>
-            
+          <div class="info-copy compact-info">
+            <h2 class="info-title">Church Information</h2>
+
+            <div class="info-item">
+              <div class="info-label">Sunday Worship</div>
+              <div class="info-value gold">9:30 AM</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Adult Sunday School</div>
+              <div class="info-value">Sundays • 9:00 AM</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Kids’ Church School</div>
+              <div class="info-value">Fridays • 6:00 PM</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Wednesday Bible Study</div>
+              <div class="info-value">6:30 PM • In Person &amp; Zoom • Sanctuary</div>
+            </div>
+
+            <div class="info-item wide">
+              <div class="info-label">Morning Prayer Line</div>
+              <div class="info-value">Monday–Friday • 7:30 AM</div>
+              <div class="info-value" id="prayer-join">Join details loading from calendar…</div>
+            </div>
+
+            <div class="info-item wide">
+              <div class="info-label">Food Bank</div>
+              <div class="info-value" id="food-bank-schedule">Schedule loading from calendar…</div>
+            </div>
+
+            <div class="info-item events-update wide">
+              <div class="info-label">Events &amp; Updates</div>
+              <div class="info-value events-link">bethelamelancaster.com/events</div>
+            </div>
+
             <div class="website-row">
               <div class="info-label">Visit Us Online</div>
               <div class="website-address">bethelamelancaster.com</div>
             </div>
           </div>
+
           <div class="giving-qr" aria-label="QR code for online giving">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhwAAAIcAQAAAACVhUrRAAADk0lEQVR4nO2dTY4jIQyFn0ezhxv0/Y/VN4ATvFkY81dZTSfpingoKhWEfIKFZWMbx4gft/rn5wxAEEEEEUQQQQQRRBBBBBHkJRDrLU/dDDPzLqoBWL6NyTfcjiCCvA+S6A1o8sICFpBENRYg0ce3yc9fiSCCfBpk0iNgCRXjI4n+wm+7Tr7ndgQR5MWQvw/GUrFEAKjZTTUArMaa7cHsZ61EEEE+H1IN1cwMic1s6y0U0JtWIogg94UMvTMkJBWLD4D2BJoy2iY/bSWCCPKZkNo8Z9vX9kX4qSfFy4PJ99uOIIK8HNL0zqxHWA3xYTX6Yce/q4Zd6TxrJYII8qkQy6FQchuZXdZwJ1tiPw1J7whyNgQtUpMIoHsGSHp8p42TLACAxBbciS5JlvtsRxBB3gZBj3IOSSkhLKnJlDvcXFK86z+U7AhyMGTITuuWeIbUNJGZBKelHJT2W8mOIEdCpthoKs0RXTMSrRprBkDAwl3A1Vnt7us7bUcQQd4G6brj8hLdNq1g6foRSTabIOdChq9g9gbM3V1qym7OSXYEORIybDZLtIjdtGfNrMaw0NxgQ+S2cQR67rMdQQR5G2SYakPjhD0GTNcNujLqXmv52QQ5GjJON+hhnetJZ/rMDmrJjiAHQybZmcM38b5EeUKOWpPsCHI05IGW6RHSvZu4y5HiO4KcC5k80mUZbG9pWHFdasa9HukdQc6FLGEddKlZPQbdflsS3iQ7ghwNWXVKt8cuvoIxmKbcNsmOIIIAfr+gSUpdL1wnkuz1cyyD39ZLGdx0O4II8lrIbrNhOwFFWGc21S55O/fZjiCC/BLE9UsG4no1v21xSq9NtQ0FORiy3N8h1+SBGAFGlGdPe5PeEeRQyKhX0PLZqqEntsULo1BbVzysRp13BBGkFyVItC968U8vRr1oGQA1ClZ/8Qp5ykoEEeRDIOupf/JXz76CefKWriObTZDDIctfG7gxVqeK7gXA8BVcVM/ttiOIIK+HxP2ddnu639DJhnbeQTv7FAMQt7AxF2270XYEEeQXIL0y20geqDZMuO6sjlLVU23qO25HEEF+ARJO6VG23U891cb1hDpX3733dgQR5F0Q97BZRlc0cEfcGt9RXVBBzoY8+B+EXksK/kwFNSP+E8FHpsPOs1YiiCCfBdlrG85p0kviNB5dTJCPWpBzIbbnqP1Hq/fZjiCCCCKIIIIIIogggggiSG//ABMSU6e+5m2PAAAAAElFTkSuQmCC" alt="Scan to give online">
             <div class="giving-qr-title">Give Online</div>
@@ -528,11 +816,34 @@
           </div>
         </section>
       </aside>
+
+      <section class="daily-extras" aria-label="Daily information">
+        <article class="daily-card daily-headlines">
+          <h2 class="daily-card-title">Lancaster Local Headlines</h2>
+          <ul class="headline-list" id="headline-list">
+            <li>Loading local headlines…</li>
+          </ul>
+          <div class="daily-updated" id="daily-news-updated"></div>
+        </article>
+
+        <article class="daily-card daily-word">
+          <h2 class="daily-card-title">Word of the Day</h2>
+          <div class="word-main" id="word-main">Loading…</div>
+          <div class="word-pos" id="word-pos"></div>
+          <div class="word-definition" id="word-definition"></div>
+          <div class="word-example" id="word-example"></div>
+        </article>
+
+        <article class="daily-card daily-joke">
+          <h2 class="daily-card-title">Dad Joke of the Day</h2>
+          <div class="joke-text" id="joke-text">Loading today’s joke…</div>
+          <div class="joke-punchline" id="joke-punchline"></div>
+        </article>
+      </section>
     </main>
 
     <div class="view-indicator" aria-hidden="true">
       <span class="view-dot active"></span>
-      <span class="view-dot"></span>
       <span class="view-dot"></span>
       <span class="view-dot"></span>
       <span class="view-dot"></span>
@@ -551,10 +862,81 @@
     const TZ='America/New_York';
     const WEATHER_URL='https://api.open-meteo.com/v1/forecast?latitude=40.0379&longitude=-76.3055&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=5';
     const NEWS_RSS='https://news.google.com/rss/search?q='+encodeURIComponent('Lancaster Pennsylvania local news')+'&hl=en-US&gl=US&ceid=US:en';
-    const NEWS_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS);
+    const NEWS_FIREBASE_URL='https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getLocalNews';
+    const NEWS_FALLBACK_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS);
+    const NEWS_CACHE_KEY='bethel_display_news_v2';
+    const NEWS_CACHE_MAX_MS=72*60*60*1000;
     const EVENTS_FEED_URL='https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
     const CALENDAR_CACHE_KEY='bethel_display_calendar_v2';
     const CALENDAR_CACHE_MS=15*60*1000;
+
+    const WORDS_OF_DAY=[
+      {word:'Benevolent',pos:'adjective',definition:'Kind, generous, and willing to help others.',example:'Her benevolent spirit made everyone feel welcome and cared for.'},
+      {word:'Resilient',pos:'adjective',definition:'Able to recover and keep going after difficulty or change.',example:'A resilient community finds strength even after a hard season.'},
+      {word:'Gratitude',pos:'noun',definition:'A feeling of thankfulness and appreciation.',example:'She began the morning with gratitude for another new day.'},
+      {word:'Illuminate',pos:'verb',definition:'To light up, clarify, or make something easier to understand.',example:'A thoughtful explanation can illuminate a difficult idea.'},
+      {word:'Harmony',pos:'noun',definition:'A pleasing state of agreement, cooperation, or peaceful connection.',example:'The choir’s harmony filled the sanctuary beautifully.'},
+      {word:'Compassion',pos:'noun',definition:'Sympathetic concern for another person, along with a desire to help.',example:'Compassion often begins by listening carefully.'},
+      {word:'Persevere',pos:'verb',definition:'To continue despite difficulty, delay, or discouragement.',example:'Even when progress is slow, persevere.'},
+      {word:'Serendipity',pos:'noun',definition:'A pleasant discovery that happens by chance.',example:'Meeting an old friend at the store was a happy bit of serendipity.'},
+      {word:'Diligent',pos:'adjective',definition:'Careful and persistent in one’s work or responsibilities.',example:'Her diligent preparation made the event run smoothly.'},
+      {word:'Uplift',pos:'verb',definition:'To encourage, inspire, or improve someone’s spirits.',example:'A kind word can uplift someone more than we realize.'},
+      {word:'Abundant',pos:'adjective',definition:'Existing in plentiful or generous amounts.',example:'The garden produced an abundant harvest.'},
+      {word:'Camaraderie',pos:'noun',definition:'Mutual trust, friendship, and good fellowship among people.',example:'Volunteering together created real camaraderie.'},
+      {word:'Intentional',pos:'adjective',definition:'Done deliberately and with a clear purpose.',example:'She was intentional about making time for family.'},
+      {word:'Fortitude',pos:'noun',definition:'Courage and strength when facing pain or adversity.',example:'He handled the challenge with remarkable fortitude.'},
+      {word:'Jubilant',pos:'adjective',definition:'Feeling or expressing great joy and celebration.',example:'The congregation was jubilant after the good news.'},
+      {word:'Empathy',pos:'noun',definition:'The ability to understand and share another person’s feelings.',example:'Empathy can turn a conversation into a genuine connection.'},
+      {word:'Flourish',pos:'verb',definition:'To grow, develop, or thrive successfully.',example:'People flourish when they feel supported and valued.'},
+      {word:'Steadfast',pos:'adjective',definition:'Firm, loyal, and unwavering in purpose or belief.',example:'She remained steadfast through every setback.'},
+      {word:'Generosity',pos:'noun',definition:'A willingness to give, share, or help freely.',example:'Their generosity helped several families through a difficult week.'},
+      {word:'Reconcile',pos:'verb',definition:'To restore friendly relations or bring things back into agreement.',example:'They chose to reconcile rather than hold onto the disagreement.'},
+      {word:'Optimistic',pos:'adjective',definition:'Hopeful and confident about what may happen.',example:'He stayed optimistic while waiting for the results.'},
+      {word:'Nurture',pos:'verb',definition:'To care for and encourage the growth or development of something.',example:'Strong communities nurture the gifts of every generation.'},
+      {word:'Integrity',pos:'noun',definition:'The quality of being honest and guided by strong moral principles.',example:'Integrity matters most when nobody is watching.'},
+      {word:'Tranquil',pos:'adjective',definition:'Calm, peaceful, and free from disturbance.',example:'The sanctuary felt tranquil before the service began.'},
+      {word:'Resourceful',pos:'adjective',definition:'Skilled at finding quick and clever ways to overcome difficulties.',example:'The team was resourceful when plans changed at the last minute.'},
+      {word:'Affirm',pos:'verb',definition:'To state positively, support, or encourage.',example:'Take time to affirm the people who quietly serve others.'},
+      {word:'Renewal',pos:'noun',definition:'The process of becoming refreshed, restored, or strengthened again.',example:'The retreat offered a welcome sense of renewal.'},
+      {word:'Conscientious',pos:'adjective',definition:'Careful, responsible, and attentive to doing things well.',example:'Her conscientious work kept every detail organized.'},
+      {word:'Fellowship',pos:'noun',definition:'Friendly association and companionship among people with shared interests.',example:'Food and conversation turned the gathering into true fellowship.'},
+      {word:'Encourage',pos:'verb',definition:'To give someone confidence, support, or hope.',example:'One sincere compliment can encourage someone all day.'},
+      {word:'Joyful',pos:'adjective',definition:'Full of happiness, delight, or gladness.',example:'The children brought a joyful energy to the room.'}
+    ];
+
+    const DAD_JOKES=[
+      {setup:'Why did the bicycle fall over?',punchline:'Because it was two-tired.'},
+      {setup:'What do you call cheese that isn’t yours?',punchline:'Nacho cheese.'},
+      {setup:'Why don’t eggs tell jokes?',punchline:'They’d crack each other up.'},
+      {setup:'What did one wall say to the other wall?',punchline:'I’ll meet you at the corner.'},
+      {setup:'Why did the scarecrow win an award?',punchline:'Because he was outstanding in his field.'},
+      {setup:'What do you call a bear with no teeth?',punchline:'A gummy bear.'},
+      {setup:'Why couldn’t the leopard play hide-and-seek?',punchline:'Because he was always spotted.'},
+      {setup:'What did the ocean say to the beach?',punchline:'Nothing. It just waved.'},
+      {setup:'Why did the math book look sad?',punchline:'Because it had too many problems.'},
+      {setup:'What do you call a sleeping bull?',punchline:'A bulldozer.'},
+      {setup:'Why did the coffee file a police report?',punchline:'It got mugged.'},
+      {setup:'What do you call a fake noodle?',punchline:'An impasta.'},
+      {setup:'Why did the tomato blush?',punchline:'Because it saw the salad dressing.'},
+      {setup:'What do you call a fish wearing a bowtie?',punchline:'Sofishticated.'},
+      {setup:'Why are elevator jokes so good?',punchline:'They work on many levels.'},
+      {setup:'What kind of shoes do ninjas wear?',punchline:'Sneakers.'},
+      {setup:'Why did the cookie go to the doctor?',punchline:'Because it felt crummy.'},
+      {setup:'What do you call a cow with no legs?',punchline:'Ground beef.'},
+      {setup:'Why can’t your nose be 12 inches long?',punchline:'Because then it would be a foot.'},
+      {setup:'What did the grape do when it got stepped on?',punchline:'Nothing—it just let out a little wine.'},
+      {setup:'Why was the broom late?',punchline:'It swept in.'},
+      {setup:'What do clouds wear under their raincoats?',punchline:'Thunderwear.'},
+      {setup:'Why did the golfer bring two pairs of pants?',punchline:'In case he got a hole in one.'},
+      {setup:'What did the janitor say when he jumped out of the closet?',punchline:'Supplies!'},
+      {setup:'Why don’t skeletons fight each other?',punchline:'They don’t have the guts.'},
+      {setup:'What did the zero say to the eight?',punchline:'Nice belt.'},
+      {setup:'Why did the computer go to the doctor?',punchline:'Because it caught a virus.'},
+      {setup:'How does a penguin build its house?',punchline:'Igloos it together.'},
+      {setup:'Why did the banana go to the doctor?',punchline:'It wasn’t peeling well.'},
+      {setup:'What kind of tree fits in your hand?',punchline:'A palm tree.'},
+      {setup:'Why did the stadium get hot after the game?',punchline:'All the fans left.'}
+    ];
 
     const VERSES=[
       {ref:'Psalm 118:24',text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'},
@@ -643,6 +1025,26 @@
       const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day);
       return Math.floor((Date.UTC(y,m-1,d)-Date.UTC(y,0,1))/86400000)+1;
     }
+    function loadDailyExtras(){
+      const idx=(dayOfYearInET()-1);
+      const word=WORDS_OF_DAY[idx%WORDS_OF_DAY.length];
+      const joke=DAD_JOKES[idx%DAD_JOKES.length];
+
+      const wordMain=document.getElementById('word-main');
+      const wordPos=document.getElementById('word-pos');
+      const wordDefinition=document.getElementById('word-definition');
+      const wordExample=document.getElementById('word-example');
+      const jokeText=document.getElementById('joke-text');
+      const jokePunchline=document.getElementById('joke-punchline');
+
+      if(wordMain)wordMain.textContent=word.word;
+      if(wordPos)wordPos.textContent=word.pos;
+      if(wordDefinition)wordDefinition.textContent=word.definition;
+      if(wordExample)wordExample.textContent='“'+word.example+'”';
+      if(jokeText)jokeText.textContent=joke.setup;
+      if(jokePunchline)jokePunchline.textContent=joke.punchline;
+    }
+
     function loadVerse(){
       const verse=VERSES[(dayOfYearInET()-1)%VERSES.length];
       document.getElementById('verse-text').textContent=verse.text;
@@ -775,13 +1177,63 @@
       }
       document.getElementById('month-grid').innerHTML=cells.join('');
     }
+
+    function extractJoinDetails(ev){
+      const raw=((ev && ev.description)||'')+' '+((ev && ev.location)||'');
+      const phoneMatch=raw.match(/(?:\+?1[\s.\-]?)?\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}/);
+      const codeMatch=raw.match(/(?:passcode|code|pin|access code|meeting id)\s*[:#\-]?\s*([A-Za-z0-9#*]{3,20})/i);
+      const pieces=[];
+      if(phoneMatch)pieces.push('Phone: '+phoneMatch[0].trim());
+      if(codeMatch)pieces.push('Code: '+codeMatch[1].trim());
+      return pieces.join(' • ');
+    }
+
+    function summarizeFoodBank(events){
+      const matches=(events||[])
+        .filter(ev=>/food\s*bank/i.test(String(ev.title||'')))
+        .sort((a,b)=>a.start-b.start)
+        .slice(0,20);
+
+      if(!matches.length)return '';
+
+      const groups=new Map();
+      matches.forEach(ev=>{
+        const day=new Intl.DateTimeFormat('en-US',{weekday:'long'}).format(ev.start);
+        const start=ev.allDay?'All day':formatTime(ev.start);
+        let end='';
+        if(!ev.allDay && ev.end && ev.end>ev.start)end=formatTime(ev.end);
+        const time=end && end!==start ? start+'–'+end : start;
+        const key=day+'|'+time;
+        groups.set(key,{day,time});
+      });
+
+      const values=[...groups.values()];
+      if(!values.length)return '';
+      return values.map(x=>x.day+'s • '+x.time).join(' • ');
+    }
+
+    function renderMinistryInfo(events){
+      const prayer=(events||[]).find(ev=>/morning\s*prayer/i.test(String(ev.title||'')));
+      const prayerEl=document.getElementById('prayer-join');
+      if(prayerEl){
+        const details=extractJoinDetails(prayer);
+        prayerEl.textContent=details || 'Phone & code: see calendar event details';
+      }
+
+      const foodEl=document.getElementById('food-bank-schedule');
+      if(foodEl){
+        const summary=summarizeFoodBank(events);
+        foodEl.textContent=summary || 'See calendar for current days & hours';
+      }
+    }
+
     async function loadCalendar(){
       const cached=readCalendarCache();
-      if(cached.length){ renderWeekCalendar(cached); renderMonthCalendar(cached); }
+      if(cached.length){ renderWeekCalendar(cached); renderMonthCalendar(cached); renderMinistryInfo(cached); }
       try{
         const r=await fetch(EVENTS_FEED_URL,{cache:'default'}); if(!r.ok) throw new Error('calendar request');
         const ics=await r.text(); if(!ics.includes('BEGIN:VCALENDAR')) throw new Error('calendar response');
-        const events=parseCalendar(ics); writeCalendarCache(events); renderWeekCalendar(events); renderMonthCalendar(events);
+        const events=parseCalendar(ics); writeCalendarCache(events); renderWeekCalendar(events); renderMonthCalendar(events); renderMinistryInfo(events);
       }catch(err){
         console.warn('Calendar unavailable:',err);
         if(!cached.length){
@@ -793,31 +1245,119 @@
 
     function cleanHeadline(title){return String(title||'').replace(/\s+-\s+[^-]+$/,'').replace(/\s+/g,' ').trim()}
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+    function readNewsCache(){
+      try{
+        const raw=localStorage.getItem(NEWS_CACHE_KEY);
+        if(!raw)return null;
+        const saved=JSON.parse(raw);
+        if(!saved||!saved.savedAt||!Array.isArray(saved.items))return null;
+        if(Date.now()-saved.savedAt>NEWS_CACHE_MAX_MS)return null;
+        return saved;
+      }catch(_){return null}
+    }
+
+    function writeNewsCache(items,updatedAt){
+      try{
+        localStorage.setItem(NEWS_CACHE_KEY,JSON.stringify({
+          savedAt:Date.now(),
+          items:Array.isArray(items)?items:[],
+          updatedAt:updatedAt||new Date().toISOString()
+        }));
+      }catch(_){}
+    }
+
     function renderNews(items,stamp){
       const headlines=(Array.isArray(items)?items:[]).map(x=>cleanHeadline(x.title)).filter(Boolean).slice(0,8);
       if(!headlines.length)return false;
+
+      const displayStamp=stamp||new Date();
       document.getElementById('ticker').innerHTML=[...headlines,...headlines].map(h=>'<span class="ticker-item">'+escapeHtml(h)+'</span>').join('');
-      document.getElementById('news-updated').textContent='Updated '+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(stamp||new Date());
+      document.getElementById('news-updated').textContent='Updated '+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(displayStamp);
+
+      const list=document.getElementById('headline-list');
+      if(list){
+        list.innerHTML=headlines.slice(0,5).map(h=>'<li>'+escapeHtml(h)+'</li>').join('');
+      }
+
+      const overviewList=document.getElementById('overview-headline-list');
+      if(overviewList){
+        overviewList.innerHTML=headlines.slice(0,5).map(h=>'<li>'+escapeHtml(h)+'</li>').join('');
+      }
+
+      const dailyUpdated=document.getElementById('daily-news-updated');
+      if(dailyUpdated){
+        dailyUpdated.textContent='Updated '+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(displayStamp);
+      }
+
+      const overviewUpdated=document.getElementById('overview-news-updated');
+      if(overviewUpdated){
+        overviewUpdated.textContent='Updated '+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(displayStamp);
+      }
       return true;
     }
     async function loadNews(){
-      const cached=cacheGet('bethel_display_news',60*60*1000);
-      if(cached)renderNews(cached.items,new Date(cached.updatedAt));
-      try{
-        const r=await fetch(NEWS_URL,{cache:'default'});
-        if(!r.ok)throw new Error('news request');
-        const data=await r.json();
-        if(data.status!=='ok'||!Array.isArray(data.items))throw new Error('news response');
-        const payload={items:data.items,updatedAt:new Date().toISOString()};
-        renderNews(payload.items,new Date(payload.updatedAt));
-        cacheSet('bethel_display_news',payload);
-      }catch(err){
-        console.warn('News unavailable:',err);
-        if(!cached){
-          document.getElementById('ticker').innerHTML='<span class="ticker-item">Lancaster-area headlines are temporarily unavailable.</span>';
-          document.getElementById('news-updated').textContent='';
-        }
+      const cached=readNewsCache();
+      if(cached&&cached.items.length){
+        renderNews(cached.items,new Date(cached.updatedAt||cached.savedAt));
       }
+
+      // Preferred source: our Firebase proxy/cache.
+      try{
+        const r=await fetch(NEWS_FIREBASE_URL,{cache:'no-store'});
+        if(!r.ok)throw new Error('firebase news request');
+        const data=await r.json();
+        if(!data||data.success!==true||!Array.isArray(data.headlines)||!data.headlines.length){
+          throw new Error('firebase news response');
+        }
+        const items=data.headlines.map(x=>({
+          title:x.title||'',
+          link:x.link||'',
+          pubDate:x.pubDate||''
+        }));
+        const updatedAt=data.generatedAt||new Date().toISOString();
+        renderNews(items,new Date(updatedAt));
+        writeNewsCache(items,updatedAt);
+        return;
+      }catch(err){
+        console.warn('Firebase news unavailable, trying fallback:',err);
+      }
+
+      // Temporary fallback while the Firebase function is being deployed.
+      try{
+        const r=await fetch(NEWS_FALLBACK_URL,{cache:'default'});
+        if(!r.ok)throw new Error('fallback news request');
+        const data=await r.json();
+        if(data.status!=='ok'||!Array.isArray(data.items)||!data.items.length){
+          throw new Error('fallback news response');
+        }
+        const updatedAt=new Date().toISOString();
+        renderNews(data.items,new Date(updatedAt));
+        writeNewsCache(data.items,updatedAt);
+        return;
+      }catch(err){
+        console.warn('Fallback news unavailable:',err);
+      }
+
+      // Never blank the board if we have a reasonably recent last-known-good set.
+      if(cached&&cached.items.length){
+        renderNews(cached.items,new Date(cached.updatedAt||cached.savedAt));
+        const overviewUpdated=document.getElementById('overview-news-updated');
+        if(overviewUpdated)overviewUpdated.textContent+=' • cached';
+        const dailyUpdated=document.getElementById('daily-news-updated');
+        if(dailyUpdated)dailyUpdated.textContent+=' • cached';
+        return;
+      }
+
+      document.getElementById('ticker').innerHTML='<span class="ticker-item">Lancaster-area headlines are temporarily unavailable.</span>';
+      document.getElementById('news-updated').textContent='';
+      const list=document.getElementById('headline-list');
+      if(list)list.innerHTML='<li>Local headlines are temporarily unavailable.</li>';
+      const overviewList=document.getElementById('overview-headline-list');
+      if(overviewList)overviewList.innerHTML='<li>Local headlines are temporarily unavailable.</li>';
+      const dailyUpdated=document.getElementById('daily-news-updated');
+      if(dailyUpdated)dailyUpdated.textContent='';
+      const overviewUpdated=document.getElementById('overview-news-updated');
+      if(overviewUpdated)overviewUpdated.textContent='';
     }
 
     function tuneEmbeddedEvents(){
@@ -856,6 +1396,7 @@
     updateClock();
     setInterval(updateClock,1000);
     loadVerse();
+    loadDailyExtras();
     loadWeather();
     loadNews();
     loadCalendar();
@@ -865,7 +1406,7 @@
 
     // Rotate the entire layout every 90 seconds so the same bright/static
     // elements do not remain in the same screen position all day.
-    const DISPLAY_VIEWS=['view-overview','view-week','view-month','view-inspire','view-events'];
+    const DISPLAY_VIEWS=['view-overview','view-week','view-month','view-inspire'];
     const VIEW_INTERVAL_MS=90*1000;
     let currentView=0;
 

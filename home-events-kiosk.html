@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bethel Kiosk Events</title>
+  <style>
+    :root{
+      --bg:#01060b;
+      --panel:#0b1218;
+      --panel2:#101922;
+      --text:#fffefe;
+      --muted:#aeb8bf;
+      --gold:#f7bf5b;
+      --border:rgba(255,255,255,.10);
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;background:transparent;color:var(--text);font-family:Arial,Helvetica,sans-serif;
+      overflow:hidden;scrollbar-width:none
+    }
+    html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+    body{padding:2px}
+    .wrap{width:100%;margin:0 auto}
+    .heading-row{
+      display:flex;align-items:end;justify-content:space-between;gap:16px;
+      margin:0 0 12px;
+    }
+    h2{margin:0;font-size:clamp(22px,3.2vw,34px);line-height:1.05}
+    .sub{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .all-link{
+      flex:0 0 auto;text-decoration:none;border:1px solid rgba(247,191,91,.36);
+      color:var(--gold);border-radius:999px;padding:9px 13px;font-size:12px;font-weight:900;
+      background:rgba(247,191,91,.08)
+    }
+    .carousel{position:relative}
+    .viewport{
+      overflow:hidden;border-radius:22px;border:1px solid var(--border);
+      background:linear-gradient(145deg,var(--panel2),var(--panel));
+      box-shadow:0 16px 38px rgba(0,0,0,.22)
+    }
+    .track{
+      --visible:3;
+      display:flex;
+      align-items:stretch;
+      transition:transform .55s cubic-bezier(.2,.8,.2,1)
+    }
+    .slide{
+      flex:0 0 calc(100% / var(--visible));
+      min-width:0;
+      padding:0 7px;
+    }
+    .event{
+      --cat-color:#aeb8bf;--cat-soft:rgba(174,184,191,.12);--cat-border:rgba(174,184,191,.34);
+      height:100%;
+      min-height:470px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border-left:5px solid var(--cat-color);
+      background:linear-gradient(145deg,#101922,#0b1218);
+    }
+    .cat-worship{--cat-color:#f7bf5b;--cat-soft:rgba(247,191,91,.14);--cat-border:rgba(247,191,91,.42)}
+    .cat-community{--cat-color:#64c970;--cat-soft:rgba(100,201,112,.14);--cat-border:rgba(100,201,112,.42)}
+    .cat-faith-study{--cat-color:#b56de0;--cat-soft:rgba(181,109,224,.14);--cat-border:rgba(181,109,224,.42)}
+    .cat-ministry{--cat-color:#6ea8fe;--cat-soft:rgba(110,168,254,.14);--cat-border:rgba(110,168,254,.42)}
+    .cat-special-event{--cat-color:#ff7a8a;--cat-soft:rgba(255,122,138,.14);--cat-border:rgba(255,122,138,.42)}
+    .cat-youth{--cat-color:#4fd1c5;--cat-soft:rgba(79,209,197,.14);--cat-border:rgba(79,209,197,.42)}
+    .cat-meetings{--cat-color:#d9a45f;--cat-soft:rgba(217,164,95,.14);--cat-border:rgba(217,164,95,.42)}
+    .cat-other{--cat-color:#aeb8bf;--cat-soft:rgba(174,184,191,.12);--cat-border:rgba(174,184,191,.34)}
+    .copy{padding:20px 20px 22px;display:flex;flex:1;flex-direction:column;min-width:0}
+    .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+    .badge{
+      display:inline-flex;align-items:center;min-height:24px;padding:5px 9px;border-radius:999px;
+      font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.05em
+    }
+    .badge.category{background:var(--cat-soft);color:var(--cat-color);border:1px solid var(--cat-border)}
+    .badge.relative{background:rgba(247,191,91,.12);color:var(--gold)}
+    .event h3{margin:0;font-size:clamp(20px,2vw,28px);line-height:1.08;letter-spacing:-.02em}
+    .meta{display:flex;flex-direction:column;gap:6px;margin-top:12px;color:#e7edf1;font-size:12px;font-weight:700}
+    .desc{
+      margin:13px 0 0;color:#c9d1d6;font-size:13px;line-height:1.5;
+      display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden
+    }
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:18px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+      border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+      color:#eef3f6;background:rgba(255,255,255,.035);font-size:12px;font-weight:900
+    }
+    .btn.primary{background:var(--cat-color);border-color:var(--cat-color);color:#071015}
+    .visual{
+      order:-1;
+      position:relative;
+      height:215px;
+      min-height:215px;
+      background:#101820;
+      overflow:hidden;
+      border-left:0;
+      border-bottom:1px solid var(--border);
+      display:grid;
+      place-items:center
+    }
+    .visual img{width:100%;height:100%;object-fit:contain;display:block}
+    .date-card{
+      width:126px;border:1px solid var(--cat-border);border-radius:18px;overflow:hidden;
+      background:rgba(0,0,0,.18);box-shadow:0 12px 32px rgba(0,0,0,.22);text-align:center
+    }
+    .date-card .month{padding:9px;background:var(--cat-color);color:#071015;font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+    .date-card .day{padding:14px 10px 5px;font-size:52px;line-height:1;font-weight:950}
+    .date-card .dow{padding:0 10px 14px;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
+    .controls{display:none !important;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+    .arrow,.pause,.dot{
+      border:1px solid var(--border);background:rgba(255,255,255,.035);color:#dfe6ea;
+      cursor:pointer
+    }
+    .arrow,.pause{height:34px;border-radius:9px;padding:0 12px;font-weight:900}
+    .dots{display:flex;gap:6px}
+    .dot{width:9px;height:9px;border-radius:50%;padding:0}
+    .dot.active{background:var(--gold);border-color:var(--gold)}
+    .state{
+      min-height:250px;display:grid;place-items:center;text-align:center;border:1px solid var(--border);
+      border-radius:22px;background:linear-gradient(145deg,var(--panel2),var(--panel));color:var(--muted);padding:28px
+    }
+    @media(max-width:1050px){
+      .track{--visible:2}
+      .visual{height:230px;min-height:230px}
+      .event{min-height:485px}
+    }
+    @media(max-width:650px){
+      .track{--visible:1}
+      .heading-row{align-items:center}
+      .sub{display:none}
+      .slide{padding:0}
+      .event{min-height:0}
+      .visual{height:270px;min-height:270px}
+      .copy{padding:22px}
+      .event h3{font-size:28px}
+      .desc{-webkit-line-clamp:2}
+      .meta{font-size:12px}
+    }
+    @media(max-width:480px){
+      .all-link{font-size:11px;padding:8px 10px}
+      .visual{height:235px;min-height:235px}
+      .copy{padding:18px}
+    }
+    @media(max-height:560px){
+      body{padding:0 2px}
+      .heading-row{margin-bottom:6px;align-items:center}
+      h2{font-size:clamp(18px,2.2vw,26px)}
+      .sub{margin-top:2px;font-size:10px}
+      .all-link{padding:6px 10px;font-size:9px}
+      .event{height:calc(100vh - 50px);min-height:0}
+      .visual{height:42%;min-height:112px}
+      .date-card{width:76px;border-radius:12px}
+      .date-card .month{padding:5px;font-size:9px}
+      .date-card .day{padding:7px 8px 2px;font-size:34px}
+      .date-card .dow{padding:0 8px 7px;font-size:8px}
+      .copy{padding:9px 12px 10px}
+      .badges{gap:4px;margin-bottom:6px}
+      .badge{min-height:18px;padding:3px 6px;font-size:7px}
+      .event h3{font-size:clamp(15px,1.55vw,22px)}
+      .meta{gap:3px;margin-top:6px;font-size:9px}
+      .desc{display:none}
+      .actions{padding-top:7px;gap:5px}
+      .btn{padding:6px 8px;border-radius:7px;font-size:8px}
+    }
+    @media(prefers-reduced-motion:reduce){.track{transition:none}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="heading-row">
+      <div>
+        <h2 id="events-heading">Upcoming at Bethel</h2>
+        <p class="sub" id="events-subheading">What’s happening next in worship, community, ministry, and more.</p>
+      </div>
+      <a class="all-link" href="https://bethelamelancaster.com/events" target="_top">View All Events</a>
+    </div>
+
+    <div id="loading" class="state">Loading upcoming events…</div>
+
+    <section id="carousel" class="carousel" aria-label="Upcoming Bethel events" style="display:none">
+      <div class="viewport">
+        <div class="track" id="track"></div>
+      </div>
+      <div class="controls" id="controls">
+        <button class="arrow" id="prev" type="button" aria-label="Previous event">‹</button>
+        <div class="dots" id="dots" aria-label="Choose event"></div>
+        <button class="arrow" id="next" type="button" aria-label="Next event">›</button>
+        <button class="pause" id="pause" type="button" aria-label="Pause automatic rotation">Ⅱ</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import ICAL from 'https://cdn.jsdelivr.net/npm/ical.js@2.2.1/dist/ical.min.js';
+
+    const EVENTS_FEED_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
+    const EVENT_IMAGE_FEED_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getEventFlyers';
+    const QUERY = new URLSearchParams(location.search);
+    const WEEK_MODE = QUERY.get('range') === 'week';
+
+    if(WEEK_MODE){
+      document.getElementById('events-heading').textContent='This Week at Bethel';
+      document.getElementById('events-subheading').textContent='Website-style event cards for the current week.';
+      document.getElementById('loading').textContent='Loading this week\u2019s events\u2026';
+      document.getElementById('carousel').setAttribute('aria-label','This week at Bethel');
+    }
+
+    const categoryIcons = {
+      'Worship':'✦','Faith & Study':'✧','Youth':'★','Community':'♥',
+      'Meetings':'◆','Ministry':'●','Special Event':'✦'
+    };
+
+    function categoryClass(category){
+      return ({
+        'Worship':'cat-worship','Community':'cat-community',
+        'Faith & Study':'cat-faith-study','Ministry':'cat-ministry',
+        'Special Event':'cat-special-event','Youth':'cat-youth',
+        'Meetings':'cat-meetings'
+      })[category] || 'cat-other';
+    }
+
+    function esc(s){
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
+    function endOfDay(d){const x=new Date(d);x.setHours(23,59,59,999);return x}
+    function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+    function startOfWeek(d){const x=startOfDay(d);x.setDate(x.getDate()-x.getDay());return x}
+    function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+    function formatTime(d){return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(d)}
+    function formatDate(d){return new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric'}).format(d)}
+
+    function relativeBadge(ev){
+      const diff=Math.round((startOfDay(ev.start)-startOfDay(new Date()))/86400000);
+      if(diff===0)return'Today'; if(diff===1)return'Tomorrow'; return'';
+    }
+
+    function inferCategory(title,description){
+      const s=(title+' '+description).toLowerCase();
+      if(/\b(ypd|youth|young people|children|kids|teen)\b/.test(s))return'Youth';
+      if(/\b(outreach|community|food|camp|school supply|back.to.school|neighborhood|service project)\b/.test(s))return'Community';
+      if(/\b(bible study|prayer|sunday school|study|class meeting)\b/.test(s))return'Faith & Study';
+      if(/\b(worship|service|sunday service|communion|revival)\b/.test(s))return'Worship';
+      if(/\b(meeting|board|committee|conference|lay organization|trustee|steward)\b/.test(s))return'Meetings';
+      if(/\b(women|men|missionary|choir|ministry|usher|music)\b/.test(s))return'Ministry';
+      return'Special Event';
+    }
+
+    function parseDescriptionMeta(raw,title){
+      const meta={featured:false,category:'',clean:''};
+      const clean=[];
+      String(raw||'').split(/\r?\n/).forEach(line=>{
+        const t=line.trim();
+        if(/^\[featured\]$/i.test(t)){meta.featured=true;return}
+        const m=t.match(/^\[category:\s*(.+?)\]$/i);
+        if(m){meta.category=m[1].trim();return}
+        if(/^\[(image|link):/i.test(t))return;
+        clean.push(line);
+      });
+      meta.clean=clean.join('\n').trim();
+      if(!meta.category)meta.category=inferCategory(title,meta.clean);
+      return meta;
+    }
+
+    function eventId(uid,start){
+      const base=uid+'|'+start.toISOString();let hash=0;
+      for(let i=0;i<base.length;i++){hash=((hash<<5)-hash)+base.charCodeAt(i);hash|=0}
+      return'e'+Math.abs(hash).toString(36);
+    }
+
+    function eventToDisplay(obj,startDate,endDate,recurring){
+      const rawTitle=obj.summary||'Bethel Event';
+      const titleFeatured=/^\s*⭐/.test(rawTitle);
+      const title=rawTitle.replace(/^\s*⭐\s*/,'').trim()||'Bethel Event';
+      const meta=parseDescriptionMeta(obj.description||'',title);
+      const allDay=Boolean(obj.startDate&&obj.startDate.isDate);
+      const start=startDate;
+      let end=endDate;
+      if(!end||Number.isNaN(end.getTime()))end=new Date(start.getTime()+(allDay?86400000:3600000));
+      return{
+        id:eventId(obj.uid||title,start),uid:obj.uid||title,title,
+        description:meta.clean,location:obj.location||'',start,end,allDay,
+        recurring:Boolean(recurring),category:meta.category,
+        featured:Boolean(titleFeatured||meta.featured),image:''
+      };
+    }
+
+    function parseCalendar(icsText){
+      const root=new ICAL.Component(ICAL.parse(icsText));
+      try{root.getAllSubcomponents('vtimezone').forEach(c=>{try{ICAL.TimezoneService.register(new ICAL.Timezone(c))}catch(_){}})}catch(_){}
+      const objs=root.getAllSubcomponents('vevent').map(c=>new ICAL.Event(c));
+      const bases=new Map(),exceptions=[];
+      objs.forEach(ev=>{
+        const rid=ev.component.getFirstPropertyValue('recurrence-id');
+        if(rid)exceptions.push(ev);else bases.set(ev.uid,ev);
+      });
+      exceptions.forEach(ex=>{const base=bases.get(ex.uid);if(base){try{base.relateException(ex)}catch(_){}}});
+      const rangeStart=addDays(startOfDay(new Date()),-1);
+      const rangeEnd=addDays(rangeStart,180);
+      const results=[];
+      bases.forEach(ev=>{
+        if(!ev.isRecurring()){
+          const s=ev.startDate.toJSDate(),e=ev.endDate?ev.endDate.toJSDate():null;
+          if(e>=rangeStart&&s<=rangeEnd)results.push(eventToDisplay(ev,s,e,false));
+          return;
+        }
+        const it=ev.iterator();let next=null,safety=0;
+        while(safety++<4000&&(next=it.next())){
+          const rough=next.toJSDate();if(rough>rangeEnd)break;if(rough<rangeStart)continue;
+          try{
+            const d=ev.getOccurrenceDetails(next),source=d.item||ev;
+            const s=d.startDate.toJSDate(),e=d.endDate?d.endDate.toJSDate():null;
+            if(e>=rangeStart&&s<=rangeEnd)results.push(eventToDisplay(source,s,e,true));
+          }catch(_){
+            const dur=Math.max(0,ev.endDate.toJSDate().getTime()-ev.startDate.toJSDate().getTime());
+            results.push(eventToDisplay(ev,rough,new Date(rough.getTime()+dur),true));
+          }
+        }
+      });
+      const dedup=new Map();results.forEach(ev=>dedup.set(ev.id,ev));
+      return Array.from(dedup.values()).filter(ev=>ev.end>=new Date()).sort((a,b)=>a.start-b.start);
+    }
+
+    async function loadImages(){
+      try{
+        const r=await fetch(EVENT_IMAGE_FEED_URL+'?t='+Date.now(),{cache:'no-store'});
+        if(!r.ok)return{};
+        const p=await r.json(),map={};
+        (Array.isArray(p.events)?p.events:[]).forEach(x=>{
+          if(x&&x.iCalUID&&x.imageUrl)map[String(x.iCalUID).trim().toLowerCase()]=String(x.imageUrl);
+        });
+        return map;
+      }catch(_){return{}}
+    }
+
+    function selectCarouselEvents(events){
+      const weekStart=startOfWeek(new Date());
+      const weekEnd=endOfDay(addDays(weekStart,6));
+      const source=WEEK_MODE
+        ? events.filter(ev=>ev.end>=new Date()&&ev.start<=weekEnd)
+        : events;
+      const unique=[],seenRecurring=new Set();
+      for(const ev of source){
+        if(ev.recurring&&!WEEK_MODE){
+          const key=String(ev.uid||ev.title).toLowerCase();
+          if(seenRecurring.has(key))continue;
+          seenRecurring.add(key);
+        }
+        unique.push(ev);
+        if(unique.length>=(WEEK_MODE?14:7))break;
+      }
+      return unique;
+    }
+
+    function slideMarkup(ev){
+      const rel=relativeBadge(ev);
+      const month=new Intl.DateTimeFormat('en-US',{month:'short'}).format(ev.start);
+      const dow=new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(ev.start);
+      const time=ev.allDay?'All day':formatTime(ev.start);
+      const href='https://bethelamelancaster.com/events?event='+encodeURIComponent(ev.id);
+      const desc=ev.description||'Join us at Bethel. View the event for complete details.';
+      return`
+        <div class="slide">
+          <article class="event ${categoryClass(ev.category)}">
+            <div class="copy">
+              <div class="badges">
+                ${rel?`<span class="badge relative">${esc(rel)}</span>`:''}
+                <span class="badge category">${esc((categoryIcons[ev.category]||'•')+' '+ev.category)}</span>
+              </div>
+              <h3>${esc(ev.title)}</h3>
+              <div class="meta">
+                <span>◷ ${esc(formatDate(ev.start))} · ${esc(time)}</span>
+                ${ev.location?`<span>⌖ ${esc(ev.location)}</span>`:''}
+              </div>
+              <p class="desc">${esc(desc)}</p>
+              <div class="actions">
+                <a class="btn primary" href="${href}" target="_top">View Event</a>
+                <a class="btn" href="https://bethelamelancaster.com/events" target="_top">All Events</a>
+              </div>
+            </div>
+            <div class="visual">
+              ${ev.image
+                ? `<img src="${esc(ev.image)}" alt="${esc(ev.title+' event flyer')}" loading="lazy">`
+                : `<div class="date-card">
+                    <div class="month">${esc(month)}</div>
+                    <div class="day">${ev.start.getDate()}</div>
+                    <div class="dow">${esc(dow)}</div>
+                   </div>`}
+            </div>
+          </article>
+        </div>`;
+    }
+
+    let slides=[],index=0,timer=null,paused=false;
+    const track=document.getElementById('track');
+    const dots=document.getElementById('dots');
+    const pauseBtn=document.getElementById('pause');
+    const prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    function visibleCount(){
+      if(window.innerWidth<=650)return 1;
+      if(window.innerWidth<=1050)return 2;
+      return 3;
+    }
+
+    function maxIndex(){
+      return Math.max(0,slides.length-visibleCount());
+    }
+
+    function renderDots(){
+      const count=maxIndex()+1;
+      dots.innerHTML=Array.from({length:count},(_,i)=>
+        `<button class="dot ${i===index?'active':''}" type="button" data-index="${i}" aria-label="Show events starting at item ${i+1}"></button>`
+      ).join('');
+      dots.querySelectorAll('[data-index]').forEach(btn=>
+        btn.addEventListener('click',()=>{
+          show(Number(btn.dataset.index));
+          restart();
+        })
+      );
+    }
+
+    function show(i){
+      if(!slides.length)return;
+      const max=maxIndex();
+      if(i>max)i=0;
+      if(i<0)i=max;
+      index=i;
+      track.style.transform=`translateX(-${index*(100/visibleCount())}%)`;
+      dots.querySelectorAll('.dot').forEach((d,n)=>d.classList.toggle('active',n===index));
+    }
+
+    function restart(){
+      clearInterval(timer);
+      if(paused||prefersReduced||maxIndex()===0)return;
+      timer=setInterval(()=>show(index+1),7000);
+    }
+    function setPaused(value){
+      paused=value;pauseBtn.textContent=paused?'▶':'Ⅱ';
+      pauseBtn.setAttribute('aria-label',paused?'Resume automatic rotation':'Pause automatic rotation');
+      restart();
+    }
+
+    async function init(){
+      try{
+        const r=await fetch(EVENTS_FEED_URL,{cache:'default'});
+        if(!r.ok)throw new Error('calendar');
+        const ics=await r.text();
+        if(!ics.includes('BEGIN:VCALENDAR'))throw new Error('calendar');
+        let events=parseCalendar(ics);
+
+        const imageMap=await loadImages();
+        events.forEach(ev=>{
+          const img=imageMap[String(ev.uid||'').trim().toLowerCase()];
+          if(img)ev.image=img;
+        });
+
+        slides=selectCarouselEvents(events);
+        if(!slides.length)throw new Error('empty');
+
+        track.innerHTML=slides.map(slideMarkup).join('');
+        renderDots();
+        show(0);
+
+        document.getElementById('loading').style.display='none';
+        document.getElementById('carousel').style.display='block';
+        document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
+
+        restart();
+        reportHeight();
+      }catch(err){
+        document.getElementById('loading').innerHTML=
+          'Upcoming events are temporarily unavailable.<br><a href="https://bethelamelancaster.com/events" target="_top" style="color:#f7bf5b">View the Events page</a>';
+        reportHeight();
+      }
+    }
+
+    document.getElementById('prev').addEventListener('click',()=>{show(index-1);restart()});
+    document.getElementById('next').addEventListener('click',()=>{show(index+1);restart()});
+    pauseBtn.addEventListener('click',()=>setPaused(!paused));
+    document.getElementById('carousel').addEventListener('mouseenter',()=>{clearInterval(timer)});
+    document.getElementById('carousel').addEventListener('mouseleave',restart);
+    document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(timer):restart());
+
+    let resizeTimer;
+    window.addEventListener('resize',()=>{
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(()=>{
+        index=Math.min(index,maxIndex());
+        renderDots();
+        show(index);
+        document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
+        restart();
+        reportHeight();
+      },120);
+    });
+
+    function reportHeight(){
+      try{window.parent.postMessage({type:'bethel-home-events-height',height:document.documentElement.scrollHeight},'*')}catch(_){}
+    }
+    new ResizeObserver(reportHeight).observe(document.body);
+
+    init();
+  </script>
+</body>
+</html>

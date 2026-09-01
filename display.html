@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#01060b">
-  <title>Bethel AME Lancaster — Rotating Cultural Center Display v14</title>
+  <title>Bethel AME Lancaster — Rotating Cultural Center Display v15</title>
   <style>
     :root{--bg:#0f081d;--panel:#1a1030;--panel2:#22133e;--border:rgba(214,187,255,.16);--text:#fbf8ff;--muted:#d0c3e6;--gold:#ffd166;--green:#8ee59a;--blue:#8fc5ff;--purple:#d39cff;--danger:#ff7a8a;--radius:22px}
     *{box-sizing:border-box}
@@ -1267,7 +1267,20 @@
     }
 
     function renderNews(items,stamp){
-      const headlines=(Array.isArray(items)?items:[]).map(x=>cleanHeadline(x.title)).filter(Boolean).slice(0,8);
+      const cutoff=Date.now()-(7*24*60*60*1000);
+      const freshItems=(Array.isArray(items)?items:[])
+        .filter(x=>{
+          if(!x||!x.title)return false;
+          const t=Date.parse(x.pubDate||'');
+          return Number.isFinite(t) ? t>=cutoff : true;
+        })
+        .sort((a,b)=>{
+          const ta=Date.parse(a.pubDate||'')||0;
+          const tb=Date.parse(b.pubDate||'')||0;
+          return tb-ta;
+        });
+
+      const headlines=freshItems.map(x=>cleanHeadline(x.title)).filter(Boolean).slice(0,8);
       if(!headlines.length)return false;
 
       const displayStamp=stamp||new Date();

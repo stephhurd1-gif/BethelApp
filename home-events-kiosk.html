@@ -92,8 +92,8 @@
     .visual{
       order:-1;
       position:relative;
-      height:215px;
-      min-height:215px;
+      height:300px;
+      min-height:300px;
       background:#101820;
       overflow:hidden;
       border-left:0;
@@ -127,7 +127,7 @@
     }
     @media(max-width:1050px){
       .track{--visible:2}
-      .visual{height:230px;min-height:230px}
+      .visual{height:300px;min-height:300px}
       .event{min-height:485px}
     }
     @media(max-width:650px){
@@ -154,7 +154,7 @@
       .sub{margin-top:2px;font-size:10px}
       .all-link{padding:6px 10px;font-size:9px}
       .event{height:calc(100vh - 50px);min-height:0}
-      .visual{height:42%;min-height:112px}
+      .visual{height:56%;min-height:150px}
       .date-card{width:76px;border-radius:12px}
       .date-card .month{padding:5px;font-size:9px}
       .date-card .day{padding:7px 8px 2px;font-size:34px}
@@ -216,6 +216,15 @@
     html.week-mode .date-card .month{padding:3px;font-size:8px}
     html.week-mode .date-card .day{padding:4px 6px 1px;font-size:27px}
     html.week-mode .date-card .dow{padding:0 6px 4px;font-size:7px}
+
+    /* Match the display's Verse of the Day purple cards. */
+    .viewport,.event,.state{
+      background:
+        radial-gradient(circle at 84% 12%,rgba(220,102,173,.15),transparent 34%),
+        linear-gradient(145deg,#421936 0%,#2b132c 50%,#1a0d20 100%);
+      border-color:rgba(224,123,185,.24);
+    }
+    .visual{background:#211122}
     @media(prefers-reduced-motion:reduce){.track{transition:none}}
   </style>
 </head>

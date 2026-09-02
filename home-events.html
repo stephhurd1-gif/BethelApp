@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Upcoming at Bethel</title>
+  <!-- Bethel homepage events carousel: mobile-fast-v3 -->
   <style>
     :root{
       --bg:#01060b;
@@ -472,7 +473,7 @@
 
     async function loadFlyerRows(){
       try{
-        const r=await fetch(EVENT_IMAGE_FEED_URL+'?t='+Date.now(),{cache:'no-store'});
+        const r=await fetch(EVENT_IMAGE_FEED_URL,{cache:'default'});
         if(!r.ok)return[];
         const p=await r.json();
         return p&&Array.isArray(p.events)?p.events:[];
@@ -532,8 +533,6 @@
 
     function selectCarouselEvents(events){
       // Keep only one upcoming occurrence from each recurring series.
-      // The incoming events are already sorted chronologically, so preserving
-      // that order keeps the homepage carousel in true date/time order.
       const unique=[],seenRecurring=new Set();
 
       for(const ev of events){
@@ -543,17 +542,30 @@
           seenRecurring.add(key);
         }
         unique.push(ev);
-        if(unique.length>=7)break;
       }
 
-      return unique;
+      // Force true chronological order AFTER flyer matching/deduping.
+      // Flyer presence can never affect position in the homepage carousel.
+      unique.sort((a,b)=>{
+        const byStart=a.start.getTime()-b.start.getTime();
+        if(byStart!==0)return byStart;
+        return String(a.title||'').localeCompare(String(b.title||''));
+      });
+
+      return unique.slice(0,7);
     }
 
-    function slideMarkup(ev){
+    function homepageImageUrl(url){
+      // The homepage does not need a 1600px-wide Drive thumbnail.
+      // A smaller image is much faster on phones while remaining sharp in the carousel.
+      return String(url||'').replace(/([?&])sz=w\d+/i,'$1sz=w1000');
+    }
+
+    function slideMarkup(ev,slideIndex=0){
       const month=new Intl.DateTimeFormat('en-US',{month:'short'}).format(ev.start);
       const dow=new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(ev.start);
       const time=ev.allDay?'All day':formatTime(ev.start);
-      const href='https://bethelamelancaster.com/events?event='+encodeURIComponent(ev.id);
+      const href='https://events.bethelamelancaster.com?event='+encodeURIComponent(ev.id);
       const dateText=formatDate(ev.start)+(ev.allDay?'':' · '+time);
       const locationText=ev.location||'Bethel AME Lancaster';
 
@@ -564,10 +576,11 @@
               <a class="event-link" href="${href}" target="_top" aria-label="View ${esc(ev.title)} event details">
                 <div class="flyer-visual">
                   <img
-                    src="${esc(ev.image)}"
+                    src="${esc(homepageImageUrl(ev.image))}"
                     alt="${esc(ev.title+' event flyer')}"
-                    loading="eager"
-                    fetchpriority="high"
+                    loading="${slideIndex < visibleCount() ? 'eager' : 'lazy'}"
+                    fetchpriority="${slideIndex === 0 ? 'high' : 'auto'}"
+                    decoding="async"
                     referrerpolicy="no-referrer"
                   >
                 </div>
@@ -658,52 +671,106 @@
       restart();
     }
 
-    async function init(){
+    const HOME_EVENTS_CACHE_KEY='bethel_home_events_v3';
+    const HOME_EVENTS_CACHE_MS=15*60*1000;
+
+    function serializeSlides(items){
+      return items.map(ev=>({
+        ...ev,
+        start:ev.start.toISOString(),
+        end:ev.end.toISOString()
+      }));
+    }
+
+    function deserializeSlides(items){
+      return (Array.isArray(items)?items:[]).map(ev=>({
+        ...ev,
+        start:new Date(ev.start),
+        end:new Date(ev.end)
+      })).filter(ev=>!Number.isNaN(ev.start.getTime())&&!Number.isNaN(ev.end.getTime()));
+    }
+
+    function readSlideCache(){
       try{
-        const r=await fetch(EVENTS_FEED_URL,{cache:'default'});
-        if(!r.ok)throw new Error('calendar');
-        const ics=await r.text();
-        if(!ics.includes('BEGIN:VCALENDAR'))throw new Error('calendar');
-        let events=parseCalendar(ics);
+        const raw=localStorage.getItem(HOME_EVENTS_CACHE_KEY);
+        if(!raw)return[];
+        const saved=JSON.parse(raw);
+        if(!saved||!saved.savedAt||Date.now()-saved.savedAt>HOME_EVENTS_CACHE_MS)return[];
+        return deserializeSlides(saved.slides).filter(ev=>ev.end>=new Date());
+      }catch(_){return[]}
+    }
 
-        const flyerRows=await loadFlyerRows();
-        applyFlyers(events,flyerRows);
+    function writeSlideCache(items){
+      try{
+        localStorage.setItem(HOME_EVENTS_CACHE_KEY,JSON.stringify({
+          savedAt:Date.now(),
+          slides:serializeSlides(items)
+        }));
+      }catch(_){}
+    }
 
-        console.info(
-          'Bethel homepage flyer matches:',
-          events.filter(ev=>Boolean(ev.image)).map(ev=>ev.title)
-        );
+    function renderSlides(items){
+      slides=items;
+      if(!slides.length)return false;
 
-        slides=selectCarouselEvents(events);
-        if(!slides.length)throw new Error('empty');
+      index=0;
+      track.innerHTML=slides.map((ev,i)=>slideMarkup(ev,i)).join('');
 
-        track.innerHTML=slides.map(slideMarkup).join('');
+      track.querySelectorAll('.flyer-visual img').forEach(img=>{
+        img.addEventListener('error',()=>{
+          const visual=img.closest('.flyer-visual');
+          if(visual){
+            img.remove();
+            visual.classList.add('image-error');
+          }
+        },{once:true});
+      });
 
-        // If a Google Drive thumbnail ever fails to load, keep the card usable
-        // and make the failure visible instead of leaving an unexplained blank box.
-        track.querySelectorAll('.flyer-visual img').forEach(img=>{
-          img.addEventListener('error',()=>{
-            const visual=img.closest('.flyer-visual');
-            if(visual){
-              img.remove();
-              visual.classList.add('image-error');
-            }
-          },{once:true});
-        });
+      renderDots();
+      show(0);
+      document.getElementById('loading').style.display='none';
+      document.getElementById('carousel').style.display='block';
+      document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
+      restart();
+      reportHeight();
+      return true;
+    }
 
-        renderDots();
-        show(0);
+    async function fetchFreshSlides(){
+      // Start both network requests together. Previously the flyer request did not
+      // begin until after the entire calendar download and parse had completed.
+      const flyerPromise=loadFlyerRows();
 
-        document.getElementById('loading').style.display='none';
-        document.getElementById('carousel').style.display='block';
-        document.getElementById('controls').style.display=maxIndex()>0?'flex':'none';
+      const r=await fetch(EVENTS_FEED_URL,{cache:'default'});
+      if(!r.ok)throw new Error('calendar');
+      const ics=await r.text();
+      if(!ics.includes('BEGIN:VCALENDAR'))throw new Error('calendar');
 
-        restart();
-        reportHeight();
+      let events=parseCalendar(ics);
+      const flyerRows=await flyerPromise;
+      applyFlyers(events,flyerRows);
+
+      return selectCarouselEvents(events)
+        .sort((a,b)=>a.start.getTime()-b.start.getTime());
+    }
+
+    async function init(){
+      const cached=readSlideCache();
+      const showedCache=renderSlides(cached);
+
+      try{
+        const fresh=await fetchFreshSlides();
+        if(!fresh.length)throw new Error('empty');
+
+        writeSlideCache(fresh);
+        renderSlides(fresh);
       }catch(err){
-        document.getElementById('loading').innerHTML=
-          'Upcoming events are temporarily unavailable.<br><a href="https://events.bethelamelancaster.com" target="_top" style="color:#f7bf5b">View the Events page</a>';
-        reportHeight();
+        if(!showedCache){
+          document.getElementById('loading').innerHTML=
+            'Upcoming events are temporarily unavailable. <a href="https://events.bethelamelancaster.com" target="_top" style="color:#f7bf5b">View the Events page</a>.';
+          reportHeight();
+        }
+        console.warn('Homepage events load error:',err);
       }
     }
 

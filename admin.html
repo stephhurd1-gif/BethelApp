@@ -91,6 +91,26 @@
     .stat-num { font-size: 28px; font-weight: bold; color: var(--gold); }
     .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
 
+    /* Livestream Analytics */
+    .live-toolbar { display:flex; gap:10px; align-items:end; flex-wrap:wrap; margin-bottom:16px; }
+    .live-toolbar > div { flex:1; min-width:180px; }
+    select, input[type="date"], input[type="number"] { width:100%; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); color:var(--white); font-size:15px; }
+    select option { color:#111; }
+    .platform-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .platform-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:16px; }
+    .platform-card h3 { margin:0 0 12px; font-size:15px; }
+    .metric-row { display:grid; grid-template-columns:1fr 110px; gap:10px; align-items:center; margin:10px 0; }
+    .metric-row label { margin:0; color:#ddd; }
+    .live-meta { display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:12px; color:#aaa; margin-top:12px; }
+    .live-dot { width:8px; height:8px; border-radius:50%; background:#68d391; display:inline-block; margin-right:5px; }
+    .analytics-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .analytics-table th,.analytics-table td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .analytics-table th { color:var(--gold); font-size:12px; }
+    .history-item { cursor:pointer; }
+    .history-item:hover { border-color:rgba(247,191,91,0.35); }
+    @media (max-width:600px) { .platform-grid { grid-template-columns:1fr; } .analytics-table { font-size:12px; } .analytics-table th,.analytics-table td { padding:8px 5px; } }
+    @media print { body{background:#fff;color:#111}.login-wrap,.admin-header,.stat-grid,.tabs,.live-toolbar .btn,.btn-row,#live-entry-card{display:none!important}.admin-wrap{max-width:none;padding:0}.tab-panel{display:none!important}#tab-livestream{display:block!important}.card,.platform-card{border:1px solid #ccc;background:#fff;color:#111}.card h2,.analytics-table th{color:#5c1b68}.empty-note,.live-meta,label{color:#555}input,select{border:0!important;background:#fff!important;color:#111!important;padding:0!important}.live-dot{background:#333}}
+
     @media (max-width: 480px) {
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
       .admin-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -145,6 +165,7 @@
     <button class="tab" onclick="switchTab('visitors')">Visitors</button>
     <button class="tab" onclick="switchTab('prayer')">&#128591; Prayer</button>
     <button class="tab" onclick="switchTab('giving')">&#128181; Giving</button>
+    <button class="tab" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
   </div>
 
   <!-- Send Now -->
@@ -281,6 +302,59 @@
     </div>
   </div>
 
+  <!-- Livestream Analytics -->
+  <div class="tab-panel" id="tab-livestream">
+    <div class="card">
+      <h2>&#128250; Livestream Analytics</h2>
+      <div class="live-toolbar">
+        <div><label>Service date</label><input type="date" id="live-service-date"></div>
+        <div><label>Service title</label><input type="text" id="live-service-title" value="Sunday Worship" maxlength="80"></div>
+        <button class="btn btn-outline" onclick="loadLivestreamService()">Load</button>
+      </div>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <h3>Facebook</h3>
+          <div class="metric-row"><label>1+ Minute Views</label><input type="number" min="0" id="fb-1min" value="0"></div>
+          <div class="metric-row"><label>5+ Minute Views</label><input type="number" min="0" id="fb-5min" value="0"></div>
+        </div>
+        <div class="platform-card">
+          <h3>YouTube</h3>
+          <div class="metric-row"><label>1+ Minute Views</label><input type="number" min="0" id="yt-1min" value="0"></div>
+          <div class="metric-row"><label>5+ Minute Views</label><input type="number" min="0" id="yt-5min" value="0"></div>
+        </div>
+      </div>
+      <div class="live-meta"><span><span class="live-dot"></span>Auto-updating from Firestore</span><span id="live-last-updated">Not saved yet</span></div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="saveLivestreamService()">Save Service</button>
+        <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
+      </div>
+      <div class="status-msg" id="live-msg"></div>
+    </div>
+
+    <div class="card" id="live-entry-card">
+      <h2>Add Interaction</h2>
+      <div class="live-toolbar">
+        <div><label>Platform</label><select id="interaction-platform"><option>Facebook</option><option>YouTube</option></select></div>
+        <div><label>Name</label><input type="text" id="interaction-name" placeholder="Jane Smith"></div>
+        <div><label>Interaction</label><select id="interaction-type"><option>Comment</option><option>Reaction</option><option>Live Chat</option></select></div>
+        <div><label>Time</label><input type="text" id="interaction-time" placeholder="10:42 AM"></div>
+      </div>
+      <button class="btn btn-gold" onclick="addLivestreamInteraction()">Add Interaction</button>
+    </div>
+
+    <div class="card">
+      <h2>Interactions</h2>
+      <div style="overflow-x:auto;">
+        <table class="analytics-table"><thead><tr><th>Platform</th><th>Name</th><th>Interaction</th><th>Time</th></tr></thead><tbody id="interaction-list"><tr><td colspan="4" class="empty-note">No interactions saved.</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Service History</h2>
+      <div id="livestream-history"><p class="empty-note">Loading...</p></div>
+    </div>
+  </div>
+
   <!-- Queue -->
   <div class="tab-panel" id="tab-queue">
     <div class="card">
@@ -298,7 +372,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, where, orderBy, Timestamp }
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, setDoc, doc, query, where, orderBy, Timestamp, serverTimestamp, onSnapshot }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const FIREBASE_CONFIG = {
@@ -349,7 +423,7 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving','livestream'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
@@ -358,6 +432,7 @@
     if (name === 'visitors') { document.getElementById('visitor-lock-card').style.display='block'; document.getElementById('visitor-content').style.display='none'; document.getElementById('visitor-pwd').value=''; }
     if (name === 'prayer') { document.getElementById('prayer-lock-card').style.display='block'; document.getElementById('prayer-content').style.display='none'; }
     if (name === 'giving') { document.getElementById('giving-lock-card').style.display='block'; document.getElementById('giving-content').style.display='none'; }
+    if (name === 'livestream') initLivestreamAnalytics();
   }
   window.switchTab = switchTab;
 
@@ -878,6 +953,108 @@
     }
   }
   window.loadPrayerRequests = loadPrayerRequests;
+
+
+  // ── Livestream Analytics ──────────────────────────────────────────
+  let livestreamUnsubscribe = null;
+  let currentLivestreamId = null;
+
+  function serviceIdFromDate(dateStr) { return dateStr || new Date().toISOString().slice(0,10); }
+  function liveMsg(text, type='success') { const el=document.getElementById('live-msg'); el.className='status-msg '+type; el.textContent=text; }
+  function num(id) { return Math.max(0, parseInt(document.getElementById(id).value || '0',10) || 0); }
+
+  function initLivestreamAnalytics() {
+    const dateEl=document.getElementById('live-service-date');
+    if (!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+    loadLivestreamService();
+    loadLivestreamHistory();
+  }
+  window.initLivestreamAnalytics=initLivestreamAnalytics;
+
+  async function saveLivestreamService() {
+    try {
+      const date=document.getElementById('live-service-date').value;
+      if(!date) return liveMsg('Choose a service date first.','error');
+      const ref=doc(db,'livestream_services',serviceIdFromDate(date));
+      await setDoc(ref,{
+        serviceDate:date,
+        title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship',
+        facebook:{oneMinuteViews:num('fb-1min'),fiveMinuteViews:num('fb-5min')},
+        youtube:{oneMinuteViews:num('yt-1min'),fiveMinuteViews:num('yt-5min')},
+        updatedAt:serverTimestamp()
+      },{merge:true});
+      liveMsg('Livestream analytics saved.');
+      loadLivestreamHistory();
+    } catch(e) { liveMsg('Could not save: '+e.message,'error'); }
+  }
+  window.saveLivestreamService=saveLivestreamService;
+
+  function loadLivestreamService(dateOverride) {
+    const dateEl=document.getElementById('live-service-date');
+    if(dateOverride) dateEl.value=dateOverride;
+    const date=dateEl.value || new Date().toISOString().slice(0,10);
+    const id=serviceIdFromDate(date);
+    currentLivestreamId=id;
+    if(livestreamUnsubscribe) livestreamUnsubscribe();
+    livestreamUnsubscribe=onSnapshot(doc(db,'livestream_services',id),(snap)=>{
+      if(!snap.exists()) {
+        document.getElementById('fb-1min').value=0; document.getElementById('fb-5min').value=0;
+        document.getElementById('yt-1min').value=0; document.getElementById('yt-5min').value=0;
+        document.getElementById('live-last-updated').textContent='No saved data for this service';
+      } else {
+        const d=snap.data();
+        document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
+        document.getElementById('fb-1min').value=d.facebook?.oneMinuteViews ?? 0;
+        document.getElementById('fb-5min').value=d.facebook?.fiveMinuteViews ?? 0;
+        document.getElementById('yt-1min').value=d.youtube?.oneMinuteViews ?? 0;
+        document.getElementById('yt-5min').value=d.youtube?.fiveMinuteViews ?? 0;
+        const when=d.updatedAt?.toDate ? d.updatedAt.toDate().toLocaleString() : 'just now';
+        document.getElementById('live-last-updated').textContent='Last updated: '+when;
+      }
+    },e=>liveMsg('Live update error: '+e.message,'error'));
+    loadLivestreamInteractions();
+  }
+  window.loadLivestreamService=loadLivestreamService;
+
+  async function addLivestreamInteraction() {
+    try {
+      const date=document.getElementById('live-service-date').value;
+      const name=document.getElementById('interaction-name').value.trim();
+      const time=document.getElementById('interaction-time').value.trim();
+      if(!date || !name || !time) return liveMsg('Service date, name, and time are required.','error');
+      await addDoc(collection(db,'livestream_services',serviceIdFromDate(date),'interactions'),{
+        platform:document.getElementById('interaction-platform').value,
+        name,
+        interaction:document.getElementById('interaction-type').value,
+        time,
+        createdAt:serverTimestamp()
+      });
+      document.getElementById('interaction-name').value=''; document.getElementById('interaction-time').value='';
+      liveMsg('Interaction added.');
+      loadLivestreamInteractions();
+    } catch(e) { liveMsg('Could not add interaction: '+e.message,'error'); }
+  }
+  window.addLivestreamInteraction=addLivestreamInteraction;
+
+  async function loadLivestreamInteractions() {
+    const body=document.getElementById('interaction-list');
+    try {
+      const date=document.getElementById('live-service-date').value;
+      const snap=await getDocs(collection(db,'livestream_services',serviceIdFromDate(date),'interactions'));
+      const rows=snap.docs.map(x=>x.data());
+      rows.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+      body.innerHTML=rows.length ? rows.map(r=>`<tr><td>${escHtml(r.platform||'')}</td><td>${escHtml(r.name||'')}</td><td>${escHtml(r.interaction||'')}</td><td>${escHtml(r.time||'')}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-note">No interactions saved.</td></tr>';
+    } catch(e) { body.innerHTML='<tr><td colspan="4" style="color:#fc8181;">'+escHtml(e.message)+'</td></tr>'; }
+  }
+
+  async function loadLivestreamHistory() {
+    const el=document.getElementById('livestream-history');
+    try {
+      const snap=await getDocs(collection(db,'livestream_services'));
+      const rows=snap.docs.map(x=>x.data()).sort((a,b)=>(b.serviceDate||'').localeCompare(a.serviceDate||''));
+      el.innerHTML=rows.length ? rows.map(d=>`<div class="scheduled-item history-item" onclick="loadLivestreamService('${escHtml(d.serviceDate||'')}')"><div class="item-info"><div class="item-title">${escHtml(d.title||'Sunday Worship')}</div><div class="item-time">${escHtml(d.serviceDate||'')}</div><div class="item-body">Facebook: ${d.facebook?.oneMinuteViews??0} (1+ min) / ${d.facebook?.fiveMinuteViews??0} (5+ min) &nbsp; • &nbsp; YouTube: ${d.youtube?.oneMinuteViews??0} / ${d.youtube?.fiveMinuteViews??0}</div></div></div>`).join('') : '<p class="empty-note">No livestream services saved yet.</p>';
+    } catch(e) { el.innerHTML='<p class="empty-note" style="color:#fc8181;">'+escHtml(e.message)+'</p>'; }
+  }
 
   // Set min datetime to now
   const dt = document.getElementById('sched-time');

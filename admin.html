@@ -108,6 +108,18 @@
     .analytics-table { width:100%; border-collapse:collapse; font-size:13px; }
     .analytics-table th,.analytics-table td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.08); }
     .analytics-table th { color:var(--gold); font-size:12px; }
+    .verified-participant-list { display:grid; gap:8px; }
+    .verified-participant-row {
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:10px 12px;border-radius:12px;
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    }
+    .verified-participant-name { font-weight:bold;color:var(--white); }
+    .verified-participant-meta { font-size:12px;color:#aaa; }
+    .verified-participant-badge {
+      font-size:11px;padding:3px 8px;border-radius:999px;
+      background:rgba(247,191,91,0.10);border:1px solid rgba(247,191,91,0.25);color:var(--gold);
+    }
     .history-item { cursor:pointer; }
     .history-item:hover { border-color:rgba(247,191,91,0.35); }
     .history-item.selected-service {
@@ -356,10 +368,13 @@
           <div class="metric-row"><label>Likes</label><div class="metric-value" id="yt-likes">—</div></div>
           <div class="metric-row"><label>Comments</label><div class="metric-value" id="yt-comments">—</div></div>
           <div class="metric-row"><label>Shares</label><div class="metric-value" id="yt-shares">—</div></div>
-          <div class="metric-note">YouTube metrics are read-only and come from the YouTube API. A dash means YouTube did not provide that metric.</div>
+          <div class="metric-note">YouTube metrics are read-only digital engagement metrics from the YouTube API. Views and watch time may include replay activity after the live service. A dash means YouTube did not provide that metric.</div>
         </div>
       </div>
       <div class="live-meta"><span><span class="live-dot"></span>Secure analytics feed</span><span id="live-last-updated">Select a service below</span></div>
+      <div class="metric-note" style="margin-top:10px;">
+        Reporting: use the named participant list below for Verified Online Attendance. Treat platform views, watch time, likes, comments, shares, and similar totals as Digital Engagement.
+      </div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="saveLivestreamService()">Save Facebook / Service Details</button>
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
@@ -368,7 +383,7 @@
     </div>
 
     <div class="card" id="live-entry-card">
-      <h2>Add Interaction</h2>
+      <h2>Add Verified Interaction</h2>
       <div class="live-toolbar">
         <div><label>Platform</label><select id="interaction-platform"><option>Facebook</option><option>YouTube</option></select></div>
         <div><label>Name</label><input type="text" id="interaction-name" placeholder="Jane Smith"></div>
@@ -379,9 +394,35 @@
     </div>
 
     <div class="card">
-      <h2>Interactions <span id="interaction-service-label" style="font-size:11px;color:#888;font-weight:normal;"></span></h2>
-      <div style="overflow-x:auto;">
-        <table class="analytics-table"><thead><tr><th>Platform</th><th>Name</th><th>Interaction</th><th>Time</th></tr></thead><tbody id="interaction-list"><tr><td colspan="4" class="empty-note">No interactions saved.</td></tr></tbody></table>
+      <h2>Verified Online Participants <span id="interaction-service-label" style="font-size:11px;color:#888;font-weight:normal;"></span></h2>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="stat-num" id="verified-participant-count">0</div>
+          <div class="stat-label">Unique verified participants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="interaction-count">0</div>
+          <div class="stat-label">Total interactions</div>
+        </div>
+      </div>
+
+      <div id="verified-participant-list" class="verified-participant-list">
+        <p class="empty-note">No verified participants for this service.</p>
+      </div>
+
+      <details style="margin-top:14px;">
+        <summary style="cursor:pointer;color:var(--gold);font-weight:bold;">View full interaction log</summary>
+        <div style="overflow-x:auto;margin-top:10px;">
+          <table class="analytics-table">
+            <thead><tr><th>Platform</th><th>Name</th><th>Interaction</th><th>Time</th></tr></thead>
+            <tbody id="interaction-list"><tr><td colspan="4" class="empty-note">No interactions saved.</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+
+      <div class="metric-note" style="margin-top:12px;">
+        Verified Online Participants counts unique named participants for this service. Multiple interactions by the same person count once.
       </div>
     </div>
 
@@ -1104,12 +1145,63 @@
 
   function renderInteractions(rows=[]) {
     const body=document.getElementById('interaction-list');
-    body.innerHTML=rows.length ? rows.map(r=>`<tr>
-      <td>${escHtml(String(r.platform||''))}</td>
-      <td>${escHtml(String(r.name||r.authorName||''))}</td>
-      <td>${escHtml(String(r.interaction||r.interactionType||'Live Chat'))}</td>
-      <td>${escHtml(formatInteractionTime(r.time||r.publishedAt||r.createdAt||''))}</td>
+    const countEl=document.getElementById('verified-participant-count');
+    const interactionCountEl=document.getElementById('interaction-count');
+    const participantList=document.getElementById('verified-participant-list');
+
+    const normalized=rows
+      .map(r=>({
+        ...r,
+        displayName:String(r.name||r.authorName||'').trim(),
+        platform:String(r.platform||'').trim(),
+        interactionLabel:String(r.interaction||r.interactionType||'Live Chat').trim(),
+        displayTime:formatInteractionTime(r.time||r.publishedAt||r.createdAt||'')
+      }))
+      .filter(r=>r.displayName);
+
+    body.innerHTML=normalized.length ? normalized.map(r=>`<tr>
+      <td>${escHtml(r.platform)}</td>
+      <td>${escHtml(r.displayName)}</td>
+      <td>${escHtml(r.interactionLabel)}</td>
+      <td>${escHtml(r.displayTime)}</td>
     </tr>`).join('') : '<tr><td colspan="4" class="empty-note">No interactions saved.</td></tr>';
+
+    const people=new Map();
+
+    normalized.forEach(r=>{
+      const key=r.displayName.toLocaleLowerCase();
+      if(!people.has(key)) {
+        people.set(key,{
+          name:r.displayName,
+          platforms:new Set(),
+          interactions:0,
+          firstTime:r.displayTime || ''
+        });
+      }
+      const p=people.get(key);
+      if(r.platform) p.platforms.add(r.platform);
+      p.interactions++;
+      if(!p.firstTime && r.displayTime) p.firstTime=r.displayTime;
+    });
+
+    const participants=[...people.values()]
+      .sort((a,b)=>a.name.localeCompare(b.name));
+
+    if(countEl) countEl.textContent=String(participants.length);
+    if(interactionCountEl) interactionCountEl.textContent=String(normalized.length);
+
+    if(participantList) {
+      participantList.innerHTML=participants.length ? participants.map(p=>{
+        const platforms=[...p.platforms].join(' + ') || 'Platform not listed';
+        return `<div class="verified-participant-row">
+          <div>
+            <div class="verified-participant-name">${escHtml(p.name)}</div>
+            <div class="verified-participant-meta">${escHtml(platforms)}${p.firstTime ? ' • '+escHtml(p.firstTime) : ''}</div>
+          </div>
+          <div class="verified-participant-badge">${p.interactions} interaction${p.interactions===1?'':'s'}</div>
+        </div>`;
+      }).join('') : '<p class="empty-note">No verified participants for this service.</p>';
+    }
   }
 
   function renderService(d) {

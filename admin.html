@@ -352,10 +352,21 @@
       </div>
       <div class="platform-grid">
         <div class="platform-card">
-          <h3>Facebook</h3>
-          <div class="metric-row"><label>1+ Minute Views</label><input type="number" min="0" id="fb-1min" value="0"></div>
-          <div class="metric-row"><label>5+ Minute Views</label><input type="number" min="0" id="fb-5min" value="0"></div>
-          <div class="metric-note">Facebook remains separate from YouTube. Enter these only when Meta provides reliable values.</div>
+          <h3>Facebook <span id="fb-status" style="font-size:11px;color:#888;font-weight:normal;"></span></h3>
+          <div class="metric-row"><label>Reach</label><div class="metric-value" id="fb-reach">—</div></div>
+          <div class="metric-row"><label>Plays</label><div class="metric-value" id="fb-plays">—</div></div>
+          <div class="metric-row"><label>60-Second Views</label><div class="metric-value" id="fb-60sec">—</div></div>
+          <div class="metric-row"><label>Unique 30-Second Viewers</label><div class="metric-value" id="fb-30sec-unique">—</div></div>
+          <div class="metric-row"><label>Unique 10-Second Viewers</label><div class="metric-value" id="fb-10sec-unique">—</div></div>
+          <div class="metric-row"><label>Total Watch Minutes</label><div class="metric-value" id="fb-watch-minutes">—</div></div>
+          <div class="metric-row"><label>Avg. Watch Time</label><div class="metric-value" id="fb-avg-watch">—</div></div>
+          <div class="metric-row"><label>95% Completions</label><div class="metric-value" id="fb-completions">—</div></div>
+          <div class="metric-row"><label>Comments Retrieved</label><div class="metric-value" id="fb-comments">—</div></div>
+          <div class="metric-row"><label>Named Commenters</label><div class="metric-value" id="fb-named-commenters">—</div></div>
+          <div class="metric-note">
+            Facebook metrics are read-only digital engagement metrics from the Meta Graph API.
+            They remain separate from attendance. Named commenters are counted as verified participants only when Meta provides a name.
+          </div>
         </div>
         <div class="platform-card">
           <h3>YouTube <span id="yt-status" style="font-size:11px;color:#888;font-weight:normal;"></span></h3>
@@ -373,10 +384,10 @@
       </div>
       <div class="live-meta"><span><span class="live-dot"></span>Secure analytics feed</span><span id="live-last-updated">Select a service below</span></div>
       <div class="metric-note" style="margin-top:10px;">
-        Reporting: use the named participant list below for Verified Online Attendance. Treat platform views, watch time, likes, comments, shares, and similar totals as Digital Engagement.
+        Reporting: use the named participant list below for Verified Online Attendance. Treat Facebook and YouTube views, reach, watch time, likes, comments, shares, and similar totals as Digital Engagement.
       </div>
       <div class="btn-row">
-        <button class="btn btn-gold" onclick="saveLivestreamService()">Save Facebook / Service Details</button>
+        <button class="btn btn-gold" onclick="saveLivestreamService()">Save Service Details</button>
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
       </div>
       <div class="status-msg" id="live-msg"></div>
@@ -1130,6 +1141,31 @@
     document.getElementById('yt-status').textContent='';
   }
 
+  function clearFacebookMetrics() {
+    ['fb-reach','fb-plays','fb-60sec','fb-30sec-unique','fb-10sec-unique','fb-watch-minutes','fb-completions','fb-comments','fb-named-commenters']
+      .forEach(id=>showMetric(id,null));
+    const avg=document.getElementById('fb-avg-watch');
+    if(avg) avg.textContent='—';
+    const status=document.getElementById('fb-status');
+    if(status) status.textContent='';
+  }
+
+  function renderFacebookMetrics(f={}) {
+    showMetric('fb-reach',f.reach);
+    showMetric('fb-plays',f.plays);
+    showMetric('fb-60sec',f.sixtySecondViews);
+    showMetric('fb-30sec-unique',f.uniqueThirtySecondViewers);
+    showMetric('fb-10sec-unique',f.uniqueTenSecondViewers);
+    showMetric('fb-watch-minutes',f.totalWatchMinutes);
+    const avg=document.getElementById('fb-avg-watch');
+    if(avg) avg.textContent=formatDuration(f.averageWatchTimeSeconds);
+    showMetric('fb-completions',f.uniqueCompletions95);
+    showMetric('fb-comments',f.commentsRetrieved);
+    showMetric('fb-named-commenters',f.namedCommentersRetrieved);
+    const status=document.getElementById('fb-status');
+    if(status) status.textContent=f.liveStatus ? `• ${f.liveStatus}` : '';
+  }
+
   function renderYoutubeMetrics(y={}) {
     showMetric('yt-views',y.views);
     showMetric('yt-watch-minutes',y.estimatedMinutesWatched);
@@ -1207,8 +1243,7 @@
   function renderService(d) {
     if(d.serviceDate) document.getElementById('live-service-date').value=d.serviceDate;
     document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
-    document.getElementById('fb-1min').value=d.facebook?.oneMinuteViews ?? 0;
-    document.getElementById('fb-5min').value=d.facebook?.fiveMinuteViews ?? 0;
+    renderFacebookMetrics(d.facebook || {});
     renderYoutubeMetrics(d.youtube || {});
 
     document.getElementById('live-selected-title').textContent=d.title || 'Sunday Worship';
@@ -1241,6 +1276,7 @@
   async function initLivestreamAnalytics() {
     const dateEl=document.getElementById('live-service-date');
     if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+    clearFacebookMetrics();
     clearYoutubeMetrics();
     await loadLivestreamHistory();
 
@@ -1263,15 +1299,11 @@
       await livestreamAdminRequest('save',{
         id,
         serviceDate:date,
-        title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship',
-        facebook:{
-          oneMinuteViews:num('fb-1min'),
-          fiveMinuteViews:num('fb-5min')
-        }
+        title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship'
       });
 
       currentLivestreamId=id;
-      liveMsg('Facebook metrics and service details saved.');
+      liveMsg('Service details saved.');
       await loadLivestreamHistory(false);
     } catch(e) { liveMsg('Could not save: '+e.message,'error'); }
   }

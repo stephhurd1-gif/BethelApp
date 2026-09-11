@@ -110,6 +110,20 @@
     .analytics-table th { color:var(--gold); font-size:12px; }
     .history-item { cursor:pointer; }
     .history-item:hover { border-color:rgba(247,191,91,0.35); }
+    .history-item.selected-service {
+      border-color:rgba(247,191,91,0.8);
+      box-shadow:0 0 0 1px rgba(247,191,91,0.18) inset;
+      background:rgba(247,191,91,0.07);
+    }
+    .live-selected-summary {
+      display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+      padding:14px 16px;margin-bottom:16px;border-radius:14px;
+      background:rgba(247,191,91,0.08);border:1px solid rgba(247,191,91,0.22);
+    }
+    .live-selected-label { font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:4px; }
+    .live-selected-title { font-size:17px;font-weight:bold;color:var(--white); }
+    .live-selected-date { font-size:12px;color:var(--gold);margin-top:4px; }
+    .live-youtube-link { text-decoration:none;font-size:12px;padding:8px 13px; }
     @media (max-width:600px) { .platform-grid { grid-template-columns:1fr; } .analytics-table { font-size:12px; } .analytics-table th,.analytics-table td { padding:8px 5px; } }
     @media print { body{background:#fff;color:#111}.login-wrap,.admin-header,.stat-grid,.tabs,.live-toolbar .btn,.btn-row,#live-entry-card{display:none!important}.admin-wrap{max-width:none;padding:0}.tab-panel{display:none!important}#tab-livestream{display:block!important}.card,.platform-card{border:1px solid #ccc;background:#fff;color:#111}.card h2,.analytics-table th{color:#5c1b68}.empty-note,.live-meta,label{color:#555}input,select{border:0!important;background:#fff!important;color:#111!important;padding:0!important}.live-dot{background:#333}}
 
@@ -308,6 +322,17 @@
   <div class="tab-panel" id="tab-livestream">
     <div class="card">
       <h2>&#128250; Livestream Analytics</h2>
+
+      <div id="live-selected-summary" class="live-selected-summary">
+        <div>
+          <div class="live-selected-label">Selected service</div>
+          <div id="live-selected-title" class="live-selected-title">Choose a service from the history below</div>
+          <div id="live-selected-date" class="live-selected-date"></div>
+        </div>
+        <a id="live-youtube-link" class="btn btn-outline live-youtube-link"
+           href="#" target="_blank" rel="noopener" style="display:none;">Open on YouTube</a>
+      </div>
+
       <div class="live-toolbar">
         <div><label>Service date</label><input type="date" id="live-service-date"></div>
         <div><label>Service title</label><input type="text" id="live-service-title" value="Sunday Worship" maxlength="80"></div>
@@ -354,7 +379,7 @@
     </div>
 
     <div class="card">
-      <h2>Interactions</h2>
+      <h2>Interactions <span id="interaction-service-label" style="font-size:11px;color:#888;font-weight:normal;"></span></h2>
       <div style="overflow-x:auto;">
         <table class="analytics-table"><thead><tr><th>Platform</th><th>Name</th><th>Interaction</th><th>Time</th></tr></thead><tbody id="interaction-list"><tr><td colspan="4" class="empty-note">No interactions saved.</td></tr></tbody></table>
       </div>
@@ -1093,8 +1118,32 @@
     document.getElementById('fb-1min').value=d.facebook?.oneMinuteViews ?? 0;
     document.getElementById('fb-5min').value=d.facebook?.fiveMinuteViews ?? 0;
     renderYoutubeMetrics(d.youtube || {});
+
+    document.getElementById('live-selected-title').textContent=d.title || 'Sunday Worship';
+    document.getElementById('live-selected-date').textContent=d.serviceDate || '';
+    const interactionLabel=document.getElementById('interaction-service-label');
+    if(interactionLabel) interactionLabel.textContent=d.serviceDate ? `• ${d.serviceDate}` : '';
+
+    const ytLink=document.getElementById('live-youtube-link');
+    const youtubeUrl=d.youtube?.youtubeUrl || d.youtubeUrl ||
+      (d.youtube?.videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(d.youtube.videoId)}` : '');
+    if(youtubeUrl) {
+      ytLink.href=youtubeUrl;
+      ytLink.style.display='inline-flex';
+    } else {
+      ytLink.removeAttribute('href');
+      ytLink.style.display='none';
+    }
+
     const when=d.updatedAt ? formatInteractionTime(d.updatedAt) : 'just now';
     document.getElementById('live-last-updated').textContent='Last updated: '+when;
+    highlightSelectedLivestream(currentLivestreamId);
+  }
+
+  function highlightSelectedLivestream(id) {
+    document.querySelectorAll('#livestream-history .history-item').forEach(card=>{
+      card.classList.toggle('selected-service', !!id && card.dataset.serviceId===String(id));
+    });
   }
 
   async function initLivestreamAnalytics() {
@@ -1203,7 +1252,7 @@
           ? `Facebook: ${d.facebook.oneMinuteViews??'—'} (1+ min) / ${d.facebook.fiveMinuteViews??'—'} (5+ min)`
           : 'Facebook: —';
 
-        return `<div class="scheduled-item history-item" onclick="loadLivestreamService('${escHtml(String(d.id))}')">
+        return `<div class="scheduled-item history-item" data-service-id="${escHtml(String(d.id))}" onclick="loadLivestreamService('${escHtml(String(d.id))}')">
           <div class="item-info">
             <div class="item-title">${escHtml(String(d.title||'Sunday Worship'))}</div>
             <div class="item-time">${escHtml(String(d.serviceDate||''))}</div>
@@ -1211,6 +1260,8 @@
           </div>
         </div>`;
       }).join('') : '<p class="empty-note">No livestream services saved yet.</p>';
+
+      highlightSelectedLivestream(currentLivestreamId);
 
       if(rows.length && !currentLivestreamId) {
         await loadLivestreamService(rows[0].id,false);

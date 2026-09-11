@@ -120,6 +120,29 @@
       font-size:11px;padding:3px 8px;border-radius:999px;
       background:rgba(247,191,91,0.10);border:1px solid rgba(247,191,91,0.25);color:var(--gold);
     }
+    .report-summary-grid {
+      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;
+    }
+    .report-platform-grid {
+      display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+    }
+    .report-platform-card {
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px;padding:14px;
+    }
+    .report-platform-card h3 { margin:0 0 10px;color:var(--gold);font-size:14px; }
+    .report-platform-card > div {
+      display:flex;justify-content:space-between;gap:12px;padding:7px 0;
+      border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;
+    }
+    .report-platform-card > div:last-child { border-bottom:0; }
+    .report-platform-card span { color:#aaa; }
+    .report-platform-card strong { color:var(--white); }
+    @media (max-width:600px) {
+      .report-summary-grid { grid-template-columns:1fr; }
+      .report-platform-grid { grid-template-columns:1fr; }
+    }
+
     .history-item { cursor:pointer; }
     .history-item:hover { border-color:rgba(247,191,91,0.35); }
     .history-item.selected-service {
@@ -143,6 +166,28 @@
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
       .admin-header { flex-direction: column; align-items: flex-start; gap: 10px; }
     }
+  
+    @media print {
+      #live-entry-card,
+      #livestream-history-tools,
+      #livestream-history,
+      .admin-header,
+      .stat-grid,
+      .tabs,
+      .live-toolbar .btn,
+      .btn-row,
+      #live-msg {
+        display:none !important;
+      }
+      #tab-livestream { display:block !important; }
+      #live-report-card,
+      #tab-livestream > .card:first-child,
+      #tab-livestream .card:has(#interaction-list) {
+        break-inside:avoid;
+      }
+      #live-report-card { margin-top:12px; }
+    }
+
   </style>
 </head>
 <body>
@@ -348,6 +393,7 @@
       <div class="live-toolbar">
         <div><label>Service date</label><input type="date" id="live-service-date"></div>
         <div><label>Service title</label><input type="text" id="live-service-title" value="Sunday Worship" maxlength="80"></div>
+        <div><label>In-person attendance</label><input type="number" min="0" id="live-inperson-attendance" value="0"></div>
         <button class="btn btn-outline" onclick="loadLivestreamService()">Load</button>
       </div>
       <div class="platform-grid">
@@ -391,6 +437,48 @@
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
       </div>
       <div class="status-msg" id="live-msg"></div>
+    </div>
+
+    <div class="card" id="live-report-card">
+      <h2>Service Report Summary</h2>
+      <div class="report-summary-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="report-inperson">0</div>
+          <div class="stat-label">In-person attendance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="report-verified-online">0</div>
+          <div class="stat-label">Verified online attendance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="report-total-attendance">0</div>
+          <div class="stat-label">Total verified attendance</div>
+        </div>
+      </div>
+
+      <div class="report-platform-grid">
+        <div class="report-platform-card">
+          <h3>Facebook Digital Engagement</h3>
+          <div><span>Reach</span><strong id="report-fb-reach">—</strong></div>
+          <div><span>Plays</span><strong id="report-fb-plays">—</strong></div>
+          <div><span>60-second views</span><strong id="report-fb-60sec">—</strong></div>
+          <div><span>Watch minutes</span><strong id="report-fb-watch">—</strong></div>
+          <div><span>Comments</span><strong id="report-fb-comments">—</strong></div>
+        </div>
+
+        <div class="report-platform-card">
+          <h3>YouTube Digital Engagement</h3>
+          <div><span>Views</span><strong id="report-yt-views">—</strong></div>
+          <div><span>Watch minutes</span><strong id="report-yt-watch">—</strong></div>
+          <div><span>Avg. view duration</span><strong id="report-yt-duration">—</strong></div>
+          <div><span>Likes</span><strong id="report-yt-likes">—</strong></div>
+          <div><span>Shares</span><strong id="report-yt-shares">—</strong></div>
+        </div>
+      </div>
+
+      <div class="metric-note" style="margin-top:12px;">
+        Attendance uses only in-person headcount plus uniquely named online participants. Platform views, reach, watch time, comments, likes, and shares are reported separately as digital engagement.
+      </div>
     </div>
 
     <div class="card" id="live-entry-card">
@@ -1179,6 +1267,41 @@
     document.getElementById('yt-status').textContent=y.status ? `• ${y.status}` : '';
   }
 
+  function reportValue(id, value) {
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.textContent=(value===null||value===undefined||value==='')?'—':String(value);
+  }
+
+  function updateAttendanceReport() {
+    const inPerson=Math.max(0, parseInt(document.getElementById('live-inperson-attendance')?.value || '0',10) || 0);
+    const verified=Math.max(0, parseInt(document.getElementById('verified-participant-count')?.textContent || '0',10) || 0);
+
+    reportValue('report-inperson', inPerson);
+    reportValue('report-verified-online', verified);
+    reportValue('report-total-attendance', inPerson + verified);
+  }
+
+  function updateDigitalReport(d={}) {
+    const f=d.facebook || {};
+    const y=d.youtube || {};
+
+    reportValue('report-fb-reach', f.reach);
+    reportValue('report-fb-plays', f.plays);
+    reportValue('report-fb-60sec', f.sixtySecondViews);
+    reportValue('report-fb-watch', f.totalWatchMinutes);
+    reportValue('report-fb-comments', f.commentsRetrieved);
+
+    reportValue('report-yt-views', y.views);
+    reportValue('report-yt-watch', y.estimatedMinutesWatched);
+    reportValue('report-yt-duration', formatDuration(y.averageViewDurationSeconds));
+    reportValue('report-yt-likes', y.likes);
+    reportValue('report-yt-shares', y.shares);
+
+    updateAttendanceReport();
+  }
+
+
   function renderInteractions(rows=[]) {
     const body=document.getElementById('interaction-list');
     const countEl=document.getElementById('verified-participant-count');
@@ -1238,13 +1361,17 @@
         </div>`;
       }).join('') : '<p class="empty-note">No verified participants for this service.</p>';
     }
+
+    updateAttendanceReport();
   }
 
   function renderService(d) {
     if(d.serviceDate) document.getElementById('live-service-date').value=d.serviceDate;
     document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
+    document.getElementById('live-inperson-attendance').value=d.inPersonAttendance ?? 0;
     renderFacebookMetrics(d.facebook || {});
     renderYoutubeMetrics(d.youtube || {});
+    updateDigitalReport(d);
 
     document.getElementById('live-selected-title').textContent=d.title || 'Sunday Worship';
     document.getElementById('live-selected-date').textContent=d.serviceDate || '';
@@ -1299,7 +1426,8 @@
       await livestreamAdminRequest('save',{
         id,
         serviceDate:date,
-        title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship'
+        title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship',
+        inPersonAttendance:Math.max(0, parseInt(document.getElementById('live-inperson-attendance').value || '0',10) || 0)
       });
 
       currentLivestreamId=id;
@@ -1504,7 +1632,10 @@
     applyLivestreamHistoryFilters();
   }
 
-  document.addEventListener('DOMContentLoaded', wireLivestreamHistoryFilters);
+  document.addEventListener('DOMContentLoaded', ()=>{
+    wireLivestreamHistoryFilters();
+    document.getElementById('live-inperson-attendance')?.addEventListener('input', updateAttendanceReport);
+  });
   setTimeout(wireLivestreamHistoryFilters, 500);
 })();
 </script>

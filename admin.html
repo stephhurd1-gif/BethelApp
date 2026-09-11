@@ -334,7 +334,7 @@
           <div class="metric-note">YouTube metrics are read-only and come from the YouTube API. A dash means YouTube did not provide that metric.</div>
         </div>
       </div>
-      <div class="live-meta"><span><span class="live-dot"></span>Auto-updating from Firestore</span><span id="live-last-updated">Select a service below</span></div>
+      <div class="live-meta"><span><span class="live-dot"></span>Secure analytics feed</span><span id="live-last-updated">Select a service below</span></div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="saveLivestreamService()">Save Facebook / Service Details</button>
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
@@ -407,6 +407,7 @@
     const msg = document.getElementById('login-msg');
     if (pwd === ADMIN_PASSWORD) {
       sessionStorage.setItem('bethel_admin', '1');
+      sessionStorage.setItem('bethel_admin_password', pwd);
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('admin-screen').style.display = 'block';
       loadStats();
@@ -420,6 +421,7 @@
 
   function logout() {
     sessionStorage.removeItem('bethel_admin');
+    sessionStorage.removeItem('bethel_admin_password');
     location.reload();
   }
   window.logout = logout;
@@ -967,25 +969,74 @@
 
 
   // ── Livestream Analytics ──────────────────────────────────────────
-  let livestreamUnsubscribe = null;
   let currentLivestreamId = null;
+  let livestreamRefreshTimer = null;
+
+  const LIVESTREAM_ADMIN_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getLivestreamAnalytics';
 
   function serviceIdFromDate(dateStr) { return dateStr || new Date().toISOString().slice(0,10); }
   function liveMsg(text, type='success') { const el=document.getElementById('live-msg'); el.className='status-msg '+type; el.textContent=text; }
   function num(id) { return Math.max(0, parseInt(document.getElementById(id).value || '0',10) || 0); }
-  function showMetric(id, value, suffix='') {
-    document.getElementById(id).textContent = (value === null || value === undefined || value === '') ? '—' : `${value}${suffix}`;
+
+  function adminSessionPassword() {
+    return sessionStorage.getItem('bethel_admin_password') || '';
   }
+
+  async function livestreamAdminRequest(action, payload={}) {
+    const password=adminSessionPassword();
+    if(!password) {
+      throw new Error('Please sign out and sign back in before opening Livestream Analytics.');
+    }
+
+    const res=await fetch(LIVESTREAM_ADMIN_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password,action,...payload})
+    });
+
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.success===false) {
+      if(res.status===401) throw new Error('Admin analytics authorization failed. Please sign out and sign back in.');
+      throw new Error(data.error || `Analytics request failed (${res.status}).`);
+    }
+    return data;
+  }
+
+  function showMetric(id,value,suffix='') {
+    document.getElementById(id).textContent=(value===null||value===undefined||value==='')?'—':`${value}${suffix}`;
+  }
+
   function formatDuration(seconds) {
-    if (seconds === null || seconds === undefined) return '—';
+    if(seconds===null||seconds===undefined) return '—';
     const s=Math.max(0,Number(seconds)||0), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
     return h ? `${h}h ${m}m ${sec}s` : `${m}m ${sec}s`;
   }
+
+  function formatInteractionTime(value) {
+    if(!value) return '';
+    if(typeof value==='string') {
+      const parsed=new Date(value);
+      if(!Number.isNaN(parsed.getTime()) && /T/.test(value)) {
+        return parsed.toLocaleString('en-US',{
+          timeZone:'America/New_York',
+          month:'short',
+          day:'numeric',
+          hour:'numeric',
+          minute:'2-digit'
+        });
+      }
+      return value;
+    }
+    return String(value);
+  }
+
   function clearYoutubeMetrics() {
     ['yt-views','yt-watch-minutes','yt-avg-percent','yt-peak-concurrent','yt-avg-concurrent','yt-likes','yt-comments','yt-shares'].forEach(id=>showMetric(id,null));
     document.getElementById('yt-avg-duration').textContent='—';
     document.getElementById('yt-status').textContent='';
   }
+
   function renderYoutubeMetrics(y={}) {
     showMetric('yt-views',y.views);
     showMetric('yt-watch-minutes',y.estimatedMinutesWatched);
@@ -999,11 +1050,39 @@
     document.getElementById('yt-status').textContent=y.status ? `• ${y.status}` : '';
   }
 
-  function initLivestreamAnalytics() {
+  function renderInteractions(rows=[]) {
+    const body=document.getElementById('interaction-list');
+    body.innerHTML=rows.length ? rows.map(r=>`<tr>
+      <td>${escHtml(String(r.platform||''))}</td>
+      <td>${escHtml(String(r.name||r.authorName||''))}</td>
+      <td>${escHtml(String(r.interaction||r.interactionType||'Live Chat'))}</td>
+      <td>${escHtml(formatInteractionTime(r.time||r.publishedAt||r.createdAt||''))}</td>
+    </tr>`).join('') : '<tr><td colspan="4" class="empty-note">No interactions saved.</td></tr>';
+  }
+
+  function renderService(d) {
+    if(d.serviceDate) document.getElementById('live-service-date').value=d.serviceDate;
+    document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
+    document.getElementById('fb-1min').value=d.facebook?.oneMinuteViews ?? 0;
+    document.getElementById('fb-5min').value=d.facebook?.fiveMinuteViews ?? 0;
+    renderYoutubeMetrics(d.youtube || {});
+    const when=d.updatedAt ? formatInteractionTime(d.updatedAt) : 'just now';
+    document.getElementById('live-last-updated').textContent='Last updated: '+when;
+  }
+
+  async function initLivestreamAnalytics() {
     const dateEl=document.getElementById('live-service-date');
     if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
     clearYoutubeMetrics();
-    loadLivestreamHistory();
+    await loadLivestreamHistory();
+
+    if(livestreamRefreshTimer) clearInterval(livestreamRefreshTimer);
+    livestreamRefreshTimer=setInterval(()=>{
+      if(document.getElementById('tab-livestream')?.classList.contains('active')) {
+        loadLivestreamHistory(false);
+        if(currentLivestreamId) loadLivestreamService(currentLivestreamId,false);
+      }
+    },30000);
   }
   window.initLivestreamAnalytics=initLivestreamAnalytics;
 
@@ -1011,52 +1090,46 @@
     try {
       const date=document.getElementById('live-service-date').value;
       if(!date) return liveMsg('Choose a service date first.','error');
+
       const id=currentLivestreamId || serviceIdFromDate(date);
-      await setDoc(doc(db,'livestream_services',id),{
+      await livestreamAdminRequest('save',{
+        id,
         serviceDate:date,
         title:document.getElementById('live-service-title').value.trim() || 'Sunday Worship',
-        facebook:{oneMinuteViews:num('fb-1min'),fiveMinuteViews:num('fb-5min')},
-        updatedAt:serverTimestamp()
-      },{merge:true});
+        facebook:{
+          oneMinuteViews:num('fb-1min'),
+          fiveMinuteViews:num('fb-5min')
+        }
+      });
+
       currentLivestreamId=id;
       liveMsg('Facebook metrics and service details saved.');
-      loadLivestreamHistory();
+      await loadLivestreamHistory(false);
     } catch(e) { liveMsg('Could not save: '+e.message,'error'); }
   }
   window.saveLivestreamService=saveLivestreamService;
 
-  async function loadLivestreamService(idOverride) {
-    const dateEl=document.getElementById('live-service-date');
-    let id=idOverride || null;
-    if(!id) {
-      const date=dateEl.value || new Date().toISOString().slice(0,10);
-      const snap=await getDocs(query(collection(db,'livestream_services'),where('serviceDate','==',date)));
-      if(!snap.empty) {
-        const preferred=snap.docs.find(d=>d.id.startsWith('youtube-')) || snap.docs[0];
-        id=preferred.id;
-      } else id=serviceIdFromDate(date);
-    }
+  async function loadLivestreamService(idOverride,showErrors=true) {
+    try {
+      let id=idOverride || null;
+      const dateEl=document.getElementById('live-service-date');
 
-    currentLivestreamId=id;
-    if(livestreamUnsubscribe) livestreamUnsubscribe();
-    livestreamUnsubscribe=onSnapshot(doc(db,'livestream_services',id),(snap)=>{
-      if(!snap.exists()) {
-        document.getElementById('fb-1min').value=0;
-        document.getElementById('fb-5min').value=0;
-        clearYoutubeMetrics();
-        document.getElementById('live-last-updated').textContent='No saved data for this service';
-      } else {
-        const d=snap.data();
-        if(d.serviceDate) dateEl.value=d.serviceDate;
-        document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
-        document.getElementById('fb-1min').value=d.facebook?.oneMinuteViews ?? 0;
-        document.getElementById('fb-5min').value=d.facebook?.fiveMinuteViews ?? 0;
-        renderYoutubeMetrics(d.youtube || {});
-        const when=d.updatedAt?.toDate ? d.updatedAt.toDate().toLocaleString() : 'just now';
-        document.getElementById('live-last-updated').textContent='Last updated: '+when;
+      if(!id) {
+        const date=dateEl.value || new Date().toISOString().slice(0,10);
+        const found=await livestreamAdminRequest('findByDate',{serviceDate:date});
+        id=found.serviceId || serviceIdFromDate(date);
       }
-    },e=>liveMsg('Live update error: '+e.message,'error'));
-    loadLivestreamInteractions();
+
+      currentLivestreamId=id;
+      const data=await livestreamAdminRequest('get',{id});
+      renderService(data.service);
+      renderInteractions(data.interactions || []);
+    } catch(e) {
+      clearYoutubeMetrics();
+      renderInteractions([]);
+      document.getElementById('live-last-updated').textContent='No saved data for this service';
+      if(showErrors) liveMsg('Could not load service: '+e.message,'error');
+    }
   }
   window.loadLivestreamService=loadLivestreamService;
 
@@ -1066,48 +1139,59 @@
       const name=document.getElementById('interaction-name').value.trim();
       const time=document.getElementById('interaction-time').value.trim();
       if(!date || !name || !time) return liveMsg('Service date, name, and time are required.','error');
+
       const id=currentLivestreamId || serviceIdFromDate(date);
-      await addDoc(collection(db,'livestream_services',id,'interactions'),{
+      await livestreamAdminRequest('addInteraction',{
+        id,
         platform:document.getElementById('interaction-platform').value,
         name,
         interaction:document.getElementById('interaction-type').value,
-        time,
-        createdAt:serverTimestamp()
+        time
       });
+
       document.getElementById('interaction-name').value='';
       document.getElementById('interaction-time').value='';
       liveMsg('Interaction added.');
-      loadLivestreamInteractions();
+      await loadLivestreamService(id,false);
     } catch(e) { liveMsg('Could not add interaction: '+e.message,'error'); }
   }
   window.addLivestreamInteraction=addLivestreamInteraction;
 
   async function loadLivestreamInteractions() {
-    const body=document.getElementById('interaction-list');
-    try {
-      if(!currentLivestreamId) {
-        body.innerHTML='<tr><td colspan="4" class="empty-note">Select a service first.</td></tr>';
-        return;
-      }
-      const snap=await getDocs(collection(db,'livestream_services',currentLivestreamId,'interactions'));
-      const rows=snap.docs.map(x=>x.data());
-      rows.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-      body.innerHTML=rows.length ? rows.map(r=>`<tr><td>${escHtml(String(r.platform||''))}</td><td>${escHtml(String(r.name||r.authorName||''))}</td><td>${escHtml(String(r.interaction||r.interactionType||'Live Chat'))}</td><td>${escHtml(String(r.time||''))}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-note">No interactions saved.</td></tr>';
-    } catch(e) { body.innerHTML='<tr><td colspan="4" style="color:#fc8181;">'+escHtml(e.message)+'</td></tr>'; }
+    if(currentLivestreamId) await loadLivestreamService(currentLivestreamId,false);
   }
 
-  async function loadLivestreamHistory() {
+  async function loadLivestreamHistory(showErrors=true) {
     const el=document.getElementById('livestream-history');
     try {
-      const snap=await getDocs(collection(db,'livestream_services'));
-      const rows=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.serviceDate||'').localeCompare(a.serviceDate||''));
+      const data=await livestreamAdminRequest('list');
+      const rows=data.services || [];
+
       el.innerHTML=rows.length ? rows.map(d=>{
         const y=d.youtube||{};
-        const yt=(d.platform==='YouTube'||d.youtubeVideoId) ? `YouTube: ${y.views??'—'} views • ${y.estimatedMinutesWatched??'—'} watch min • ${formatDuration(y.averageViewDurationSeconds)} avg` : 'YouTube: —';
-        const fb=d.facebook ? `Facebook: ${d.facebook.oneMinuteViews??'—'} (1+ min) / ${d.facebook.fiveMinuteViews??'—'} (5+ min)` : 'Facebook: —';
-        return `<div class="scheduled-item history-item" onclick="loadLivestreamService('${escHtml(d.id)}')"><div class="item-info"><div class="item-title">${escHtml(String(d.title||'Sunday Worship'))}</div><div class="item-time">${escHtml(String(d.serviceDate||''))}</div><div class="item-body">${fb} &nbsp; • &nbsp; ${yt}</div></div></div>`;
+        const yt=(d.platform==='YouTube'||d.youtubeVideoId)
+          ? `YouTube: ${y.views??'—'} views • ${y.estimatedMinutesWatched??'—'} watch min • ${formatDuration(y.averageViewDurationSeconds)} avg`
+          : 'YouTube: —';
+        const fb=d.facebook
+          ? `Facebook: ${d.facebook.oneMinuteViews??'—'} (1+ min) / ${d.facebook.fiveMinuteViews??'—'} (5+ min)`
+          : 'Facebook: —';
+
+        return `<div class="scheduled-item history-item" onclick="loadLivestreamService('${escHtml(String(d.id))}')">
+          <div class="item-info">
+            <div class="item-title">${escHtml(String(d.title||'Sunday Worship'))}</div>
+            <div class="item-time">${escHtml(String(d.serviceDate||''))}</div>
+            <div class="item-body">${fb} &nbsp; • &nbsp; ${yt}</div>
+          </div>
+        </div>`;
       }).join('') : '<p class="empty-note">No livestream services saved yet.</p>';
-    } catch(e) { el.innerHTML='<p class="empty-note" style="color:#fc8181;">'+escHtml(e.message)+'</p>'; }
+
+      if(rows.length && !currentLivestreamId) {
+        await loadLivestreamService(rows[0].id,false);
+      }
+    } catch(e) {
+      el.innerHTML='<p class="empty-note" style="color:#fc8181;">'+escHtml(e.message)+'</p>';
+      if(showErrors) liveMsg('Could not load service history: '+e.message,'error');
+    }
   }
 
   // Set min datetime to now

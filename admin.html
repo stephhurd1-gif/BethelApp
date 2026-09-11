@@ -362,6 +362,33 @@
 
     <div class="card">
       <h2>Service History</h2>
+
+      <div id="livestream-history-tools"
+           style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px;">
+        <div style="flex:1;min-width:220px;">
+          <label style="margin-top:0;">Search</label>
+          <input id="livestream-history-search" type="text"
+                 placeholder="Search by title or date">
+        </div>
+
+        <div style="min-width:170px;">
+          <label style="margin-top:0;">Service type</label>
+          <select id="livestream-history-type">
+            <option value="all">All services</option>
+            <option value="sunday">Sunday Worship</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="lte">LTE</option>
+            <option value="choir">Choir</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <label style="display:flex;align-items:center;gap:7px;margin:0 0 11px;color:#ddd;white-space:nowrap;">
+          <input id="livestream-show-tests" type="checkbox">
+          Show tests
+        </label>
+      </div>
+
       <div id="livestream-history"><p class="empty-note">Loading...</p></div>
     </div>
   </div>
@@ -1200,76 +1227,110 @@
   dt.min = now.toISOString().slice(0,16);
 </script>
 
+
+
+
 <style>
-#livestreamHistory .history-hidden { display:none !important; }
-#livestreamHistory .history-duplicate { opacity:.62; }
-#livestreamHistory .history-duplicate::after {
-  content:"Possible duplicate";
-  display:inline-block;
-  margin:6px 0 0 12px;
-  padding:2px 7px;
-  border:1px solid #666;
-  border-radius:999px;
-  font-size:11px;
-  color:#bbb;
-}
+  #livestream-history .history-hidden { display:none !important; }
+  #livestream-history .history-duplicate { opacity:.62; }
+  #livestream-history .duplicate-badge {
+    display:inline-block;
+    margin-top:7px;
+    padding:2px 7px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:999px;
+    font-size:11px;
+    color:#bbb;
+  }
 </style>
+
 <script>
-(function(){
-  function classify(title){
-    title=(title||"").toLowerCase();
-    if(/\btest\b/.test(title)) return "test";
-    if(/sunday|worship service|king of kings/.test(title)) return "sunday";
-    if(/wednesday|wonderful wednesday/.test(title)) return "wednesday";
-    if(/\blte\b|living the experience/.test(title)) return "lte";
-    if(/choir/.test(title)) return "choir";
-    return "other";
-  }
-  function applyLivestreamHistoryFilters(){
-    const root=document.getElementById("livestreamHistory");
-    if(!root) return;
-    const search=(document.getElementById("livestreamHistorySearch")?.value||"").trim().toLowerCase();
-    const type=document.getElementById("livestreamHistoryType")?.value||"all";
-    const showTests=!!document.getElementById("livestreamShowTests")?.checked;
-    const cards=[...root.children].filter(el=>el.nodeType===1);
-    const seen=new Set();
+(function () {
+  function classifyLivestreamTitle(title) {
+    const t = String(title || '').toLowerCase();
 
-    cards.forEach(card=>{
-      card.classList.remove("history-hidden","history-duplicate");
-      const txt=(card.innerText||"").trim();
-      const lines=txt.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-      const title=lines[0]||"";
-      const date=(txt.match(/\b20\d{2}-\d{2}-\d{2}\b/)||[""])[0];
-      const kind=classify(title);
-      const key=(title.toLowerCase().replace(/\s+/g," ").trim()+"|"+date);
-      if(seen.has(key)) card.classList.add("history-duplicate");
-      else seen.add(key);
-
-      const isTest=kind==="test";
-      const typeMatch=type==="all" || kind===type;
-      const searchMatch=!search || txt.toLowerCase().includes(search);
-      const visible=(showTests || !isTest) && typeMatch && searchMatch;
-      card.classList.toggle("history-hidden", !visible);
-    });
+    if (/\btest\b/.test(t)) return 'test';
+    if (/sunday|worship service|king of kings|annual day|anniversary/.test(t)) return 'sunday';
+    if (/wednesday|wonderful wednesday/.test(t)) return 'wednesday';
+    if (/\blte\b|living the experience/.test(t)) return 'lte';
+    if (/choir/.test(t)) return 'choir';
+    return 'other';
   }
 
-  function wire(){
-    ["livestreamHistorySearch","livestreamHistoryType","livestreamShowTests"].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el && !el.dataset.historyFilterWired){
-        el.dataset.historyFilterWired="1";
-        el.addEventListener(el.tagName==="INPUT" && el.type==="search" ? "input" : "change", applyLivestreamHistoryFilters);
+  function applyLivestreamHistoryFilters() {
+    const root = document.getElementById('livestream-history');
+    if (!root) return;
+
+    const search = (document.getElementById('livestream-history-search')?.value || '')
+      .trim().toLowerCase();
+    const type = document.getElementById('livestream-history-type')?.value || 'all';
+    const showTests = !!document.getElementById('livestream-show-tests')?.checked;
+
+    const cards = [...root.querySelectorAll('.history-item')];
+    const seen = new Set();
+
+    cards.forEach(card => {
+      card.classList.remove('history-hidden', 'history-duplicate');
+      card.querySelectorAll('.duplicate-badge').forEach(x => x.remove());
+
+      const title = card.querySelector('.item-title')?.textContent?.trim() || '';
+      const date = card.querySelector('.item-time')?.textContent?.trim() || '';
+      const allText = card.textContent.toLowerCase();
+      const kind = classifyLivestreamTitle(title);
+
+      const duplicateKey =
+        title.toLowerCase().replace(/\s+/g, ' ').trim() + '|' + date;
+
+      if (seen.has(duplicateKey)) {
+        card.classList.add('history-duplicate');
+        const badge = document.createElement('span');
+        badge.className = 'duplicate-badge';
+        badge.textContent = 'Possible duplicate';
+        card.querySelector('.item-info')?.appendChild(badge);
+      } else {
+        seen.add(duplicateKey);
       }
+
+      const passesTest = showTests || kind !== 'test';
+      const passesType = type === 'all' || kind === type;
+      const passesSearch = !search || allText.includes(search);
+
+      card.classList.toggle(
+        'history-hidden',
+        !(passesTest && passesType && passesSearch)
+      );
     });
-    const root=document.getElementById("livestreamHistory");
-    if(root && !root.dataset.historyObserverWired){
-      root.dataset.historyObserverWired="1";
-      new MutationObserver(applyLivestreamHistoryFilters).observe(root,{childList:true,subtree:false});
+  }
+
+  function wireLivestreamHistoryFilters() {
+    const search = document.getElementById('livestream-history-search');
+    const type = document.getElementById('livestream-history-type');
+    const tests = document.getElementById('livestream-show-tests');
+    const root = document.getElementById('livestream-history');
+
+    if (search && !search.dataset.wired) {
+      search.dataset.wired = '1';
+      search.addEventListener('input', applyLivestreamHistoryFilters);
     }
+    if (type && !type.dataset.wired) {
+      type.dataset.wired = '1';
+      type.addEventListener('change', applyLivestreamHistoryFilters);
+    }
+    if (tests && !tests.dataset.wired) {
+      tests.dataset.wired = '1';
+      tests.addEventListener('change', applyLivestreamHistoryFilters);
+    }
+    if (root && !root.dataset.filterObserver) {
+      root.dataset.filterObserver = '1';
+      new MutationObserver(applyLivestreamHistoryFilters)
+        .observe(root, { childList:true });
+    }
+
     applyLivestreamHistoryFilters();
   }
-  document.addEventListener("DOMContentLoaded",wire);
-  setTimeout(wire,1000);
+
+  document.addEventListener('DOMContentLoaded', wireLivestreamHistoryFilters);
+  setTimeout(wireLivestreamHistoryFilters, 500);
 })();
 </script>
 

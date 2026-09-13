@@ -196,9 +196,11 @@
 <div class="login-wrap" id="login-screen">
   <div class="login-card">
     <h1>Bethel Admin</h1>
-    <p>Push Notification Dashboard</p>
+    <p>Secure Admin Portal</p>
+    <label for="admin-email">Email</label>
+    <input type="text" id="admin-email" placeholder="you@example.com" autocomplete="username">
     <label for="pwd">Password</label>
-    <input type="password" id="pwd" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
+    <input type="password" id="pwd" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
     <div class="btn-row" style="justify-content:center;margin-top:18px;">
       <button class="btn btn-gold" onclick="login()">Sign In</button>
     </div>
@@ -209,7 +211,10 @@
 <!-- Admin dashboard -->
 <div class="admin-wrap" id="admin-screen" style="display:none;">
   <div class="admin-header">
-    <h1>&#128276; Bethel Push Admin</h1>
+    <div>
+      <h1>&#128276; Bethel Admin</h1>
+      <div id="admin-user-label" style="font-size:12px;color:#888;margin-top:4px;"></div>
+    </div>
     <button class="btn btn-outline" onclick="logout()" style="font-size:13px;padding:8px 14px;">Sign out</button>
   </div>
 
@@ -231,15 +236,16 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('send')">Send Now</button>
-    <button class="tab" onclick="switchTab('schedule')">Schedule</button>
-    <button class="tab" onclick="switchTab('queue')">Scheduled Queue</button>
-    <button class="tab" onclick="switchTab('announcements')">Announcements</button>
-    <button class="tab" onclick="switchTab('visitors')">Visitors</button>
-    <button class="tab" onclick="switchTab('prayer')">&#128591; Prayer</button>
-    <button class="tab" onclick="switchTab('giving')">&#128181; Giving</button>
-    <button class="tab" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
-    <button class="tab" onclick="switchTab('website')">&#128200; Website Analytics</button>
+    <button class="tab active" data-tab="send" data-permission="notifications" onclick="switchTab('send')">Send Now</button>
+    <button class="tab" data-tab="schedule" data-permission="notifications" onclick="switchTab('schedule')">Schedule</button>
+    <button class="tab" data-tab="queue" data-permission="notifications" onclick="switchTab('queue')">Scheduled Queue</button>
+    <button class="tab" data-tab="announcements" data-permission="announcements" onclick="switchTab('announcements')">Announcements</button>
+    <button class="tab" data-tab="visitors" data-permission="visitors" onclick="switchTab('visitors')">Visitors</button>
+    <button class="tab" data-tab="prayer" data-permission="prayer" onclick="switchTab('prayer')">&#128591; Prayer</button>
+    <button class="tab" data-tab="giving" data-permission="giving" onclick="switchTab('giving')">&#128181; Giving</button>
+    <button class="tab" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
+    <button class="tab" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">&#128200; Website Analytics</button>
+    <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Users</button>
   </div>
 
   <!-- Send Now -->
@@ -631,6 +637,60 @@
     </div>
   </div>
 
+
+  <!-- User Management -->
+  <div class="tab-panel" id="tab-users">
+    <div class="card">
+      <h2>&#128101; Add Admin User</h2>
+      <p class="empty-note">Create an individual sign-in and assign one of Bethel's access groups.</p>
+
+      <div class="live-toolbar">
+        <div><label>Name</label><input type="text" id="new-user-name" placeholder="Full name"></div>
+        <div><label>Email</label><input type="text" id="new-user-email" placeholder="name@example.com"></div>
+      </div>
+
+      <div class="live-toolbar">
+        <div><label>Temporary password</label><input type="password" id="new-user-password" placeholder="At least 8 characters"></div>
+        <div>
+          <label>Access group</label>
+          <select id="new-user-role">
+            <option value="admin">Admin</option>
+            <option value="finance">Finance</option>
+            <option value="pastoral_prayer">Pastoral / Prayer</option>
+            <option value="communications">Communications</option>
+            <option value="viewer">Viewer</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="createAdminUser()">Create User</button>
+      </div>
+      <div class="status-msg" id="users-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Admin Users</h2>
+      <div id="admin-users-list"><p class="empty-note">Loading...</p></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="loadAdminUsers()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Access Groups</h2>
+      <div class="scheduled-list">
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Super Admin</div><div class="item-body">Full access, including user management.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Admin</div><div class="item-body">Notifications, announcements, visitors, prayer, and analytics.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Finance</div><div class="item-body">Giving plus reporting and analytics.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Pastoral / Prayer</div><div class="item-body">Prayer requests and visitor information.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Communications</div><div class="item-body">Notifications, announcements, livestream analytics, and website analytics.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Viewer</div><div class="item-body">Analytics/reporting view access only.</div></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Queue -->
   <div class="tab-panel" id="tab-queue">
     <div class="card">
@@ -648,6 +708,8 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, setDoc, doc, query, where, orderBy, Timestamp, serverTimestamp, onSnapshot }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -660,51 +722,142 @@
     appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
   };
 
-  const ADMIN_PASSWORD = 'BethelAME2024!';
   const COUNT_FN_URL = 'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getSubscriberCount';
 
   const app = initializeApp(FIREBASE_CONFIG);
   const db  = getFirestore(app);
+  const auth = getAuth(app);
+  let currentAdminProfile = null;
 
-  // ── Auth ──────────────────────────────────────────────────────────
-  function login() {
-    const pwd = document.getElementById('pwd').value;
-    const msg = document.getElementById('login-msg');
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem('bethel_admin', '1');
-      sessionStorage.setItem('bethel_admin_password', pwd);
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('admin-screen').style.display = 'block';
-      loadStats();
-      loadQueue();
-    } else {
-      msg.className = 'status-msg error';
-      msg.textContent = 'Incorrect password. Please try again.';
+  // ── Firebase Authentication / Role Access ─────────────────────────
+  const ADMIN_PROFILE_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAdminProfile';
+  const ADMIN_USERS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAdminUsers';
+
+  async function idToken() {
+    const user=auth.currentUser;
+    if(!user) throw new Error('Please sign in.');
+    return await user.getIdToken();
+  }
+
+  async function secureAdminRequest(url,payload={}) {
+    const token=await idToken();
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      },
+      body:JSON.stringify(payload)
+    });
+
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.success===false) {
+      throw new Error(data.error || `Request failed (${res.status}).`);
+    }
+    return data;
+  }
+
+  async function loadAdminProfile() {
+    const data=await secureAdminRequest(ADMIN_PROFILE_URL,{});
+    currentAdminProfile=data.user;
+    return currentAdminProfile;
+  }
+
+  function hasPermission(permission) {
+    return currentAdminProfile?.permissions?.[permission] === true;
+  }
+
+  function applyAdminPermissions() {
+    document.querySelectorAll('.tab[data-permission]').forEach(btn=>{
+      btn.style.display=hasPermission(btn.dataset.permission) ? '' : 'none';
+    });
+
+    const label=document.getElementById('admin-user-label');
+    if(label && currentAdminProfile) {
+      label.textContent=`${currentAdminProfile.displayName || currentAdminProfile.email} • ${currentAdminProfile.roleLabel}`;
+    }
+
+    const firstAllowed=[...document.querySelectorAll('.tab[data-permission]')]
+      .find(btn=>btn.style.display!=='none');
+
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+
+    if(firstAllowed) {
+      firstAllowed.classList.add('active');
+      const name=firstAllowed.dataset.tab;
+      const panel=document.getElementById('tab-'+name);
+      if(panel) panel.classList.add('active');
     }
   }
-  window.login = login;
 
-  function logout() {
-    sessionStorage.removeItem('bethel_admin');
-    sessionStorage.removeItem('bethel_admin_password');
-    location.reload();
-  }
-  window.logout = logout;
-
-  if (sessionStorage.getItem('bethel_admin')) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
+  async function showAdminPortal() {
+    await loadAdminProfile();
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-screen').style.display='block';
+    applyAdminPermissions();
     loadStats();
     loadQueue();
   }
 
+  async function login() {
+    const email=document.getElementById('admin-email').value.trim();
+    const pwd=document.getElementById('pwd').value;
+    const msg=document.getElementById('login-msg');
+    msg.className='status-msg info';
+    msg.textContent='Signing in…';
+
+    try {
+      await signInWithEmailAndPassword(auth,email,pwd);
+      await showAdminPortal();
+      msg.className='status-msg';
+      msg.textContent='';
+    } catch(e) {
+      await signOut(auth).catch(()=>{});
+      msg.className='status-msg error';
+      msg.textContent=e.message.includes('Admin access')
+        ? e.message
+        : 'Could not sign in. Check your email, password, and access assignment.';
+    }
+  }
+  window.login=login;
+
+  async function logout() {
+    await signOut(auth);
+    location.reload();
+  }
+  window.logout=logout;
+
+  onAuthStateChanged(auth, async user=>{
+    if(!user) {
+      document.getElementById('login-screen').style.display='flex';
+      document.getElementById('admin-screen').style.display='none';
+      return;
+    }
+
+    try {
+      await showAdminPortal();
+    } catch(e) {
+      await signOut(auth).catch(()=>{});
+      const msg=document.getElementById('login-msg');
+      msg.className='status-msg error';
+      msg.textContent=e.message || 'Your account does not have admin access.';
+    }
+  });
+
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving','livestream','website'][i] === name);
+    const button=document.querySelector(`.tab[data-tab="${name}"]`);
+    if(button?.dataset.permission && !hasPermission(button.dataset.permission)) return;
+
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.classList.toggle('active',t.dataset.tab===name);
     });
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+name)?.classList.add('active');
+
     if (name === 'queue') loadQueue();
     if (name === 'announcements') loadAnnouncementsList();
     if (name === 'visitors') { document.getElementById('visitor-lock-card').style.display='block'; document.getElementById('visitor-content').style.display='none'; document.getElementById('visitor-pwd').value=''; }
@@ -712,6 +865,7 @@
     if (name === 'giving') { document.getElementById('giving-lock-card').style.display='block'; document.getElementById('giving-content').style.display='none'; }
     if (name === 'livestream') initLivestreamAnalytics();
     if (name === 'website') loadWebsiteAnalytics();
+    if (name === 'users') loadAdminUsers();
   }
   window.switchTab = switchTab;
 
@@ -1248,25 +1402,20 @@
   function liveMsg(text, type='success') { const el=document.getElementById('live-msg'); el.className='status-msg '+type; el.textContent=text; }
   function num(id) { return Math.max(0, parseInt(document.getElementById(id).value || '0',10) || 0); }
 
-  function adminSessionPassword() {
-    return sessionStorage.getItem('bethel_admin_password') || '';
-  }
 
   async function livestreamAdminRequest(action, payload={}) {
-    const password=adminSessionPassword();
-    if(!password) {
-      throw new Error('Please sign out and sign back in before opening Livestream Analytics.');
-    }
-
+    const token=await idToken();
     const res=await fetch(LIVESTREAM_ADMIN_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password,action,...payload})
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      },
+      body:JSON.stringify({action,...payload})
     });
 
     const data=await res.json().catch(()=>({}));
     if(!res.ok || data.success===false) {
-      if(res.status===401) throw new Error('Admin analytics authorization failed. Please sign out and sign back in.');
       throw new Error(data.error || `Analytics request failed (${res.status}).`);
     }
     return data;
@@ -1479,19 +1628,117 @@
   }
 
 
-  async function websiteAnalyticsRequest(payload={}) {
-    const password=adminSessionPassword();
-    if(!password) throw new Error('Please sign out and sign back in before opening Website Analytics.');
 
+  function usersMsg(text,type='success') {
+    const el=document.getElementById('users-msg');
+    if(!el) return;
+    el.className='status-msg '+type;
+    el.textContent=text;
+  }
+
+  async function loadAdminUsers() {
+    const list=document.getElementById('admin-users-list');
+    if(!list || !hasPermission('manageUsers')) return;
+    list.innerHTML='<p class="empty-note">Loading…</p>';
+
+    try {
+      const data=await secureAdminRequest(ADMIN_USERS_URL,{action:'list'});
+      list.innerHTML=(data.users||[]).length ? data.users.map(u=>`
+        <div class="scheduled-item" style="align-items:center;">
+          <div class="item-info">
+            <div class="item-title">${escHtml(u.displayName || u.email)}</div>
+            <div class="item-body">${escHtml(u.email)}</div>
+            <div class="item-time">${escHtml(u.roleLabel || u.role)} • ${u.active ? 'Active' : 'Disabled'}</div>
+          </div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+            <select id="role-${u.uid}" style="width:auto;min-width:150px;">
+              ${[
+                ['super_admin','Super Admin'],
+                ['admin','Admin'],
+                ['finance','Finance'],
+                ['pastoral_prayer','Pastoral / Prayer'],
+                ['communications','Communications'],
+                ['viewer','Viewer']
+              ].map(([id,label])=>`<option value="${id}" ${u.role===id?'selected':''}>${label}</option>`).join('')}
+            </select>
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
+              onclick="updateAdminUser('${u.uid}',${u.active ? 'false' : 'true'})">
+              ${u.active ? 'Disable' : 'Enable'}
+            </button>
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
+              onclick="saveAdminUserRole('${u.uid}',${u.active ? 'true' : 'false'})">
+              Save Role
+            </button>
+          </div>
+        </div>
+      `).join('') : '<p class="empty-note">No admin users found.</p>';
+    } catch(e) {
+      list.innerHTML='<p class="empty-note" style="color:#fc8181;">'+escHtml(e.message)+'</p>';
+    }
+  }
+  window.loadAdminUsers=loadAdminUsers;
+
+  async function createAdminUser() {
+    try {
+      const email=document.getElementById('new-user-email').value.trim();
+      const password=document.getElementById('new-user-password').value;
+      const displayName=document.getElementById('new-user-name').value.trim();
+      const role=document.getElementById('new-user-role').value;
+
+      usersMsg('Creating user…','info');
+      await secureAdminRequest(ADMIN_USERS_URL,{
+        action:'create',
+        email,password,displayName,role
+      });
+
+      document.getElementById('new-user-email').value='';
+      document.getElementById('new-user-password').value='';
+      document.getElementById('new-user-name').value='';
+      usersMsg('User created successfully.');
+      await loadAdminUsers();
+    } catch(e) {
+      usersMsg(e.message,'error');
+    }
+  }
+  window.createAdminUser=createAdminUser;
+
+  async function updateAdminUser(uid,active) {
+    try {
+      const role=document.getElementById('role-'+uid).value;
+      await secureAdminRequest(ADMIN_USERS_URL,{action:'update',uid,role,active});
+      usersMsg(active ? 'User enabled.' : 'User disabled.');
+      await loadAdminUsers();
+    } catch(e) {
+      usersMsg(e.message,'error');
+    }
+  }
+  window.updateAdminUser=updateAdminUser;
+
+  async function saveAdminUserRole(uid,active) {
+    try {
+      const role=document.getElementById('role-'+uid).value;
+      await secureAdminRequest(ADMIN_USERS_URL,{action:'update',uid,role,active});
+      usersMsg('Access group updated.');
+      await loadAdminUsers();
+    } catch(e) {
+      usersMsg(e.message,'error');
+    }
+  }
+  window.saveAdminUserRole=saveAdminUserRole;
+
+  async function websiteAnalyticsRequest(payload={}) {
+    const token=await idToken();
     const res=await fetch(WEBSITE_ANALYTICS_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password,...payload})
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      },
+      body:JSON.stringify(payload)
     });
 
     const data=await res.json().catch(()=>({}));
     if(!res.ok || data.success===false) {
-      if(res.status===401) throw new Error('Website analytics authorization failed. Please sign out and sign back in.');
       throw new Error(data.error || `Website analytics request failed (${res.status}).`);
     }
     return data;

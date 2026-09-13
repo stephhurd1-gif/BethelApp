@@ -868,9 +868,11 @@ body[data-theme="dark"] .analytics-table td{
       <div class="btn-row">
         <button class="btn btn-gold" onclick="saveLivestreamService()">Save Service Details</button>
         <button class="btn btn-outline" id="fb-sync-btn" onclick="syncFacebookNow()">Sync Facebook Now</button>
+        <button class="btn btn-outline" id="fb-id-test-btn" onclick="testFacebookIdentity()">Test Facebook Names</button>
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
       </div>
       <div class="status-msg" id="fb-sync-status" style="display:none;margin-top:10px;"></div>
+      <div class="status-msg" id="fb-identity-status" style="display:none;margin-top:10px;"></div>
       <div class="status-msg" id="live-msg"></div>
     </div>
 
@@ -1834,6 +1836,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getLivestreamAnalytics';
   const FACEBOOK_SYNC_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/syncFacebookLivestreams';
+  const FACEBOOK_IDENTITY_TEST_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/testFacebookCommentIdentity';
 
   const WEBSITE_ANALYTICS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getWebsiteAnalytics';
@@ -2350,6 +2354,77 @@ body[data-theme="dark"] .analytics-table td{
     }
   }
 
+
+
+  async function testFacebookIdentity() {
+    const btn=document.getElementById('fb-id-test-btn');
+    const status=document.getElementById('fb-identity-status');
+    try {
+      if(btn) {
+        btn.disabled=true;
+        btn.textContent='Testing Facebook Names…';
+      }
+      if(status) {
+        status.style.display='block';
+        status.className='status-msg info';
+        status.textContent='Checking whether Meta exposes commenter names for this Facebook livestream…';
+      }
+
+      const serviceId=currentLivestreamId;
+      if(!serviceId) throw new Error('Select a livestream service first.');
+
+      const service=livestreamRows.find(r=>r.id===serviceId);
+      const videoId=service?.facebook?.videoId || service?.facebookVideoId || '';
+      if(!videoId) {
+        throw new Error('This service does not have a Facebook video ID yet. Run Sync Facebook Now first.');
+      }
+
+      const token=await idToken();
+      const res=await fetch(FACEBOOK_IDENTITY_TEST_URL,{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${token}`
+        },
+        body:JSON.stringify({videoId})
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok || data.success===false) {
+        throw new Error(data.error || `Identity test failed (${res.status}).`);
+      }
+
+      if(status) {
+        status.style.display='block';
+        if((data.commentsReturned || 0) === 0) {
+          status.className='status-msg info';
+          status.textContent='Meta returned 0 comments for this video, so there are no commenter identities to test.';
+        } else if((data.commentsWithIdentity || 0) === 0) {
+          status.className='status-msg info';
+          status.textContent=`Meta returned ${data.commentsReturned} comments, but 0 included a commenter name/identity. Facebook names are not available through the API for this video.`;
+        } else {
+          const sample=(data.comments || [])
+            .filter(c=>c.fromName)
+            .slice(0,5)
+            .map(c=>c.fromName)
+            .join(', ');
+          status.className='status-msg success';
+          status.textContent=`Meta returned ${data.commentsReturned} comments and ${data.commentsWithIdentity} included commenter identity.${sample ? ' Example names: '+sample : ''}`;
+        }
+      }
+    } catch(e) {
+      if(status) {
+        status.style.display='block';
+        status.className='status-msg error';
+        status.textContent='Facebook name test failed: '+(e.message || 'Unknown error');
+      }
+    } finally {
+      if(btn) {
+        btn.disabled=false;
+        btn.textContent='Test Facebook Names';
+      }
+    }
+  }
+  window.testFacebookIdentity=testFacebookIdentity;
 
   async function syncFacebookNow() {
     const btn=document.getElementById('fb-sync-btn');

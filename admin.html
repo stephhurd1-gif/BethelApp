@@ -2383,8 +2383,27 @@ body[data-theme="dark"] .analytics-table td{
       }
 
       // Reload the currently selected service so new Facebook metrics appear.
-      if(currentLivestreamServiceId) {
-        await loadLivestreamServiceById(currentLivestreamServiceId);
+      const rows = Array.isArray(data.results) ? data.results : [];
+      const errors = rows.filter(r => r && r.error);
+      const matched = currentLivestreamId
+        ? rows.find(r => r && r.serviceDocId === currentLivestreamId)
+        : null;
+
+      if(status) {
+        if(errors.length) {
+          status.className='status-msg error';
+          status.textContent=`Facebook sync checked ${data.livestreamsSeen ?? 0} livestreams; ${errors.length} returned errors. ${errors[0]?.error || ''}`;
+        } else if(matched) {
+          status.className='status-msg success';
+          status.textContent=`Facebook sync complete. Matched this service and updated its Facebook analytics.`;
+        } else {
+          status.className='status-msg info';
+          status.textContent=`Facebook sync complete. ${data.livestreamsSeen ?? 0} livestreams checked, but no Facebook livestream matched this selected service yet.`;
+        }
+      }
+
+      if(currentLivestreamId) {
+        await loadLivestreamService(currentLivestreamId,false);
       } else {
         await initLivestreamAnalytics();
       }

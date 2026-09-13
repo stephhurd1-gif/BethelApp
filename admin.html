@@ -682,7 +682,7 @@
       <h2>Access Groups</h2>
       <div class="scheduled-list">
         <div class="scheduled-item"><div class="item-info"><div class="item-title">Super Admin</div><div class="item-body">Full access, including user management.</div></div></div>
-        <div class="scheduled-item"><div class="item-info"><div class="item-title">Admin</div><div class="item-body">Notifications, announcements, visitors, prayer, and analytics.</div></div></div>
+        <div class="scheduled-item"><div class="item-info"><div class="item-title">Admin</div><div class="item-body">Notifications, announcements, visitors, prayer, giving, and analytics.</div></div></div>
         <div class="scheduled-item"><div class="item-info"><div class="item-title">Finance</div><div class="item-body">Giving plus reporting and analytics.</div></div></div>
         <div class="scheduled-item"><div class="item-info"><div class="item-title">Pastoral / Prayer</div><div class="item-body">Prayer requests and visitor information.</div></div></div>
         <div class="scheduled-item"><div class="item-info"><div class="item-title">Communications</div><div class="item-body">Notifications, announcements, livestream analytics, and website analytics.</div></div></div>
@@ -1644,11 +1644,20 @@
     try {
       const data=await secureAdminRequest(ADMIN_USERS_URL,{action:'list'});
       list.innerHTML=(data.users||[]).length ? data.users.map(u=>`
-        <div class="scheduled-item" style="align-items:center;">
-          <div class="item-info">
+        <div class="scheduled-item" style="align-items:flex-start;">
+          <div class="item-info" style="min-width:260px;flex:1;">
             <div class="item-title">${escHtml(u.displayName || u.email)}</div>
-            <div class="item-body">${escHtml(u.email)}</div>
             <div class="item-time">${escHtml(u.roleLabel || u.role)} • ${u.active ? 'Active' : 'Disabled'}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+              <div>
+                <label style="font-size:11px;">Name</label>
+                <input type="text" id="name-${u.uid}" value="${escHtml(u.displayName || '')}">
+              </div>
+              <div>
+                <label style="font-size:11px;">Email</label>
+                <input type="text" id="email-${u.uid}" value="${escHtml(u.email || '')}">
+              </div>
+            </div>
           </div>
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
             <select id="role-${u.uid}" style="width:auto;min-width:150px;">
@@ -1666,8 +1675,12 @@
               ${u.active ? 'Disable' : 'Enable'}
             </button>
             <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
-              onclick="saveAdminUserRole('${u.uid}',${u.active ? 'true' : 'false'})">
-              Save Role
+              onclick="saveAdminUserChanges('${u.uid}',${u.active ? 'true' : 'false'})">
+              Save Changes
+            </button>
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
+              onclick="deleteAdminUser('${u.uid}')">
+              Delete
             </button>
           </div>
         </div>
@@ -1714,17 +1727,50 @@
   }
   window.updateAdminUser=updateAdminUser;
 
-  async function saveAdminUserRole(uid,active) {
+  async function saveAdminUserChanges(uid,active) {
     try {
       const role=document.getElementById('role-'+uid).value;
-      await secureAdminRequest(ADMIN_USERS_URL,{action:'update',uid,role,active});
-      usersMsg('Access group updated.');
+      const email=document.getElementById('email-'+uid).value.trim();
+      const displayName=document.getElementById('name-'+uid).value.trim();
+
+      await secureAdminRequest(ADMIN_USERS_URL,{
+        action:'update',
+        uid,
+        role,
+        active,
+        email,
+        displayName
+      });
+
+      if(auth.currentUser?.uid === uid && email && auth.currentUser.email !== email) {
+        usersMsg('Your account email was updated. Sign out and use the new email next time.');
+      } else {
+        usersMsg('User details updated.');
+      }
+
       await loadAdminUsers();
     } catch(e) {
       usersMsg(e.message,'error');
     }
   }
-  window.saveAdminUserRole=saveAdminUserRole;
+  window.saveAdminUserChanges=saveAdminUserChanges;
+
+  async function deleteAdminUser(uid) {
+    const userCard = document.getElementById('role-'+uid)?.closest('.scheduled-item');
+    const label = userCard?.querySelector('.item-title')?.textContent || 'this user';
+
+    if(!confirm(`Permanently delete ${label}?\n\nThis will remove both their admin profile and their Firebase login account.`)) return;
+
+    try {
+      usersMsg('Deleting user…','info');
+      await secureAdminRequest(ADMIN_USERS_URL,{action:'delete',uid});
+      usersMsg('User deleted successfully.');
+      await loadAdminUsers();
+    } catch(e) {
+      usersMsg(e.message,'error');
+    }
+  }
+  window.deleteAdminUser=deleteAdminUser;
 
   async function websiteAnalyticsRequest(payload={}) {
     const token=await idToken();

@@ -870,6 +870,7 @@ body[data-theme="dark"] .analytics-table td{
         <button class="btn btn-outline" id="fb-sync-btn" onclick="syncFacebookNow()">Sync Facebook Now</button>
         <button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button>
       </div>
+      <div class="status-msg" id="fb-sync-status" style="display:none;margin-top:10px;"></div>
       <div class="status-msg" id="live-msg"></div>
     </div>
 
@@ -2352,13 +2353,14 @@ body[data-theme="dark"] .analytics-table td{
 
   async function syncFacebookNow() {
     const btn=document.getElementById('fb-sync-btn');
-    const status=document.getElementById('live-status');
+    const status=document.getElementById('fb-sync-status');
     try {
       if(btn) {
         btn.disabled=true;
         btn.textContent='Syncing Facebook…';
       }
       if(status) {
+        status.style.display='block';
         status.className='status-msg info';
         status.textContent='Checking Facebook for livestream analytics…';
       }
@@ -2390,15 +2392,30 @@ body[data-theme="dark"] .analytics-table td{
         : null;
 
       if(status) {
+        status.style.display='block';
+        const seen=data.livestreamsSeen ?? 0;
+        const updated=rows.filter(r => r && !r.error).length;
+
         if(errors.length) {
           status.className='status-msg error';
-          status.textContent=`Facebook sync checked ${data.livestreamsSeen ?? 0} livestreams; ${errors.length} returned errors. ${errors[0]?.error || ''}`;
+          status.textContent=`Facebook sync checked ${seen} livestreams. ${errors.length} returned errors. ${errors[0]?.error || ''}`;
         } else if(matched) {
+          const plays=matched.plays ?? '—';
+          const reach=matched.reach ?? '—';
           status.className='status-msg success';
-          status.textContent=`Facebook sync complete. Matched this service and updated its Facebook analytics.`;
+          status.textContent=`Facebook sync complete. This service matched Facebook video ${matched.videoId || ''}. Plays: ${plays}; Reach: ${reach}.`;
+        } else if(seen === 0) {
+          status.className='status-msg error';
+          status.textContent='Facebook sync completed, but Meta returned 0 livestream videos. The Page token or Page video access may need to be checked.';
         } else {
+          const returned=rows
+            .filter(r => r && !r.error)
+            .map(r => r.serviceDate || r.title || r.videoId)
+            .filter(Boolean)
+            .slice(0,5)
+            .join(', ');
           status.className='status-msg info';
-          status.textContent=`Facebook sync complete. ${data.livestreamsSeen ?? 0} livestreams checked, but no Facebook livestream matched this selected service yet.`;
+          status.textContent=`Facebook sync checked ${seen} livestreams and updated ${updated}, but none matched the selected service (${document.getElementById('live-service-date')?.value || 'current date'}).${returned ? ' Returned: '+returned : ''}`;
         }
       }
 
@@ -2409,6 +2426,7 @@ body[data-theme="dark"] .analytics-table td{
       }
     } catch(e) {
       if(status) {
+        status.style.display='block';
         status.className='status-msg error';
         status.textContent='Facebook sync failed: '+(e.message || 'Unknown error');
       }

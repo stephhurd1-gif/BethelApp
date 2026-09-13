@@ -124,7 +124,7 @@
       display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;
     }
     .report-platform-grid {
-      display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+      display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
     }
     .report-platform-card {
       background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
@@ -239,6 +239,7 @@
     <button class="tab" onclick="switchTab('prayer')">&#128591; Prayer</button>
     <button class="tab" onclick="switchTab('giving')">&#128181; Giving</button>
     <button class="tab" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
+    <button class="tab" onclick="switchTab('website')">&#128200; Website Analytics</button>
   </div>
 
   <!-- Send Now -->
@@ -474,6 +475,15 @@
           <div><span>Likes</span><strong id="report-yt-likes">—</strong></div>
           <div><span>Shares</span><strong id="report-yt-shares">—</strong></div>
         </div>
+
+        <div class="report-platform-card">
+          <h3>Website Activity — Service Date</h3>
+          <div><span>Users</span><strong id="report-web-users">—</strong></div>
+          <div><span>Sessions</span><strong id="report-web-sessions">—</strong></div>
+          <div><span>Page views</span><strong id="report-web-pageviews">—</strong></div>
+          <div><span>New users</span><strong id="report-web-newusers">—</strong></div>
+          <div><span>Events</span><strong id="report-web-events">—</strong></div>
+        </div>
       </div>
 
       <div class="metric-note" style="margin-top:12px;">
@@ -558,6 +568,69 @@
     </div>
   </div>
 
+
+  <!-- Website Analytics -->
+  <div class="tab-panel" id="tab-website">
+    <div class="card">
+      <h2>&#128200; Website Analytics</h2>
+
+      <div class="live-toolbar">
+        <div>
+          <label>Reporting period</label>
+          <select id="website-range">
+            <option value="7days">Last 7 days</option>
+            <option value="30days" selected>Last 30 days</option>
+            <option value="90days">Last 90 days</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" onclick="loadWebsiteAnalytics()">Refresh</button>
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+        <div class="stat-card"><div class="stat-num" id="web-users">—</div><div class="stat-label">Active users</div></div>
+        <div class="stat-card"><div class="stat-num" id="web-sessions">—</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-card"><div class="stat-num" id="web-pageviews">—</div><div class="stat-label">Page views</div></div>
+        <div class="stat-card"><div class="stat-num" id="web-newusers">—</div><div class="stat-label">New users</div></div>
+        <div class="stat-card"><div class="stat-num" id="web-events">—</div><div class="stat-label">Events</div></div>
+      </div>
+
+      <div class="status-msg" id="website-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Top Pages</h2>
+      <div style="overflow-x:auto;">
+        <table class="analytics-table">
+          <thead><tr><th>Page</th><th>Path</th><th>Views</th><th>Users</th></tr></thead>
+          <tbody id="website-pages"><tr><td colspan="4" class="empty-note">Load website analytics to view pages.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Traffic Sources</h2>
+      <div style="overflow-x:auto;">
+        <table class="analytics-table">
+          <thead><tr><th>Channel</th><th>Sessions</th><th>Users</th></tr></thead>
+          <tbody id="website-sources"><tr><td colspan="3" class="empty-note">Load website analytics to view sources.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Website Events</h2>
+      <div style="overflow-x:auto;">
+        <table class="analytics-table">
+          <thead><tr><th>Event</th><th>Count</th></tr></thead>
+          <tbody id="website-events"><tr><td colspan="2" class="empty-note">Load website analytics to view events.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="metric-note" style="margin-top:10px;">
+        As we add Donate, Prayer Request, Visitor Form, Watch Live, and other custom GA4 events, they will appear here automatically.
+      </div>
+    </div>
+  </div>
+
   <!-- Queue -->
   <div class="tab-panel" id="tab-queue">
     <div class="card">
@@ -628,7 +701,7 @@
   // ── Tabs ──────────────────────────────────────────────────────────
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving','livestream'][i] === name);
+      t.classList.toggle('active', ['send','schedule','queue','announcements','visitors','prayer','giving','livestream','website'][i] === name);
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
@@ -638,6 +711,7 @@
     if (name === 'prayer') { document.getElementById('prayer-lock-card').style.display='block'; document.getElementById('prayer-content').style.display='none'; }
     if (name === 'giving') { document.getElementById('giving-lock-card').style.display='block'; document.getElementById('giving-content').style.display='none'; }
     if (name === 'livestream') initLivestreamAnalytics();
+    if (name === 'website') loadWebsiteAnalytics();
   }
   window.switchTab = switchTab;
 
@@ -1167,6 +1241,9 @@
   const LIVESTREAM_ADMIN_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getLivestreamAnalytics';
 
+  const WEBSITE_ANALYTICS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getWebsiteAnalytics';
+
   function serviceIdFromDate(dateStr) { return dateStr || new Date().toISOString().slice(0,10); }
   function liveMsg(text, type='success') { const el=document.getElementById('live-msg'); el.className='status-msg '+type; el.textContent=text; }
   function num(id) { return Math.max(0, parseInt(document.getElementById(id).value || '0',10) || 0); }
@@ -1372,6 +1449,7 @@
     renderFacebookMetrics(d.facebook || {});
     renderYoutubeMetrics(d.youtube || {});
     updateDigitalReport(d);
+    loadServiceWebsiteAnalytics(d.serviceDate || '');
 
     document.getElementById('live-selected-title').textContent=d.title || 'Sunday Worship';
     document.getElementById('live-selected-date').textContent=d.serviceDate || '';
@@ -1398,6 +1476,103 @@
     document.querySelectorAll('#livestream-history .history-item').forEach(card=>{
       card.classList.toggle('selected-service', !!id && card.dataset.serviceId===String(id));
     });
+  }
+
+
+  async function websiteAnalyticsRequest(payload={}) {
+    const password=adminSessionPassword();
+    if(!password) throw new Error('Please sign out and sign back in before opening Website Analytics.');
+
+    const res=await fetch(WEBSITE_ANALYTICS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password,...payload})
+    });
+
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.success===false) {
+      if(res.status===401) throw new Error('Website analytics authorization failed. Please sign out and sign back in.');
+      throw new Error(data.error || `Website analytics request failed (${res.status}).`);
+    }
+    return data;
+  }
+
+  function websiteMsg(text,type='success') {
+    const el=document.getElementById('website-msg');
+    if(!el) return;
+    el.className='status-msg '+type;
+    el.textContent=text;
+  }
+
+  function setWebMetric(id,value) {
+    const el=document.getElementById(id);
+    if(el) el.textContent=(value===null||value===undefined)?'—':String(Math.round(Number(value)||0));
+  }
+
+  async function loadWebsiteAnalytics() {
+    try {
+      const range=document.getElementById('website-range')?.value || '30days';
+      websiteMsg('Loading website analytics…','info');
+      const data=await websiteAnalyticsRequest({range});
+
+      const s=data.summary || {};
+      setWebMetric('web-users',s.activeUsers);
+      setWebMetric('web-sessions',s.sessions);
+      setWebMetric('web-pageviews',s.screenPageViews);
+      setWebMetric('web-newusers',s.newUsers);
+      setWebMetric('web-events',s.eventCount);
+
+      const pages=document.getElementById('website-pages');
+      if(pages) {
+        pages.innerHTML=(data.topPages||[]).length ? data.topPages.map(r=>`<tr>
+          <td>${escHtml(String(r.pageTitle||'(untitled)'))}</td>
+          <td>${escHtml(String(r.pagePath||''))}</td>
+          <td>${Math.round(Number(r.screenPageViews)||0)}</td>
+          <td>${Math.round(Number(r.activeUsers)||0)}</td>
+        </tr>`).join('') : '<tr><td colspan="4" class="empty-note">No page data yet.</td></tr>';
+      }
+
+      const sources=document.getElementById('website-sources');
+      if(sources) {
+        sources.innerHTML=(data.trafficSources||[]).length ? data.trafficSources.map(r=>`<tr>
+          <td>${escHtml(String(r.sessionDefaultChannelGroup||'(unknown)'))}</td>
+          <td>${Math.round(Number(r.sessions)||0)}</td>
+          <td>${Math.round(Number(r.activeUsers)||0)}</td>
+        </tr>`).join('') : '<tr><td colspan="3" class="empty-note">No traffic-source data yet.</td></tr>';
+      }
+
+      const events=document.getElementById('website-events');
+      if(events) {
+        events.innerHTML=(data.events||[]).length ? data.events.map(r=>`<tr>
+          <td>${escHtml(String(r.eventName||''))}</td>
+          <td>${Math.round(Number(r.eventCount)||0)}</td>
+        </tr>`).join('') : '<tr><td colspan="2" class="empty-note">No event data yet.</td></tr>';
+      }
+
+      websiteMsg('Website analytics updated.');
+    } catch(e) {
+      websiteMsg('Could not load website analytics: '+e.message,'error');
+    }
+  }
+  window.loadWebsiteAnalytics=loadWebsiteAnalytics;
+
+  async function loadServiceWebsiteAnalytics(serviceDate) {
+    ['report-web-users','report-web-sessions','report-web-pageviews','report-web-newusers','report-web-events']
+      .forEach(id=>reportValue(id,null));
+
+    if(!serviceDate) return;
+
+    try {
+      const data=await websiteAnalyticsRequest({date:serviceDate});
+      const s=data.summary || {};
+      reportValue('report-web-users',Math.round(Number(s.activeUsers)||0));
+      reportValue('report-web-sessions',Math.round(Number(s.sessions)||0));
+      reportValue('report-web-pageviews',Math.round(Number(s.screenPageViews)||0));
+      reportValue('report-web-newusers',Math.round(Number(s.newUsers)||0));
+      reportValue('report-web-events',Math.round(Number(s.eventCount)||0));
+    } catch(e) {
+      console.warn('Service-date website analytics unavailable:',e);
+    }
   }
 
   async function initLivestreamAnalytics() {
@@ -1635,6 +1810,7 @@
   document.addEventListener('DOMContentLoaded', ()=>{
     wireLivestreamHistoryFilters();
     document.getElementById('live-inperson-attendance')?.addEventListener('input', updateAttendanceReport);
+    document.getElementById('website-range')?.addEventListener('change', loadWebsiteAnalytics);
   });
   setTimeout(wireLivestreamHistoryFilters, 500);
 })();

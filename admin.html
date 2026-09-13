@@ -2373,10 +2373,18 @@ body[data-theme="dark"] .analytics-table td{
       const serviceId=currentLivestreamId;
       if(!serviceId) throw new Error('Select a livestream service first.');
 
-      const service=livestreamRows.find(r=>r.id===serviceId);
-      const videoId=service?.facebook?.videoId || service?.facebookVideoId || '';
+      // Re-read the selected service through the authenticated analytics API
+      // instead of relying on a frontend history-array variable.
+      const serviceData=await livestreamAdminRequest('get',{id:serviceId});
+      const service=serviceData?.service || serviceData?.item || serviceData?.data || serviceData || {};
+      const videoId=
+        service?.facebook?.videoId ||
+        service?.facebookVideoId ||
+        service?.facebook?.id ||
+        '';
+
       if(!videoId) {
-        throw new Error('This service does not have a Facebook video ID yet. Run Sync Facebook Now first.');
+        throw new Error('This service does not have a Facebook video ID yet. Run Sync Facebook Now first, then reload the service.');
       }
 
       const token=await idToken();

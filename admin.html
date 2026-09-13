@@ -2372,7 +2372,7 @@ body[data-theme="dark"] .analytics-table td{
           'Content-Type':'application/json',
           'Authorization':`Bearer ${token}`
         },
-        body:JSON.stringify({})
+        body:JSON.stringify({serviceDate:document.getElementById('live-service-date')?.value || null})
       });
       const data=await res.json().catch(()=>({}));
       if(!res.ok || data.success===false) {

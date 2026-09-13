@@ -254,7 +254,7 @@
 
 #admin-users-list .scheduled-item > div:last-child{
   display:grid !important;
-  grid-template-columns:minmax(150px, 180px) auto auto auto;
+  grid-template-columns:minmax(150px, 180px) auto auto auto auto;
   gap:8px !important;
   align-items:center !important;
 }
@@ -2227,6 +2227,10 @@ body[data-theme="dark"] .analytics-table td{
               Save Changes
             </button>
             <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
+              onclick="resetAdminUserPassword('${u.uid}')">
+              Reset Password
+            </button>
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 11px;"
               onclick="deleteAdminUser('${u.uid}')">
               Delete
             </button>
@@ -2302,6 +2306,42 @@ body[data-theme="dark"] .analytics-table td{
     }
   }
   window.saveAdminUserChanges=saveAdminUserChanges;
+
+
+  async function resetAdminUserPassword(uid) {
+    const userCard=document.getElementById('role-'+uid)?.closest('.scheduled-item');
+    const label=userCard?.querySelector('.item-title')?.textContent || 'this user';
+
+    const password=prompt(`Enter a new temporary password for ${label}.\n\nThey will be required to change it the next time they sign in.`);
+    if(password === null) return;
+
+    if(password.length < 8) {
+      usersMsg('Temporary password must be at least 8 characters.','error');
+      return;
+    }
+
+    const confirmPassword=prompt('Re-enter the temporary password to confirm.');
+    if(confirmPassword === null) return;
+
+    if(password !== confirmPassword) {
+      usersMsg('The temporary passwords do not match.','error');
+      return;
+    }
+
+    try {
+      usersMsg('Resetting password…','info');
+      await secureAdminRequest(ADMIN_USERS_URL,{
+        action:'resetPassword',
+        uid,
+        password
+      });
+      usersMsg('Temporary password set. The user must change it at their next login.');
+      await loadAdminUsers();
+    } catch(e) {
+      usersMsg(e.message,'error');
+    }
+  }
+  window.resetAdminUserPassword=resetAdminUserPassword;
 
   async function deleteAdminUser(uid) {
     const userCard = document.getElementById('role-'+uid)?.closest('.scheduled-item');

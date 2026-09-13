@@ -209,6 +209,27 @@
 </div>
 
 <!-- Admin dashboard -->
+
+<div id="first-password-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div class="card" style="width:min(460px,100%);margin:0;">
+    <h2>Change Your Password</h2>
+    <p class="empty-note">For security, you need to replace your temporary password before using the admin portal.</p>
+
+    <label for="first-new-password">New password</label>
+    <input type="password" id="first-new-password" autocomplete="new-password" placeholder="At least 8 characters">
+
+    <label for="first-confirm-password" style="margin-top:12px;">Confirm new password</label>
+    <input type="password" id="first-confirm-password" autocomplete="new-password" placeholder="Re-enter new password"
+      onkeydown="if(event.key==='Enter')completeFirstPasswordChange()">
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-gold" onclick="completeFirstPasswordChange()">Change Password</button>
+      <button class="btn btn-outline" onclick="logout()">Sign Out</button>
+    </div>
+    <div class="status-msg" id="first-password-msg"></div>
+  </div>
+</div>
+
 <div class="admin-wrap" id="admin-screen" style="display:none;">
   <div class="admin-header">
     <div>
@@ -801,12 +822,12 @@
 
     if(currentAdminProfile?.mustChangePassword === true) {
       document.getElementById('admin-screen').style.display='none';
-      document.getElementById('first-password-modal').style.display='flex';
+      document.getElementById('first-password-modal')?.style && (document.getElementById('first-password-modal').style.display='flex');
       setTimeout(()=>document.getElementById('first-new-password')?.focus(),50);
       return;
     }
 
-    document.getElementById('first-password-modal').style.display='none';
+    document.getElementById('first-password-modal')?.style && (document.getElementById('first-password-modal').style.display='none');
     document.getElementById('admin-screen').style.display='block';
     applyAdminPermissions();
     loadStats();
@@ -842,7 +863,7 @@
       currentAdminProfile.mustChangePassword=false;
       document.getElementById('first-new-password').value='';
       document.getElementById('first-confirm-password').value='';
-      document.getElementById('first-password-modal').style.display='none';
+      document.getElementById('first-password-modal')?.style && (document.getElementById('first-password-modal').style.display='none');
       document.getElementById('admin-screen').style.display='block';
       applyAdminPermissions();
       loadStats();
@@ -1565,6 +1586,8 @@
     reportValue('report-total-attendance', inPerson + verified);
   }
 
+  window.updateAttendanceReport=updateAttendanceReport;
+
   function updateDigitalReport(d={}) {
     const f=d.facebook || {};
     const y=d.youtube || {};
@@ -2159,8 +2182,8 @@
 
   document.addEventListener('DOMContentLoaded', ()=>{
     wireLivestreamHistoryFilters();
-    document.getElementById('live-inperson-attendance')?.addEventListener('input', updateAttendanceReport);
-    document.getElementById('website-range')?.addEventListener('change', loadWebsiteAnalytics);
+    document.getElementById('live-inperson-attendance')?.addEventListener('input', ()=>window.updateAttendanceReport?.());
+    document.getElementById('website-range')?.addEventListener('change', ()=>window.loadWebsiteAnalytics?.());
   });
   setTimeout(wireLivestreamHistoryFilters, 500);
 })();

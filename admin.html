@@ -650,7 +650,7 @@
       </div>
 
       <div class="live-toolbar">
-        <div><label>Temporary password</label><input type="password" id="new-user-password" placeholder="At least 8 characters"></div>
+        <div><label>Temporary password</label><input type="password" id="new-user-password" placeholder="At least 8 characters"><div class="item-time" style="margin-top:4px;">They will be required to create a new password the first time they sign in.</div></div>
         <div>
           <label>Access group</label>
           <select id="new-user-role">
@@ -708,7 +708,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, setDoc, doc, query, where, orderBy, Timestamp, serverTimestamp, onSnapshot }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -734,6 +734,8 @@
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAdminProfile';
   const ADMIN_USERS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAdminUsers';
+  const PASSWORD_CHANGE_COMPLETE_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/completeInitialPasswordChange';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -796,11 +798,66 @@
   async function showAdminPortal() {
     await loadAdminProfile();
     document.getElementById('login-screen').style.display='none';
+
+    if(currentAdminProfile?.mustChangePassword === true) {
+      document.getElementById('admin-screen').style.display='none';
+      document.getElementById('first-password-modal').style.display='flex';
+      setTimeout(()=>document.getElementById('first-new-password')?.focus(),50);
+      return;
+    }
+
+    document.getElementById('first-password-modal').style.display='none';
     document.getElementById('admin-screen').style.display='block';
     applyAdminPermissions();
     loadStats();
     loadQueue();
   }
+
+
+  async function completeFirstPasswordChange() {
+    const newPassword=document.getElementById('first-new-password').value;
+    const confirmPassword=document.getElementById('first-confirm-password').value;
+    const msg=document.getElementById('first-password-msg');
+
+    if(newPassword.length < 8) {
+      msg.className='status-msg error';
+      msg.textContent='Use a password with at least 8 characters.';
+      return;
+    }
+    if(newPassword !== confirmPassword) {
+      msg.className='status-msg error';
+      msg.textContent='The passwords do not match.';
+      return;
+    }
+
+    try {
+      msg.className='status-msg info';
+      msg.textContent='Updating password…';
+
+      if(!auth.currentUser) throw new Error('Your sign-in session has expired.');
+
+      await updatePassword(auth.currentUser,newPassword);
+      await secureAdminRequest(PASSWORD_CHANGE_COMPLETE_URL,{});
+
+      currentAdminProfile.mustChangePassword=false;
+      document.getElementById('first-new-password').value='';
+      document.getElementById('first-confirm-password').value='';
+      document.getElementById('first-password-modal').style.display='none';
+      document.getElementById('admin-screen').style.display='block';
+      applyAdminPermissions();
+      loadStats();
+      loadQueue();
+
+      msg.className='status-msg';
+      msg.textContent='';
+    } catch(e) {
+      msg.className='status-msg error';
+      msg.textContent=e?.code==='auth/requires-recent-login'
+        ? 'Please sign out, sign back in with the temporary password, and try again.'
+        : (e.message || 'Could not change your password.');
+    }
+  }
+  window.completeFirstPasswordChange=completeFirstPasswordChange;
 
   async function login() {
     const email=document.getElementById('admin-email').value.trim();

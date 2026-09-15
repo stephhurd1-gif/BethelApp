@@ -1013,11 +1013,26 @@ body[data-theme="dark"] .analytics-table td{
       <div class="live-toolbar">
         <div>
           <label>Reporting period</label>
-          <select id="website-range">
+          <select id="website-range" onchange="websiteRangeChanged()">
+            <option value="today">Today</option>
             <option value="7days">Last 7 days</option>
+            <option value="thisweek">This week</option>
             <option value="30days" selected>Last 30 days</option>
             <option value="90days">Last 90 days</option>
+            <option value="6months">Last 6 months</option>
+            <option value="12months">Last 12 months</option>
+            <option value="custom">Custom date range</option>
           </select>
+        </div>
+        <div id="website-custom-range" style="display:none;grid-template-columns:1fr 1fr;gap:10px;min-width:320px;">
+          <div>
+            <label>Start date</label>
+            <input type="date" id="website-start-date">
+          </div>
+          <div>
+            <label>End date</label>
+            <input type="date" id="website-end-date">
+          </div>
         </div>
         <button class="btn btn-outline" onclick="loadWebsiteAnalytics()">Refresh</button>
       </div>
@@ -2288,11 +2303,30 @@ body[data-theme="dark"] .analytics-table td{
     if(el) el.textContent=(value===null||value===undefined)?'—':String(Math.round(Number(value)||0));
   }
 
+
+  function websiteRangeChanged() {
+    const range=document.getElementById('website-range')?.value || '30days';
+    const custom=document.getElementById('website-custom-range');
+    if(custom) custom.style.display=range==='custom' ? 'grid' : 'none';
+  }
+  window.websiteRangeChanged=websiteRangeChanged;
+
   async function loadWebsiteAnalytics() {
     try {
       const range=document.getElementById('website-range')?.value || '30days';
+      const payload={range};
+
+      if(range==='custom') {
+        payload.startDate=document.getElementById('website-start-date')?.value || '';
+        payload.endDate=document.getElementById('website-end-date')?.value || '';
+        if(!payload.startDate || !payload.endDate) {
+          websiteMsg('Choose both a start date and an end date.','error');
+          return;
+        }
+      }
+
       websiteMsg('Loading website analytics…','info');
-      const data=await websiteAnalyticsRequest({range});
+      const data=await websiteAnalyticsRequest(payload);
 
       const s=data.summary || {};
       setWebMetric('web-users',s.activeUsers);
@@ -2757,7 +2791,11 @@ body[data-theme="dark"] .analytics-table td{
   document.addEventListener('DOMContentLoaded', ()=>{
     wireLivestreamHistoryFilters();
     document.getElementById('live-inperson-attendance')?.addEventListener('input', ()=>window.updateAttendanceReport?.());
-    document.getElementById('website-range')?.addEventListener('change', ()=>window.loadWebsiteAnalytics?.());
+    document.getElementById('website-range')?.addEventListener('change', ()=>{
+    window.websiteRangeChanged?.();
+    if(document.getElementById('website-range')?.value !== 'custom') window.loadWebsiteAnalytics?.();
+  });
+  window.websiteRangeChanged?.();
   });
   setTimeout(wireLivestreamHistoryFilters, 500);
 })();

@@ -512,6 +512,181 @@
         padding: 6px;
       }
     }
+
+    /* My Bethel account */
+    .account-btn-wrap {
+      position:absolute;
+      top:16px;
+      left:16px;
+      z-index:50;
+    }
+    .account-btn {
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.08);
+      color:var(--white);
+      border-radius:999px;
+      min-width:42px;
+      height:42px;
+      padding:0 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      cursor:pointer;
+      font:inherit;
+      font-size:12px;
+      font-weight:bold;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+    .account-btn:hover { background:rgba(247,191,91,0.18); }
+    .account-btn-icon { font-size:18px; line-height:1; }
+
+    .member-overlay {
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:500;
+      background:rgba(0,0,0,0.72);
+      padding:18px;
+      align-items:center;
+      justify-content:center;
+      overflow-y:auto;
+    }
+    .member-overlay.open { display:flex; }
+    .member-card {
+      width:min(520px, 100%);
+      max-height:calc(100vh - 36px);
+      overflow-y:auto;
+      background:#0a0f16;
+      border:1px solid rgba(247,191,91,0.24);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 24px 70px rgba(0,0,0,.55);
+    }
+    .member-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .member-header h2 { margin:0; color:var(--gold); font-size:22px; }
+    .member-close {
+      background:none;
+      border:0;
+      color:#aaa;
+      font-size:24px;
+      cursor:pointer;
+      padding:2px 6px;
+    }
+    .member-tabs {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-bottom:16px;
+    }
+    .member-tab {
+      border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.05);
+      color:#ddd;
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      font:inherit;
+      font-weight:bold;
+    }
+    .member-tab.active {
+      background:rgba(247,191,91,0.14);
+      border-color:rgba(247,191,91,.45);
+      color:var(--gold);
+    }
+    .member-panel { display:none; }
+    .member-panel.active { display:block; }
+    .member-form { display:grid; gap:12px; }
+    .member-field { display:grid; gap:6px; }
+    .member-field label {
+      color:#bbb;
+      font-size:12px;
+      font-weight:bold;
+    }
+    .member-input {
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.07);
+      color:var(--white);
+      font:inherit;
+      outline:none;
+    }
+    .member-input:focus { border-color:rgba(247,191,91,.55); }
+    .member-primary {
+      border:0;
+      border-radius:999px;
+      padding:13px 16px;
+      background:var(--gold);
+      color:var(--black);
+      cursor:pointer;
+      font:inherit;
+      font-weight:bold;
+    }
+    .member-secondary {
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:11px 14px;
+      background:rgba(255,255,255,.06);
+      color:var(--white);
+      cursor:pointer;
+      font:inherit;
+      font-weight:bold;
+    }
+    .member-link {
+      background:none;
+      border:0;
+      color:var(--gold);
+      cursor:pointer;
+      font:inherit;
+      font-size:13px;
+      padding:4px;
+    }
+    .member-msg {
+      min-height:18px;
+      font-size:13px;
+      line-height:1.45;
+      color:#aaa;
+    }
+    .member-msg.error { color:#fc8181; }
+    .member-msg.success { color:#68d391; }
+    .member-profile-summary {
+      padding:14px;
+      border-radius:16px;
+      background:rgba(247,191,91,.07);
+      border:1px solid rgba(247,191,91,.18);
+      margin-bottom:16px;
+    }
+    .member-profile-summary strong { color:var(--gold); }
+    .member-check {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:#ddd;
+      font-size:14px;
+      line-height:1.4;
+    }
+    .member-check input {
+      width:18px;
+      height:18px;
+      margin-top:1px;
+      accent-color:var(--gold);
+      flex:0 0 auto;
+    }
+    .verification-note {
+      margin-top:8px;
+      font-size:12px;
+      color:#aaa;
+    }
+
   </style>
 </head>
 <body>
@@ -559,8 +734,116 @@
     <button class="welcome-skip" onclick="dismissWelcome()">Skip for now</button>
   </div>
 
+
+  <!-- My Bethel account modal -->
+  <div class="member-overlay" id="member-overlay" onclick="memberOverlayClick(event)">
+    <div class="member-card" role="dialog" aria-modal="true" aria-labelledby="member-title">
+      <div class="member-header">
+        <h2 id="member-title">My Bethel</h2>
+        <button class="member-close" type="button" onclick="closeMemberAccount()" aria-label="Close">&#10005;</button>
+      </div>
+
+      <div id="member-auth-area">
+        <div class="member-tabs">
+          <button class="member-tab active" id="member-tab-signin" type="button" onclick="showMemberAuthTab('signin')">Sign In</button>
+          <button class="member-tab" id="member-tab-create" type="button" onclick="showMemberAuthTab('create')">Create Account</button>
+        </div>
+
+        <div class="member-panel active" id="member-panel-signin">
+          <form class="member-form" onsubmit="memberSignIn(event)">
+            <div class="member-field">
+              <label for="member-signin-email">Email</label>
+              <input class="member-input" type="email" id="member-signin-email" autocomplete="username" required>
+            </div>
+            <div class="member-field">
+              <label for="member-signin-password">Password</label>
+              <input class="member-input" type="password" id="member-signin-password" autocomplete="current-password" required>
+            </div>
+            <button class="member-primary" type="submit">Sign In</button>
+            <button class="member-link" type="button" onclick="memberForgotPassword()">Forgot password?</button>
+            <div class="member-msg" id="member-signin-msg"></div>
+          </form>
+        </div>
+
+        <div class="member-panel" id="member-panel-create">
+          <form class="member-form" onsubmit="memberCreateAccount(event)">
+            <div class="member-field">
+              <label for="member-create-name">Your name</label>
+              <input class="member-input" type="text" id="member-create-name" autocomplete="name" required maxlength="100">
+            </div>
+            <div class="member-field">
+              <label for="member-create-email">Email</label>
+              <input class="member-input" type="email" id="member-create-email" autocomplete="email" required>
+            </div>
+            <div class="member-field">
+              <label for="member-create-password">Password</label>
+              <input class="member-input" type="password" id="member-create-password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+            </div>
+            <div class="member-field">
+              <label for="member-create-confirm">Confirm password</label>
+              <input class="member-input" type="password" id="member-create-confirm" autocomplete="new-password" required minlength="8">
+            </div>
+            <button class="member-primary" type="submit">Create My Bethel Account</button>
+            <div class="member-msg" id="member-create-msg"></div>
+          </form>
+        </div>
+      </div>
+
+      <div id="member-profile-area" style="display:none;">
+        <div class="member-profile-summary">
+          <div><strong id="member-profile-heading">Welcome!</strong></div>
+          <div class="verification-note" id="member-verification-note"></div>
+        </div>
+
+        <form class="member-form" onsubmit="memberSaveProfile(event)">
+          <div class="member-field">
+            <label for="member-profile-name">Name</label>
+            <input class="member-input" type="text" id="member-profile-name" autocomplete="name" required maxlength="100">
+          </div>
+          <div class="member-field">
+            <label for="member-profile-email">Email</label>
+            <input class="member-input" type="email" id="member-profile-email" disabled>
+          </div>
+          <div class="member-field">
+            <label for="member-profile-phone">Phone (optional)</label>
+            <input class="member-input" type="tel" id="member-profile-phone" autocomplete="tel" maxlength="40" placeholder="(717) 555-1234">
+          </div>
+
+          <label class="member-check">
+            <input type="checkbox" id="member-pref-updates" checked>
+            <span>Church updates and important announcements</span>
+          </label>
+          <label class="member-check">
+            <input type="checkbox" id="member-pref-events" checked>
+            <span>Event and service reminders</span>
+          </label>
+
+          <button class="member-primary" type="submit">Save Profile</button>
+          <div class="member-msg" id="member-profile-msg"></div>
+        </form>
+
+        <div class="button-row" style="margin-top:16px;">
+          <button class="member-secondary" type="button" id="member-resend-verification" onclick="memberResendVerification()">Resend verification email</button>
+          <button class="member-secondary" type="button" onclick="memberSignOut()">Sign Out</button>
+        </div>
+
+        <div class="small-note" style="margin-top:16px;">
+          Saved events and giving history will appear here as My Bethel features are added.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="bethel-app">
     <div class="app-shell">
+
+      <!-- My Bethel account -->
+      <div class="account-btn-wrap">
+        <button class="account-btn" id="account-btn" type="button" onclick="openMemberAccount()" aria-label="My Bethel account">
+          <span class="account-btn-icon" aria-hidden="true">&#128100;</span>
+          <span id="account-btn-label">My Bethel</span>
+        </button>
+      </div>
 
       <!-- Notification bell -->
       <div class="notif-bell-wrap">
@@ -1403,13 +1686,304 @@
     };
 
     // Load Firebase SDKs dynamically (no bundler needed)
+    let firebaseRuntimePromise = null;
     async function loadFirebase() {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const app = initializeApp(FIREBASE_CONFIG);
-      const db = getFirestore(app);
-      return { db, doc, setDoc };
+      if (firebaseRuntimePromise) return firebaseRuntimePromise;
+
+      firebaseRuntimePromise = (async () => {
+        const appSdk = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+        const firestoreSdk = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const authSdk = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+
+        const existingApps = appSdk.getApps();
+        const firebaseApp = existingApps.length ? existingApps[0] : appSdk.initializeApp(FIREBASE_CONFIG);
+        const db = firestoreSdk.getFirestore(firebaseApp);
+        const auth = authSdk.getAuth(firebaseApp);
+
+        return {
+          db,
+          auth,
+          ...firestoreSdk,
+          ...authSdk
+        };
+      })();
+
+      return firebaseRuntimePromise;
     }
+
+
+    // ── My Bethel member accounts ─────────────────────────────────────
+    const APP_USER_PROFILE_GET_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppUserProfile';
+    const APP_USER_PROFILE_SAVE_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/saveAppUserProfile';
+
+    let currentMemberProfile = null;
+    let memberAuthInitialized = false;
+
+    function memberSetMsg(id, text='', type='') {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'member-msg' + (type ? ' ' + type : '');
+      el.textContent = text;
+    }
+
+    function openMemberAccount() {
+      document.getElementById('member-overlay')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    window.openMemberAccount = openMemberAccount;
+
+    function closeMemberAccount() {
+      document.getElementById('member-overlay')?.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    window.closeMemberAccount = closeMemberAccount;
+
+    function memberOverlayClick(event) {
+      if (event.target?.id === 'member-overlay') closeMemberAccount();
+    }
+    window.memberOverlayClick = memberOverlayClick;
+
+    function showMemberAuthTab(tab) {
+      const signin = tab === 'signin';
+      document.getElementById('member-tab-signin')?.classList.toggle('active', signin);
+      document.getElementById('member-tab-create')?.classList.toggle('active', !signin);
+      document.getElementById('member-panel-signin')?.classList.toggle('active', signin);
+      document.getElementById('member-panel-create')?.classList.toggle('active', !signin);
+    }
+    window.showMemberAuthTab = showMemberAuthTab;
+
+    async function memberApi(url, payload={}) {
+      const { auth } = await loadFirebase();
+      if (!auth.currentUser) throw new Error('Please sign in.');
+      const token = await auth.currentUser.getIdToken();
+
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${token}`
+        },
+        body:JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.error || `Request failed (${res.status}).`);
+      }
+      return data;
+    }
+
+    function renderMemberAuthState(user, profile=null) {
+      const authArea = document.getElementById('member-auth-area');
+      const profileArea = document.getElementById('member-profile-area');
+      const label = document.getElementById('account-btn-label');
+
+      if (!user) {
+        currentMemberProfile = null;
+        if (authArea) authArea.style.display = 'block';
+        if (profileArea) profileArea.style.display = 'none';
+        if (label) label.textContent = 'My Bethel';
+        return;
+      }
+
+      if (authArea) authArea.style.display = 'none';
+      if (profileArea) profileArea.style.display = 'block';
+
+      const name = profile?.displayName || user.displayName || user.email?.split('@')[0] || 'My Bethel';
+      if (label) label.textContent = name.split(/\s+/)[0].slice(0, 12);
+
+      document.getElementById('member-profile-heading').textContent = `Welcome, ${name}!`;
+      document.getElementById('member-profile-name').value = profile?.displayName || user.displayName || '';
+      document.getElementById('member-profile-email').value = user.email || profile?.email || '';
+      document.getElementById('member-profile-phone').value = profile?.phone || '';
+      document.getElementById('member-pref-updates').checked =
+        profile?.notificationPreferences?.churchUpdates !== false;
+      document.getElementById('member-pref-events').checked =
+        profile?.notificationPreferences?.eventReminders !== false;
+
+      const verified = profile?.emailVerified ?? user.emailVerified;
+      const note = document.getElementById('member-verification-note');
+      const resend = document.getElementById('member-resend-verification');
+      if (verified) {
+        if (note) note.textContent = '✓ Email verified';
+        if (resend) resend.style.display = 'none';
+      } else {
+        if (note) note.textContent = 'Please verify your email. Verification will be required before giving history can be linked to your account.';
+        if (resend) resend.style.display = '';
+      }
+    }
+
+    async function loadMemberProfile() {
+      try {
+        const data = await memberApi(APP_USER_PROFILE_GET_URL, {});
+        currentMemberProfile = data.profile || null;
+        const { auth } = await loadFirebase();
+        renderMemberAuthState(auth.currentUser, currentMemberProfile);
+      } catch (e) {
+        console.warn('My Bethel profile load failed:', e);
+        const { auth } = await loadFirebase();
+        renderMemberAuthState(auth.currentUser, null);
+        memberSetMsg('member-profile-msg', e.message || 'Could not load profile.', 'error');
+      }
+    }
+
+    async function memberSignIn(event) {
+      event.preventDefault();
+      const email = document.getElementById('member-signin-email').value.trim();
+      const password = document.getElementById('member-signin-password').value;
+      memberSetMsg('member-signin-msg', 'Signing in…');
+
+      try {
+        const { auth, signInWithEmailAndPassword } = await loadFirebase();
+        await signInWithEmailAndPassword(auth, email, password);
+        memberSetMsg('member-signin-msg', '');
+      } catch (e) {
+        memberSetMsg('member-signin-msg', 'Could not sign in. Check your email and password.', 'error');
+      }
+    }
+    window.memberSignIn = memberSignIn;
+
+    async function memberCreateAccount(event) {
+      event.preventDefault();
+      const displayName = document.getElementById('member-create-name').value.trim();
+      const email = document.getElementById('member-create-email').value.trim();
+      const password = document.getElementById('member-create-password').value;
+      const confirmPassword = document.getElementById('member-create-confirm').value;
+
+      if (password.length < 8) {
+        memberSetMsg('member-create-msg', 'Use a password with at least 8 characters.', 'error');
+        return;
+      }
+      if (password !== confirmPassword) {
+        memberSetMsg('member-create-msg', 'The passwords do not match.', 'error');
+        return;
+      }
+
+      memberSetMsg('member-create-msg', 'Creating your account…');
+
+      try {
+        const {
+          auth,
+          createUserWithEmailAndPassword,
+          updateProfile,
+          sendEmailVerification
+        } = await loadFirebase();
+
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(credential.user, { displayName });
+        await credential.user.getIdToken(true);
+
+        await memberApi(APP_USER_PROFILE_SAVE_URL, {
+          displayName,
+          phone:'',
+          notificationPreferences:{
+            churchUpdates:true,
+            eventReminders:true
+          }
+        });
+
+        await sendEmailVerification(credential.user).catch(() => {});
+        memberSetMsg('member-create-msg', '');
+        await loadMemberProfile();
+        memberSetMsg('member-profile-msg', 'Account created. We sent you an email verification link.', 'success');
+      } catch (e) {
+        let message = 'Could not create your account.';
+        if (e?.code === 'auth/email-already-in-use') message = 'An account already exists with that email. Try signing in instead.';
+        if (e?.code === 'auth/weak-password') message = 'Please choose a stronger password.';
+        memberSetMsg('member-create-msg', message, 'error');
+      }
+    }
+    window.memberCreateAccount = memberCreateAccount;
+
+    async function memberForgotPassword() {
+      const email = document.getElementById('member-signin-email').value.trim();
+      if (!email) {
+        memberSetMsg('member-signin-msg', 'Enter your email above first.', 'error');
+        return;
+      }
+
+      try {
+        const { auth, sendPasswordResetEmail } = await loadFirebase();
+        await sendPasswordResetEmail(auth, email);
+        memberSetMsg('member-signin-msg', 'Password reset email sent.', 'success');
+      } catch (e) {
+        memberSetMsg('member-signin-msg', 'Could not send the reset email. Check the address and try again.', 'error');
+      }
+    }
+    window.memberForgotPassword = memberForgotPassword;
+
+    async function memberSaveProfile(event) {
+      event.preventDefault();
+      const displayName = document.getElementById('member-profile-name').value.trim();
+      const phone = document.getElementById('member-profile-phone').value.trim();
+      const notificationPreferences = {
+        churchUpdates:document.getElementById('member-pref-updates').checked,
+        eventReminders:document.getElementById('member-pref-events').checked
+      };
+
+      memberSetMsg('member-profile-msg', 'Saving…');
+
+      try {
+        const data = await memberApi(APP_USER_PROFILE_SAVE_URL, {
+          displayName,
+          phone,
+          notificationPreferences
+        });
+
+        currentMemberProfile = data.profile || currentMemberProfile;
+        const { auth, updateProfile } = await loadFirebase();
+        if (auth.currentUser && auth.currentUser.displayName !== displayName) {
+          await updateProfile(auth.currentUser, { displayName });
+        }
+        renderMemberAuthState(auth.currentUser, currentMemberProfile);
+        memberSetMsg('member-profile-msg', 'Profile saved.', 'success');
+      } catch (e) {
+        memberSetMsg('member-profile-msg', e.message || 'Could not save profile.', 'error');
+      }
+    }
+    window.memberSaveProfile = memberSaveProfile;
+
+    async function memberResendVerification() {
+      try {
+        const { auth, sendEmailVerification } = await loadFirebase();
+        if (!auth.currentUser) throw new Error('Please sign in.');
+        await sendEmailVerification(auth.currentUser);
+        memberSetMsg('member-profile-msg', 'Verification email sent.', 'success');
+      } catch (e) {
+        memberSetMsg('member-profile-msg', e.message || 'Could not send verification email.', 'error');
+      }
+    }
+    window.memberResendVerification = memberResendVerification;
+
+    async function memberSignOut() {
+      try {
+        const { auth, signOut } = await loadFirebase();
+        await signOut(auth);
+        closeMemberAccount();
+      } catch (e) {
+        memberSetMsg('member-profile-msg', 'Could not sign out.', 'error');
+      }
+    }
+    window.memberSignOut = memberSignOut;
+
+    async function initMemberAuth() {
+      if (memberAuthInitialized) return;
+      memberAuthInitialized = true;
+
+      const { auth, onAuthStateChanged } = await loadFirebase();
+      onAuthStateChanged(auth, async user => {
+        if (!user) {
+          renderMemberAuthState(null);
+          return;
+        }
+        renderMemberAuthState(user, currentMemberProfile);
+        await loadMemberProfile();
+      });
+    }
+
+    initMemberAuth().catch(err => console.warn('My Bethel auth init failed:', err));
 
     async function saveSubscriptionToFirestore(subscription) {
       try {

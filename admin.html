@@ -710,7 +710,8 @@ body[data-theme="dark"] .analytics-table td{
     <button class="tab" data-tab="giving" data-permission="giving" onclick="switchTab('giving')">&#128181; Giving</button>
     <button class="tab" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
     <button class="tab" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">&#128200; Website Analytics</button>
-    <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Users</button>
+    <button class="tab" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">&#128100; Members</button>
+    <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Admin Users</button>
   </div>
 
   <!-- Send Now -->
@@ -1083,6 +1084,74 @@ body[data-theme="dark"] .analytics-table td{
   </div>
 
 
+
+  <!-- My Bethel Member Analytics -->
+  <div class="tab-panel" id="tab-members">
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:4px;">&#128100; My Bethel Members</h2>
+          <p class="empty-note" style="margin-top:0;">
+            Registered My Bethel accounts and account activity. These numbers are not the same as total PWA installs.
+          </p>
+        </div>
+        <button class="btn btn-outline" onclick="loadMemberAnalytics()">Refresh</button>
+      </div>
+
+      <div class="stats-grid" style="margin-top:16px;">
+        <div class="stat-card"><div class="stat-num" id="member-total">—</div><div class="stat-label">Registered members</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-verified">—</div><div class="stat-label">Verified emails</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-active7">—</div><div class="stat-label">Active last 7 days</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-active30">—</div><div class="stat-label">Active last 30 days</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-saved-events">—</div><div class="stat-label">Saved events</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-updates-on">—</div><div class="stat-label">Church updates on</div></div>
+        <div class="stat-card"><div class="stat-num" id="member-reminders-on">—</div><div class="stat-label">Event reminders on</div></div>
+      </div>
+
+      <div class="metric-note" style="margin-top:12px;">
+        “Active” is based on the most recent My Bethel account activity recorded by the app. Notification numbers show member preferences, not whether a browser currently has push permission enabled.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="live-toolbar" style="align-items:end;">
+        <div style="flex:1;min-width:230px;">
+          <label>Search members</label>
+          <input type="text" id="member-search" placeholder="Name or email" oninput="renderMemberAnalyticsRows()">
+        </div>
+        <div style="min-width:170px;">
+          <label>Status</label>
+          <select id="member-filter" onchange="renderMemberAnalyticsRows()">
+            <option value="all">All members</option>
+            <option value="verified">Verified</option>
+            <option value="unverified">Unverified</option>
+            <option value="active30">Active in 30 days</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;margin-top:14px;">
+        <table class="analytics-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Email</th>
+              <th>Verified</th>
+              <th>Last activity</th>
+              <th>Saved events</th>
+              <th>Church updates</th>
+              <th>Event reminders</th>
+            </tr>
+          </thead>
+          <tbody id="member-analytics-rows">
+            <tr><td colspan="7" class="empty-note">Open this tab to load members.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="status-msg" id="member-analytics-msg"></div>
+    </div>
+  </div>
+
   <!-- User Management -->
   <div class="tab-panel" id="tab-users">
     <div class="card">
@@ -1205,6 +1274,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAdminUsers';
   const PASSWORD_CHANGE_COMPLETE_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/completeInitialPasswordChange';
+  const MEMBER_ANALYTICS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMemberAnalytics';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -1391,6 +1462,7 @@ body[data-theme="dark"] .analytics-table td{
     if (name === 'giving') loadGivingHistory();
     if (name === 'livestream') initLivestreamAnalytics();
     if (name === 'website') loadWebsiteAnalytics();
+    if (name === 'members') loadMemberAnalytics();
     if (name === 'users') loadAdminUsers();
   }
   window.switchTab = switchTab;
@@ -2088,6 +2160,116 @@ body[data-theme="dark"] .analytics-table td{
     });
   }
 
+
+
+
+  // ── My Bethel Member Analytics ────────────────────────────────────
+  let memberAnalyticsData={ summary:{}, members:[] };
+
+  function memberDate(value) {
+    if(!value) return '—';
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString([],{
+      month:'short',
+      day:'numeric',
+      year:'numeric',
+      hour:'numeric',
+      minute:'2-digit'
+    });
+  }
+
+  function memberSetMetric(id,value) {
+    const el=document.getElementById(id);
+    if(el) el.textContent=value ?? '—';
+  }
+
+  async function loadMemberAnalytics() {
+    if(!hasPermission('manageUsers')) return;
+
+    const rows=document.getElementById('member-analytics-rows');
+    const msg=document.getElementById('member-analytics-msg');
+    if(rows) rows.innerHTML='<tr><td colspan="7" class="empty-note">Loading members…</td></tr>';
+    if(msg) {
+      msg.className='status-msg info';
+      msg.textContent='Loading member analytics…';
+    }
+
+    try {
+      const data=await secureAdminRequest(MEMBER_ANALYTICS_URL,{});
+      memberAnalyticsData={
+        summary:data.summary || {},
+        members:Array.isArray(data.members) ? data.members : []
+      };
+
+      const s=memberAnalyticsData.summary;
+      memberSetMetric('member-total',s.registered ?? 0);
+      memberSetMetric('member-verified',s.verified ?? 0);
+      memberSetMetric('member-active7',s.active7 ?? 0);
+      memberSetMetric('member-active30',s.active30 ?? 0);
+      memberSetMetric('member-saved-events',s.totalSavedEvents ?? 0);
+      memberSetMetric('member-updates-on',s.churchUpdatesOn ?? 0);
+      memberSetMetric('member-reminders-on',s.eventRemindersOn ?? 0);
+
+      renderMemberAnalyticsRows();
+
+      if(msg) {
+        msg.className='status-msg';
+        msg.textContent='';
+      }
+    } catch(e) {
+      if(rows) {
+        rows.innerHTML='<tr><td colspan="7" class="empty-note" style="color:#c53030;">'+escHtml(e.message)+'</td></tr>';
+      }
+      if(msg) {
+        msg.className='status-msg error';
+        msg.textContent=e.message || 'Could not load member analytics.';
+      }
+    }
+  }
+  window.loadMemberAnalytics=loadMemberAnalytics;
+
+  function renderMemberAnalyticsRows() {
+    const rows=document.getElementById('member-analytics-rows');
+    if(!rows) return;
+
+    const q=(document.getElementById('member-search')?.value || '').trim().toLowerCase();
+    const filter=document.getElementById('member-filter')?.value || 'all';
+    const cutoff30=Date.now()-(30*24*60*60*1000);
+
+    let list=[...(memberAnalyticsData.members || [])];
+
+    list=list.filter(m=>{
+      const searchable=((m.displayName || '')+' '+(m.email || '')).toLowerCase();
+      if(q && !searchable.includes(q)) return false;
+
+      if(filter==='verified' && !m.emailVerified) return false;
+      if(filter==='unverified' && m.emailVerified) return false;
+      if(filter==='active30') {
+        const t=m.lastLoginAt ? Date.parse(m.lastLoginAt) : 0;
+        if(!t || t < cutoff30) return false;
+      }
+      return true;
+    });
+
+    if(!list.length) {
+      rows.innerHTML='<tr><td colspan="7" class="empty-note">No members match this view.</td></tr>';
+      return;
+    }
+
+    rows.innerHTML=list.map(m=>`
+      <tr>
+        <td><strong>${escHtml(m.displayName || '—')}</strong></td>
+        <td>${escHtml(m.email || '—')}</td>
+        <td>${m.emailVerified ? '✓ Yes' : 'No'}</td>
+        <td>${escHtml(memberDate(m.lastLoginAt))}</td>
+        <td>${Number(m.savedEventCount || 0)}</td>
+        <td>${m.notificationPreferences?.churchUpdates !== false ? 'On' : 'Off'}</td>
+        <td>${m.notificationPreferences?.eventReminders !== false ? 'On' : 'Off'}</td>
+      </tr>
+    `).join('');
+  }
+  window.renderMemberAnalyticsRows=renderMemberAnalyticsRows;
 
 
   function usersMsg(text,type='success') {

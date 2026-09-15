@@ -6,7 +6,6 @@
   <title>Events — Bethel AME Lancaster</title>
   <meta name="description" content="Upcoming worship, ministry, community, youth, and special events at Bethel AME Lancaster.">
   <meta name="theme-color" content="#01060b">
-  <meta name="bethel-events-build" content="safe-header-v3-living-experience-larger-nav">
 
   <style>
     :root {
@@ -51,7 +50,7 @@
     }
 
     .back-to-app {
-      display:none;
+      display:inline-flex;
       align-items:center;
       gap:7px;
       margin:0 0 10px;
@@ -70,32 +69,7 @@
       outline:none;
       border-color:rgba(247,191,91,.38);
     }
-    body.app-mode .back-to-app { display:inline-flex; }
-    body.site-mode .back-to-app,
     body.embedded .back-to-app { display:none; }
-
-    /* Website/browser view uses the available screen instead of looking like
-       a narrow app card centered in a large desktop window. */
-    body.site-mode .page {
-      width:100%;
-      max-width:none;
-      margin:0;
-      padding:18px clamp(18px, 3vw, 54px) 56px;
-    }
-
-    body.site-mode .hero,
-    body.site-mode .toolbar,
-    body.site-mode main,
-    body.site-mode .footer {
-      width:100%;
-      max-width:none;
-    }
-
-    @media (min-width:1450px) {
-      body.site-mode .event-grid {
-        grid-template-columns:repeat(3, minmax(0, 1fr));
-      }
-    }
 
     .hero {
       position:relative;
@@ -241,76 +215,6 @@
       color:var(--gold);
     }
 
-    /* Category color system */
-    .cat-worship       { --cat-color:#f7bf5b; --cat-soft:rgba(247,191,91,.14); --cat-border:rgba(247,191,91,.42); }
-    .cat-community     { --cat-color:#64c970; --cat-soft:rgba(100,201,112,.14); --cat-border:rgba(100,201,112,.42); }
-    .cat-faith-study   { --cat-color:#b56de0; --cat-soft:rgba(181,109,224,.14); --cat-border:rgba(181,109,224,.42); }
-    .cat-ministry      { --cat-color:#6ea8fe; --cat-soft:rgba(110,168,254,.14); --cat-border:rgba(110,168,254,.42); }
-    .cat-special-event { --cat-color:#ff7a8a; --cat-soft:rgba(255,122,138,.14); --cat-border:rgba(255,122,138,.42); }
-    .cat-youth         { --cat-color:#4fd1c5; --cat-soft:rgba(79,209,197,.14); --cat-border:rgba(79,209,197,.42); }
-    .cat-meetings      { --cat-color:#d9a45f; --cat-soft:rgba(217,164,95,.14); --cat-border:rgba(217,164,95,.42); }
-    .cat-other         { --cat-color:#aeb8bf; --cat-soft:rgba(174,184,191,.12); --cat-border:rgba(174,184,191,.34); }
-
-    .chip.category-chip {
-      border-color:var(--cat-border);
-      background:var(--cat-soft);
-      color:var(--cat-color);
-    }
-    .chip.category-chip:hover {
-      border-color:var(--cat-color);
-      filter:brightness(1.08);
-    }
-    .chip.category-chip.active {
-      border-color:var(--cat-color);
-      background:var(--cat-color);
-      color:#091016;
-    }
-
-    .category-accent {
-      --cat-color:#aeb8bf;
-      --cat-soft:rgba(174,184,191,.12);
-      --cat-border:rgba(174,184,191,.34);
-    }
-
-    .event-card.category-accent {
-      border-left:4px solid var(--cat-color);
-    }
-    .event-card.category-accent:hover {
-      border-left-color:var(--cat-color);
-      border-top-color:var(--cat-border);
-      border-right-color:var(--cat-border);
-      border-bottom-color:var(--cat-border);
-    }
-    .event-card.category-accent .date-rail .month {
-      color:var(--cat-color);
-    }
-
-    .badge.category-badge {
-      background:var(--cat-soft);
-      color:var(--cat-color);
-      border:1px solid var(--cat-border);
-    }
-
-    .featured.category-accent.visible {
-      border-left:4px solid var(--cat-color);
-    }
-    .featured.category-accent .featured-label {
-      background:var(--cat-color);
-      color:#091016;
-    }
-    .featured.category-accent .featured-date .m {
-      color:var(--cat-color);
-    }
-
-    .cal-item.category-accent {
-      background:var(--cat-soft);
-      color:var(--cat-color);
-      box-shadow:inset 3px 0 0 var(--cat-color);
-    }
-    .day-mini.category-accent {
-      border-left:3px solid var(--cat-color);
-    }
-
     .section {
       margin-top:15px;
     }
@@ -381,15 +285,17 @@
       font-size:13px;
     }
     .featured-side {
-      min-height:300px;
+      min-height:260px;
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
       padding:22px;
-      background-color:#111a20;
-      background-repeat:no-repeat;
-      background-size:contain;
-      background-position:center center;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(247,191,91,.22), transparent 45%),
+        radial-gradient(circle at 20% 80%, rgba(134,35,156,.38), transparent 55%),
+        #111a20;
+      background-size:cover;
+      background-position:center;
     }
     .featured-side.has-image::before {
       content:"";
@@ -489,10 +395,8 @@
       grid-column:3;
       grid-row:1;
       min-height:100%;
-      background-color:#111a20;
-      background-repeat:no-repeat;
-      background-size:contain;
-      background-position:center center;
+      background-size:cover;
+      background-position:center;
       border-left:1px solid var(--border);
     }
     .event-card.has-image .event-card-image { display:block; }
@@ -743,11 +647,9 @@
     }
     .modal-image {
       display:none;
-      min-height:360px;
-      background-color:#111a20;
-      background-repeat:no-repeat;
-      background-size:contain;
-      background-position:center center;
+      min-height:210px;
+      background-size:cover;
+      background-position:center;
     }
     .modal-image.visible { display:block; }
     .modal-content { padding:20px; }
@@ -819,37 +721,26 @@
 
     @media (max-width:760px) {
       .page { padding:9px 9px 36px; }
-      body.site-mode .page { padding:10px 10px 38px; }
       .hero { border-radius:18px; padding:24px 16px; }
       .toolbar { top:5px; border-radius:15px; }
       .toolbar-top { grid-template-columns:1fr; }
       .view-switch { width:100%; }
       .view-btn { flex:1; }
       .featured.visible { grid-template-columns:1fr; }
-      .featured-side {
-        min-height:320px;
-        order:-1;
-        background-size:contain;
-        background-position:center center;
-        background-repeat:no-repeat;
-      }
+      .featured-side { min-height:180px; order:-1; }
       .event-grid { grid-template-columns:1fr; }
       .event-card { grid-template-columns:67px minmax(0,1fr); min-height:175px; }
       .event-card.has-image {
         grid-template-columns:67px minmax(0,1fr);
-        grid-template-rows:240px auto;
+        grid-template-rows:145px auto;
       }
       .event-card.has-image .event-card-image {
         display:block;
         grid-column:1 / -1;
         grid-row:1;
-        min-height:240px;
+        min-height:145px;
         border-left:0;
         border-bottom:1px solid var(--border);
-        background-color:#111a20;
-        background-size:contain;
-        background-position:center center;
-        background-repeat:no-repeat;
       }
       .event-card.has-image .date-rail {
         grid-column:1;
@@ -868,14 +759,6 @@
       .detail-grid { grid-template-columns:1fr; }
     }
 
-    @media (max-width:520px) {
-      .modal-image {
-        min-height:300px;
-        background-size:contain;
-        background-position:center center;
-      }
-    }
-
     @media (max-width:390px) {
       .event-card { grid-template-columns:61px minmax(0,1fr); }
       .event-body { padding:13px 11px; }
@@ -886,331 +769,16 @@
       *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
     }
   
-    /* =========================================================
-       BETHEL MAIN-SITE STYLE HEADER
-       Shown only in normal browser/site mode. The installed app
-       and iframe/embed modes keep their existing compact layout.
-       ========================================================= */
-    .site-header {
-      display:block;
-      width:100%;
-      background:#000;
-      color:#fff;
-      border-bottom:1px solid rgba(255,255,255,.04);
-    }
-    body.app-mode .site-header { display:none; }
-
-    .site-header-inner {
-      width:100%;
-      min-height:144px;
-      padding:20px clamp(32px, 4.2vw, 78px);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:36px;
-    }
-
-    .site-brand {
-      display:flex;
-      align-items:center;
-      flex:0 0 auto;
-      text-decoration:none;
-    }
-    .site-brand img {
-      display:block;
-      width:74px;
-      height:92px;
-      object-fit:contain;
-    }
-    .site-brand-fallback {
-      display:none;
-      color:#fff;
-      font-weight:900;
-      line-height:1.05;
-      letter-spacing:.02em;
-      font-size:14px;
-      text-transform:uppercase;
-    }
-
-    .site-nav {
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:30px;
-      margin-left:auto;
-    }
-
-    .site-nav-item {
-      position:relative;
-      flex:0 0 auto;
-    }
-
-    .site-nav-link,
-    .site-nav-toggle {
-      appearance:none;
-      border:0;
-      background:transparent;
-      color:#fff;
-      text-decoration:none;
-      padding:10px 0 9px;
-      font-size:20px;
-      font-weight:400;
-      letter-spacing:.01em;
-      line-height:1.2;
-      cursor:pointer;
-      white-space:nowrap;
-    }
-
-    .site-nav-link:hover,
-    .site-nav-link:focus-visible,
-    .site-nav-toggle:hover,
-    .site-nav-toggle:focus-visible {
-      color:#f7bf5b;
-      outline:none;
-    }
-
-    .site-nav-link.active {
-      border-bottom:1px solid rgba(255,255,255,.82);
-    }
-
-    .site-nav-toggle::after {
-      content:"⌄";
-      display:inline-block;
-      margin-left:5px;
-      transform:translateY(-1px);
-      font-size:14px;
-    }
-
-    .site-dropdown {
-      display:none;
-      position:absolute;
-      right:-12px;
-      top:calc(100% + 7px);
-      width:245px;
-      padding:8px;
-      background:#0b0b0b;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:10px;
-      box-shadow:0 18px 40px rgba(0,0,0,.42);
-      z-index:100;
-    }
-
-    .site-nav-item.open .site-dropdown,
-    .site-nav-item:focus-within .site-dropdown {
-      display:block;
-    }
-
-    .site-dropdown a {
-      display:block;
-      padding:10px 11px;
-      border-radius:7px;
-      color:#eee;
-      text-decoration:none;
-      font-size:14px;
-      line-height:1.25;
-    }
-    .site-dropdown a:hover,
-    .site-dropdown a:focus-visible {
-      background:rgba(255,255,255,.08);
-      color:#f7bf5b;
-      outline:none;
-    }
-
-    .site-menu-button {
-      display:none;
-      width:46px;
-      height:42px;
-      padding:0;
-      border:1px solid rgba(255,255,255,.2);
-      border-radius:9px;
-      background:#080808;
-      color:#fff;
-      font-size:24px;
-      cursor:pointer;
-    }
-
-    /* The public Events subdomain should use the whole browser width. */
-    body:not(.app-mode) .page {
-      width:100%;
-      max-width:none;
-      margin:0;
-      padding:28px clamp(28px, 4vw, 72px) 64px;
-    }
-
-    @media (max-width:1180px) {
-      .site-header-inner {
-        min-height:116px;
-        padding:14px 24px;
-      }
-      .site-brand img {
-        width:62px;
-        height:78px;
-      }
-      .site-nav { gap:20px; }
-      .site-nav-link,
-      .site-nav-toggle { font-size:18px; }
-    }
-
-    @media (max-width:900px) {
-      .site-header-inner {
-        min-height:88px;
-        padding:10px 16px;
-        position:relative;
-      }
-      .site-brand img {
-        width:52px;
-        height:64px;
-      }
-      .site-menu-button {
-        display:block;
-        margin-left:auto;
-      }
-      .site-nav {
-        display:none;
-        position:absolute;
-        top:100%;
-        left:0;
-        right:0;
-        margin:0;
-        padding:8px 16px 16px;
-        flex-direction:column;
-        align-items:stretch;
-        gap:0;
-        background:#000;
-        border-top:1px solid rgba(255,255,255,.08);
-        border-bottom:1px solid rgba(255,255,255,.12);
-        box-shadow:0 18px 30px rgba(0,0,0,.35);
-        z-index:99;
-      }
-      .site-header.menu-open .site-nav { display:flex; }
-      .site-nav-item { width:100%; }
-      .site-nav-link,
-      .site-nav-toggle {
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        width:100%;
-        padding:13px 4px;
-        border-bottom:1px solid rgba(255,255,255,.08);
-        font-size:17px;
-        text-align:left;
-      }
-      .site-nav-link.active {
-        border-bottom-color:#f7bf5b;
-        color:#f7bf5b;
-      }
-      .site-dropdown {
-        position:static;
-        width:100%;
-        margin:0;
-        padding:2px 0 6px 12px;
-        border:0;
-        border-radius:0;
-        box-shadow:none;
-        background:#000;
-      }
-      .site-nav-item:not(.open) .site-dropdown { display:none; }
-      .site-nav-item.open .site-dropdown { display:block; }
-      .site-dropdown a {
-        padding:10px 8px;
-        color:#cbd1d5;
-      }
-    }
-
-    @media (max-width:520px) {
-      body:not(.app-mode) .page {
-        padding:14px 10px 42px;
-      }
+    .btn.saved-event-btn.saved {
+      background:rgba(66,158,64,.16);
+      border-color:rgba(66,158,64,.48);
+      color:#8ee28c;
     }
 
   </style>
 </head>
 
 <body>
-  <script>
-    (function () {
-      var standalone =
-        (window.matchMedia &&
-         window.matchMedia('(display-mode: standalone)').matches) ||
-        window.navigator.standalone === true;
-
-      var embedded = window.self !== window.top;
-
-      document.body.classList.add(standalone && !embedded ? 'app-mode' : 'site-mode');
-      if (embedded) document.body.classList.add('embedded');
-    })();
-  </script>
-
-
-  <header class="site-header" id="bethel-site-header">
-    <div class="site-header-inner">
-      <a class="site-brand" href="https://bethelamelancaster.com/" aria-label="Bethel AME Lancaster home">
-        <img src="/logo.png" alt="Bethel AME Lancaster"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-        <span class="site-brand-fallback">Bethel AME<br>Lancaster</span>
-      </a>
-
-      <button class="site-menu-button" id="site-menu-button" type="button"
-              aria-label="Open website navigation" aria-expanded="false">☰</button>
-
-      <nav class="site-nav" id="site-nav" aria-label="Bethel website navigation">
-        <div class="site-nav-item">
-          <a class="site-nav-link" href="https://bethelamelancaster.com/">Home</a>
-        </div>
-
-        <div class="site-nav-item has-dropdown">
-          <button class="site-nav-toggle" type="button" aria-expanded="false">About</button>
-          <div class="site-dropdown">
-            <a href="https://bethelamelancaster.com/about-our-pastor">About Our Pastor</a>
-            <a href="https://bethelamelancaster.com/our-church-leaders">Our Church Leaders</a>
-            <a href="https://bethelamelancaster.com/our-mission">Our Mission</a>
-            <a href="https://bethelamelancaster.com/our-local-church-history">Our Local Church History</a>
-            <a href="https://bethelamelancaster.com/ame-denomination-history">AME Denomination History</a>
-          </div>
-        </div>
-
-        <div class="site-nav-item has-dropdown">
-          <button class="site-nav-toggle" type="button" aria-expanded="false">Visit</button>
-          <div class="site-dropdown">
-            <a href="https://bethelamelancaster.com/services">Our Services</a>
-            <a href="https://bethelamelancaster.com/watch-live">Watch Live</a>
-            <a href="https://bethelamelancaster.com/food-bank">Food Bank</a>
-            <a href="https://bethelamelancaster.com/contact-us">Directions & Contact</a>
-          </div>
-        </div>
-
-        <div class="site-nav-item">
-          <a class="site-nav-link" href="https://bethelamelancaster.com/living-the-experience">Living the Experience</a>
-        </div>
-
-        <div class="site-nav-item has-dropdown">
-          <button class="site-nav-toggle" type="button" aria-expanded="false">Ministries</button>
-          <div class="site-dropdown">
-            <a href="https://bethelamelancaster.com/services">Worship & Church School</a>
-            <a href="https://bethelamelancaster.com/food-bank">Jean Polite Food Bank</a>
-          </div>
-        </div>
-
-        <div class="site-nav-item">
-          <a class="site-nav-link" href="https://bethelamelancaster.com/contact-us">Contact Us</a>
-        </div>
-
-        <div class="site-nav-item">
-          <a class="site-nav-link active" href="https://events.bethelamelancaster.com/" aria-current="page">Events</a>
-        </div>
-
-        <div class="site-nav-item has-dropdown">
-          <button class="site-nav-toggle" type="button" aria-expanded="false">More</button>
-          <div class="site-dropdown">
-            <a href="https://bethelamelancaster.com/donate">Give</a>
-            <a href="https://bethelamelancaster.com/app">Bethel App</a>
-          </div>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-
   <div class="page">
     <a class="back-to-app" href="/" aria-label="Back to Bethel App">&#8592; Back to Bethel App</a>
 
@@ -1338,13 +906,139 @@
   <script type="module">
     import ICAL from 'https://cdn.jsdelivr.net/npm/ical.js@2.2.1/dist/ical.min.js';
 
+    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
+      authDomain: "bethelapp-f2d4e.firebaseapp.com",
+      projectId: "bethelapp-f2d4e",
+      storageBucket: "bethelapp-f2d4e.firebasestorage.app",
+      messagingSenderId: "512787123423",
+      appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
+    };
+
+    const firebaseApp = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(firebaseApp);
+    const SAVED_EVENTS_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
+
+    let signedInUser = null;
+    const savedEventIds = new Set();
+
+    async function savedEventsRequest(payload) {
+      if (!auth.currentUser) throw new Error('Please sign in to My Bethel first.');
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(SAVED_EVENTS_URL, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${token}`
+        },
+        body:JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success === false) {
+        throw new Error(data.error || 'Saved event request failed.');
+      }
+      return data;
+    }
+
+    async function refreshSavedEventIds() {
+      savedEventIds.clear();
+      if (!auth.currentUser) {
+        updateSavedButtons();
+        return;
+      }
+      try {
+        const data = await savedEventsRequest({ action:'list' });
+        (data.events || []).forEach(ev => savedEventIds.add(String(ev.eventId || ev.id || '')));
+      } catch (e) {
+        console.warn('Could not load saved events:', e);
+      }
+      updateSavedButtons();
+    }
+
+    function updateSavedButtons() {
+      document.querySelectorAll('[data-save-event]').forEach(btn => {
+        const id = btn.getAttribute('data-save-event');
+        const saved = savedEventIds.has(id);
+        btn.classList.toggle('saved', saved);
+        btn.textContent = saved ? '✓ Saved' : '♡ Save Event';
+        btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+      });
+    }
+
+    function eventSavePayload(ev) {
+      const pageUrl = new URL(location.href);
+      pageUrl.search = '';
+      pageUrl.searchParams.set('event', ev.id);
+      return {
+        id:ev.id,
+        title:ev.title,
+        start:ev.start?.toISOString?.() || '',
+        end:ev.end?.toISOString?.() || '',
+        allDay:ev.allDay === true,
+        location:ev.location || '',
+        category:ev.category || '',
+        image:ev.image || '',
+        eventUrl:pageUrl.toString()
+      };
+    }
+
+    async function toggleSavedEvent(ev, button=null) {
+      if (!auth.currentUser) {
+        const goSignIn = confirm('Sign in to My Bethel to save events. Open the app sign-in now?');
+        if (goSignIn) location.href = '/?mybethel=1';
+        return;
+      }
+
+      const alreadySaved = savedEventIds.has(ev.id);
+      if (button) {
+        button.disabled = true;
+        button.textContent = alreadySaved ? 'Removing…' : 'Saving…';
+      }
+
+      try {
+        if (alreadySaved) {
+          await savedEventsRequest({ action:'remove', eventId:ev.id });
+          savedEventIds.delete(ev.id);
+        } else {
+          await savedEventsRequest({ action:'save', event:eventSavePayload(ev) });
+          savedEventIds.add(ev.id);
+        }
+        updateSavedButtons();
+      } catch (e) {
+        alert(e.message || 'Could not update saved event.');
+        updateSavedButtons();
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    function bindSaveButtons() {
+      document.querySelectorAll('[data-save-event]').forEach(btn => {
+        btn.onclick = () => {
+          const ev = eventById(btn.getAttribute('data-save-event'));
+          if (ev) toggleSavedEvent(ev, btn);
+        };
+      });
+      updateSavedButtons();
+    }
+
+    onAuthStateChanged(auth, user => {
+      signedInUser = user || null;
+      refreshSavedEventIds();
+    });
+
+
     const EVENTS_FEED_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
 
-    // Flyer metadata is proxied through Firebase. This keeps the public page
-    // independent of visitors' Google login/multi-account state.
-    const EVENT_IMAGE_FEED_URL =
-      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getEventFlyers';
+    // One-time setup: paste the deployed Google Apps Script Web App URL here.
+    // Staff never need to touch this again. They simply attach a flyer image
+    // to the Google Calendar event.
+    const EVENT_IMAGE_FEED_URL = 'https://script.google.com/macros/s/AKfycbx_TICD7MK8tTZdPYCOyzQINqsN6G53utHKd9E0T4ddKwa83RJ9aftOwlkawh_CC6fc7A/exec';
 
     const state = {
       events: [],
@@ -1367,17 +1061,8 @@
       'Special Event': '✦'
     };
 
-    function categoryClass(category) {
-      const map = {
-        'Worship':'cat-worship',
-        'Community':'cat-community',
-        'Faith & Study':'cat-faith-study',
-        'Ministry':'cat-ministry',
-        'Special Event':'cat-special-event',
-        'Youth':'cat-youth',
-        'Meetings':'cat-meetings'
-      };
-      return map[category] || 'cat-other';
+    if (window.self !== window.top) {
+      document.body.classList.add('embedded');
     }
 
     function esc(s) {
@@ -1701,44 +1386,81 @@
       return { start:now, end:addDays(today, 90) };
     }
 
-    async function loadCalendarAttachmentImages() {
-      try {
-        const response = await fetch(
-          EVENT_IMAGE_FEED_URL + '?t=' + Date.now(),
-          { cache: 'no-store' }
-        );
-
-        if (!response.ok) {
-          throw new Error('Flyer feed returned HTTP ' + response.status);
+    function loadCalendarAttachmentImages() {
+      return new Promise(resolve => {
+        if (!EVENT_IMAGE_FEED_URL ||
+            EVENT_IMAGE_FEED_URL.includes('PASTE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+          resolve({});
+          return;
         }
 
-        const payload = await response.json();
-        const imageMap = {};
+        const callbackName =
+          '__bethelEventImages_' + Math.random().toString(36).slice(2);
 
-        const rows = payload && Array.isArray(payload.events)
-          ? payload.events
-          : [];
+        let finished = false;
+        const cleanup = () => {
+          try { delete window[callbackName]; } catch (_) {}
+          const node = document.getElementById(callbackName);
+          if (node) node.remove();
+        };
 
-        rows.forEach(row => {
-          if (row && row.iCalUID && row.imageUrl) {
-            imageMap[String(row.iCalUID).trim().toLowerCase()] =
-              String(row.imageUrl);
-          }
-        });
+        const timeout = setTimeout(() => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          console.warn('Event image feed timed out.');
+          resolve({});
+        }, 12000);
 
-        return imageMap;
-      } catch (err) {
-        console.warn('Could not load event attachment images:', err);
-        return {};
-      }
+        window[callbackName] = payload => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timeout);
+
+          const imageMap = {};
+          const rows = payload && Array.isArray(payload.events)
+            ? payload.events
+            : [];
+
+          rows.forEach(row => {
+            if (row && row.iCalUID && row.imageUrl) {
+              imageMap[String(row.iCalUID)] = String(row.imageUrl);
+            }
+          });
+
+          cleanup();
+          resolve(imageMap);
+        };
+
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.async = true;
+
+        const separator = EVENT_IMAGE_FEED_URL.includes('?') ? '&' : '?';
+        script.src =
+          EVENT_IMAGE_FEED_URL +
+          separator +
+          'callback=' + encodeURIComponent(callbackName) +
+          '&t=' + Date.now();
+
+        script.onerror = () => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timeout);
+          cleanup();
+          console.warn('Could not load event attachment images.');
+          resolve({});
+        };
+
+        document.head.appendChild(script);
+      });
     }
 
     function applyCalendarAttachmentImages(imageMap) {
       if (!imageMap || typeof imageMap !== 'object') return;
 
       state.events.forEach(ev => {
-        const key = String(ev.uid || '').trim().toLowerCase();
-        const attached = imageMap[key];
+        const attached = imageMap[String(ev.uid || '')];
         if (attached) ev.image = attached;
       });
     }
@@ -1778,10 +1500,7 @@
     }
 
     function categoryBadge(ev) {
-      return '<span class="badge category-badge category-accent ' +
-        categoryClass(ev.category) + '">' +
-        esc((categoryIcons[ev.category] || '•') + ' ' + ev.category) +
-        '</span>';
+      return '<span class="badge">' + esc((categoryIcons[ev.category] || '•') + ' ' + ev.category) + '</span>';
     }
 
     function recurringBadge(ev) {
@@ -1800,7 +1519,7 @@
       const location = ev.location ? '⌖ ' + esc(ev.location) : 'Bethel AME Lancaster';
 
       return `
-        <article class="event-card category-accent ${categoryClass(ev.category)} ${ev.image ? 'has-image' : ''}">
+        <article class="event-card ${ev.image ? 'has-image' : ''}">
           ${ev.image ? `<div class="event-card-image" style="background-image:url('${esc(ev.image)}')" aria-hidden="true"></div>` : ''}
           <div class="date-rail">
             <div class="month">${esc(month)}</div>
@@ -1817,6 +1536,7 @@
             ${ev.description ? `<p class="event-excerpt">${esc(ev.description)}</p>` : ''}
             <div class="card-actions">
               <button class="btn primary" type="button" data-open-event="${ev.id}">Event Details</button>
+              <button class="btn saved-event-btn" type="button" data-save-event="${ev.id}" aria-pressed="false">♡ Save Event</button>
               <a class="btn" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">+ Calendar</a>
             </div>
           </div>
@@ -1850,8 +1570,7 @@
         ? esc(ev.description.length > 260 ? ev.description.slice(0,257) + '…' : ev.description)
         : 'Join us at Bethel. Tap Event Details for everything you need to know.';
 
-      el.className = 'featured category-accent ' + categoryClass(ev.category) +
-        (ev.image ? '' : ' no-image');
+      el.classList.toggle('no-image', !ev.image);
 
       el.innerHTML = `
         <div class="featured-main">
@@ -1910,7 +1629,7 @@
       wrap.innerHTML =
         '<button class="chip active" type="button" data-category="All">All Categories</button>' +
         categories.map(cat =>
-          `<button class="chip category-chip category-accent ${categoryClass(cat)}" type="button" data-category="${esc(cat)}">${esc((categoryIcons[cat] || '•') + ' ' + cat)}</button>`
+          `<button class="chip" type="button" data-category="${esc(cat)}">${esc((categoryIcons[cat] || '•') + ' ' + cat)}</button>`
         ).join('');
 
       wrap.querySelectorAll('[data-category]').forEach(btn => {
@@ -1969,7 +1688,7 @@
                   type="button" data-cal-date="${key}">
             <span class="cal-num">${d.getDate()}</span>
             <span class="cal-items">
-              ${events.slice(0,3).map(ev => `<span class="cal-item category-accent ${categoryClass(ev.category)}">${esc(ev.title)}</span>`).join('')}
+              ${events.slice(0,3).map(ev => `<span class="cal-item">${esc(ev.title)}</span>`).join('')}
               ${events.length > 3 ? `<span class="cal-more">+${events.length-3} more</span>` : ''}
             </span>
           </button>`);
@@ -2012,7 +1731,7 @@
       }
 
       list.innerHTML = events.map(ev => `
-        <button class="day-mini category-accent ${categoryClass(ev.category)}" type="button" data-open-event="${ev.id}">
+        <button class="day-mini" type="button" data-open-event="${ev.id}">
           <strong>${esc(ev.title)}</strong>
           <span>${esc(ev.allDay ? 'All day' : formatTime(ev.start))}${ev.location ? ' · ' + esc(ev.location) : ''}</span>
         </button>`).join('');
@@ -2058,6 +1777,7 @@
       document.querySelectorAll('[data-open-event]').forEach(btn => {
         btn.onclick = () => openEvent(btn.dataset.openEvent);
       });
+      bindSaveButtons();
     }
 
     function openEvent(id, updateUrl=true) {
@@ -2083,7 +1803,8 @@
       }
 
       const actions = [
-        `<a class="btn primary" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">Add to Calendar</a>`
+        `<a class="btn primary" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">Add to Calendar</a>`,
+        `<button class="btn saved-event-btn" type="button" data-save-event="${ev.id}" aria-pressed="${savedEventIds.has(ev.id) ? 'true' : 'false'}">${savedEventIds.has(ev.id) ? '✓ Saved' : '♡ Save Event'}</button>`
       ];
 
       if (ev.location) {
@@ -2098,6 +1819,7 @@
       document.getElementById('modal-actions').innerHTML = actions.join('');
 
       document.getElementById('share-event-btn').onclick = () => shareEvent(ev);
+      bindSaveButtons();
 
       const modal = document.getElementById('event-modal');
       modal.classList.add('open');
@@ -2172,7 +1894,7 @@
       content.style.display = 'none';
 
       try {
-        const url = EVENTS_FEED_URL + (force ? '?refresh=1' : '');
+        const url = EVENTS_FEED_URL + (force ? '?refresh=' + Date.now() : '');
         const response = await fetch(url, { cache: force ? 'no-store' : 'default' });
         if (!response.ok) throw new Error('Calendar feed returned HTTP ' + response.status + '.');
 
@@ -2262,7 +1984,7 @@
       renderCalendar();
     });
 
-    document.getElementById('retry-btn').addEventListener('click',() => loadEvents(false));
+    document.getElementById('retry-btn').addEventListener('click',() => loadEvents(true));
     document.getElementById('modal-close').addEventListener('click',closeModal);
     document.getElementById('event-modal').addEventListener('click',e => {
       if (e.target.id === 'event-modal') closeModal();
@@ -2274,57 +1996,5 @@
     new ResizeObserver(reportHeight).observe(document.body);
     loadEvents();
   </script>
-
-  <script>
-    (function () {
-      const header = document.getElementById('bethel-site-header');
-      const menuButton = document.getElementById('site-menu-button');
-      if (!header || !menuButton) return;
-
-      menuButton.addEventListener('click', function () {
-        const open = header.classList.toggle('menu-open');
-        menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
-        menuButton.textContent = open ? '✕' : '☰';
-      });
-
-      header.querySelectorAll('.site-nav-toggle').forEach(function (button) {
-        button.addEventListener('click', function (event) {
-          event.stopPropagation();
-          const item = button.closest('.site-nav-item');
-          const willOpen = !item.classList.contains('open');
-
-          header.querySelectorAll('.site-nav-item.open').forEach(function (other) {
-            if (other !== item) {
-              other.classList.remove('open');
-              const otherButton = other.querySelector('.site-nav-toggle');
-              if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
-            }
-          });
-
-          item.classList.toggle('open', willOpen);
-          button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        });
-      });
-
-      document.addEventListener('click', function (event) {
-        if (!header.contains(event.target)) {
-          header.querySelectorAll('.site-nav-item.open').forEach(function (item) {
-            item.classList.remove('open');
-            const button = item.querySelector('.site-nav-toggle');
-            if (button) button.setAttribute('aria-expanded', 'false');
-          });
-        }
-      });
-
-      window.addEventListener('resize', function () {
-        if (window.innerWidth > 900) {
-          header.classList.remove('menu-open');
-          menuButton.setAttribute('aria-expanded', 'false');
-          menuButton.textContent = '☰';
-        }
-      });
-    })();
-  </script>
-
 </body>
 </html>

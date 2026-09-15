@@ -710,6 +710,7 @@ body[data-theme="dark"] .analytics-table td{
     <button class="tab" data-tab="giving" data-permission="giving" onclick="switchTab('giving')">&#128181; Giving</button>
     <button class="tab" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
     <button class="tab" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">&#128200; Website Analytics</button>
+    <button class="tab" data-tab="appanalytics" data-permission="websiteAnalytics" onclick="switchTab('appanalytics')">&#128241; App Analytics</button>
     <button class="tab" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">&#128100; Members</button>
     <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Admin Users</button>
   </div>
@@ -1085,6 +1086,71 @@ body[data-theme="dark"] .analytics-table td{
 
 
 
+
+  <!-- App Analytics -->
+  <div class="tab-panel" id="tab-appanalytics">
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:4px;">&#128241; Bethel App Analytics</h2>
+          <p class="empty-note" style="margin-top:0;">
+            Known devices, install signals, app opens, notification permission, and member-account conversion.
+          </p>
+        </div>
+        <button class="btn btn-outline" onclick="loadAppAnalytics()">Refresh</button>
+      </div>
+
+      <div class="stats-grid" style="margin-top:16px;">
+        <div class="stat-card"><div class="stat-num" id="app-known-devices">—</div><div class="stat-label">Known devices</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-installed-devices">—</div><div class="stat-label">Known app installs</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-active7">—</div><div class="stat-label">Active last 7 days</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-active30">—</div><div class="stat-label">Active last 30 days</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-opens">—</div><div class="stat-label">Recorded opens</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-push-granted">—</div><div class="stat-label">Notifications allowed</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-linked-members">—</div><div class="stat-label">Linked to My Bethel</div></div>
+      </div>
+
+      <div class="metric-note" style="margin-top:12px;">
+        PWA browsers do not provide a perfect universal download count. “Known app installs” combines explicit install events with standalone/Home Screen launches where supported.
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="card">
+        <h2>Devices</h2>
+        <div id="app-device-breakdown"><p class="empty-note">Loading…</p></div>
+      </div>
+      <div class="card">
+        <h2>Platforms</h2>
+        <div id="app-platform-breakdown"><p class="empty-note">Loading…</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent App Activity</h2>
+      <div style="overflow-x:auto;">
+        <table class="analytics-table">
+          <thead>
+            <tr>
+              <th>Last active</th>
+              <th>First seen</th>
+              <th>Device</th>
+              <th>Platform</th>
+              <th>Installed</th>
+              <th>Notifications</th>
+              <th>My Bethel</th>
+              <th>Opens</th>
+            </tr>
+          </thead>
+          <tbody id="app-analytics-rows">
+            <tr><td colspan="8" class="empty-note">Open this tab to load app analytics.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="status-msg" id="app-analytics-msg"></div>
+    </div>
+  </div>
+
   <!-- My Bethel Member Analytics -->
   <div class="tab-panel" id="tab-members">
     <div class="card">
@@ -1276,6 +1342,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/completeInitialPasswordChange';
   const MEMBER_ANALYTICS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMemberAnalytics';
+  const APP_ANALYTICS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppAnalytics';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -1462,6 +1530,7 @@ body[data-theme="dark"] .analytics-table td{
     if (name === 'giving') loadGivingHistory();
     if (name === 'livestream') initLivestreamAnalytics();
     if (name === 'website') loadWebsiteAnalytics();
+    if (name === 'appanalytics') loadAppAnalytics();
     if (name === 'members') loadMemberAnalytics();
     if (name === 'users') loadAdminUsers();
   }
@@ -2161,6 +2230,100 @@ body[data-theme="dark"] .analytics-table td{
   }
 
 
+
+
+
+  // ── App Analytics ────────────────────────────────────────────────
+  function appAnalyticsDate(value) {
+    if(!value) return '—';
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString([],{
+      month:'short',day:'numeric',year:'numeric',
+      hour:'numeric',minute:'2-digit'
+    });
+  }
+
+  function setAppMetric(id,value) {
+    const el=document.getElementById(id);
+    if(el) el.textContent=value ?? '—';
+  }
+
+  function renderAppBreakdown(id,items) {
+    const el=document.getElementById(id);
+    if(!el) return;
+    const list=Array.isArray(items) ? items : [];
+    if(!list.length) {
+      el.innerHTML='<p class="empty-note">No data yet.</p>';
+      return;
+    }
+    el.innerHTML=list.map(item=>`
+      <div class="scheduled-item">
+        <div class="item-info">
+          <div class="item-title">${escHtml(item.name || 'Unknown')}</div>
+        </div>
+        <div style="font-weight:bold;font-size:18px;">${Number(item.count || 0)}</div>
+      </div>
+    `).join('');
+  }
+
+  async function loadAppAnalytics() {
+    if(!hasPermission('websiteAnalytics')) return;
+
+    const rows=document.getElementById('app-analytics-rows');
+    const msg=document.getElementById('app-analytics-msg');
+    if(rows) rows.innerHTML='<tr><td colspan="8" class="empty-note">Loading app analytics…</td></tr>';
+    if(msg) {
+      msg.className='status-msg info';
+      msg.textContent='Loading app analytics…';
+    }
+
+    try {
+      const data=await secureAdminRequest(APP_ANALYTICS_URL,{});
+      const s=data.summary || {};
+
+      setAppMetric('app-known-devices',s.knownDevices ?? 0);
+      setAppMetric('app-installed-devices',s.installedDevices ?? 0);
+      setAppMetric('app-active7',s.active7 ?? 0);
+      setAppMetric('app-active30',s.active30 ?? 0);
+      setAppMetric('app-opens',s.totalOpens ?? 0);
+      setAppMetric('app-push-granted',s.pushGranted ?? 0);
+      setAppMetric('app-linked-members',s.linkedMembers ?? 0);
+
+      renderAppBreakdown('app-device-breakdown',data.deviceTypes);
+      renderAppBreakdown('app-platform-breakdown',data.platforms);
+
+      const recent=Array.isArray(data.recent) ? data.recent : [];
+      if(!recent.length) {
+        rows.innerHTML='<tr><td colspan="8" class="empty-note">No app activity has been recorded yet.</td></tr>';
+      } else {
+        rows.innerHTML=recent.map(r=>`
+          <tr>
+            <td>${escHtml(appAnalyticsDate(r.lastSeenAt))}</td>
+            <td>${escHtml(appAnalyticsDate(r.firstSeenAt))}</td>
+            <td>${escHtml(r.deviceType || 'unknown')}</td>
+            <td>${escHtml(r.platform || 'unknown')}</td>
+            <td>${r.installed ? 'Yes' : 'No'}</td>
+            <td>${escHtml(r.notificationPermission || 'unknown')}</td>
+            <td>${r.linkedMember ? 'Yes' : 'No'}</td>
+            <td>${Number(r.openCount || 0)}</td>
+          </tr>
+        `).join('');
+      }
+
+      if(msg) {
+        msg.className='status-msg';
+        msg.textContent='';
+      }
+    } catch(e) {
+      if(rows) rows.innerHTML='<tr><td colspan="8" class="empty-note" style="color:#c53030;">'+escHtml(e.message)+'</td></tr>';
+      if(msg) {
+        msg.className='status-msg error';
+        msg.textContent=e.message || 'Could not load app analytics.';
+      }
+    }
+  }
+  window.loadAppAnalytics=loadAppAnalytics;
 
 
   // ── My Bethel Member Analytics ────────────────────────────────────

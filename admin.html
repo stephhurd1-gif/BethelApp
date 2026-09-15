@@ -1126,6 +1126,35 @@ body[data-theme="dark"] .analytics-table td{
       </div>
     </div>
 
+
+    <div class="card">
+      <h2>Feature Engagement</h2>
+      <div class="stats-grid" style="margin-top:12px;">
+        <div class="stat-card"><div class="stat-num" id="eng-watch">—</div><div class="stat-label">Watch Live clicks</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-give">—</div><div class="stat-label">Give clicks</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-events">—</div><div class="stat-label">Events opened</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-saves">—</div><div class="stat-label">Event saves</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-prayer">—</div><div class="stat-label">Prayer submissions</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-visitor">—</div><div class="stat-label">Visitor submissions</div></div>
+        <div class="stat-card"><div class="stat-num" id="eng-directions">—</div><div class="stat-label">Directions clicks</div></div>
+      </div>
+
+      <div class="feature-grid" style="margin-top:16px;">
+        <div>
+          <h3 style="margin:0 0 10px;">Most Saved Events</h3>
+          <div id="eng-top-saved"><p class="empty-note">No saved-event data yet.</p></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 10px;">Recent Engagement</h3>
+          <div id="eng-recent"><p class="empty-note">No engagement data yet.</p></div>
+        </div>
+      </div>
+
+      <div class="metric-note" style="margin-top:12px;">
+        Privacy note: prayer text, visitor notes, giving amounts, and other sensitive form content are not included in engagement analytics.
+      </div>
+    </div>
+
     <div class="card">
       <h2>Recent App Activity</h2>
       <div style="overflow-x:auto;">
@@ -1344,6 +1373,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMemberAnalytics';
   const APP_ANALYTICS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppAnalytics';
+  const APP_ENGAGEMENT_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppEngagement';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -2292,6 +2323,7 @@ body[data-theme="dark"] .analytics-table td{
 
       renderAppBreakdown('app-device-breakdown',data.deviceTypes);
       renderAppBreakdown('app-platform-breakdown',data.platforms);
+      await loadAppEngagement();
 
       const recent=Array.isArray(data.recent) ? data.recent : [];
       if(!recent.length) {
@@ -2324,6 +2356,58 @@ body[data-theme="dark"] .analytics-table td{
     }
   }
   window.loadAppAnalytics=loadAppAnalytics;
+
+
+
+  async function loadAppEngagement() {
+    const data=await secureAdminRequest(APP_ENGAGEMENT_URL,{});
+    const counts=data.counts || {};
+
+    setAppMetric('eng-watch',counts.watch_live_click ?? 0);
+    setAppMetric('eng-give',counts.give_click ?? 0);
+    setAppMetric('eng-events',counts.events_open ?? 0);
+    setAppMetric('eng-saves',counts.event_save ?? 0);
+    setAppMetric('eng-prayer',counts.prayer_submit ?? 0);
+    setAppMetric('eng-visitor',counts.visitor_submit ?? 0);
+    setAppMetric('eng-directions',counts.directions_click ?? 0);
+
+    const top=document.getElementById('eng-top-saved');
+    const saved=Array.isArray(data.topSavedEvents) ? data.topSavedEvents : [];
+    if(top) {
+      top.innerHTML=saved.length ? saved.map(item=>`
+        <div class="scheduled-item">
+          <div class="item-info">
+            <div class="item-title">${escHtml(item.title || 'Saved event')}</div>
+          </div>
+          <div style="font-weight:bold;">${Number(item.saves || 0)}</div>
+        </div>
+      `).join('') : '<p class="empty-note">No saved-event data yet.</p>';
+    }
+
+    const recentEl=document.getElementById('eng-recent');
+    const recent=Array.isArray(data.recent) ? data.recent.slice(0,10) : [];
+    const labels={
+      watch_live_click:'Watch Live',
+      give_click:'Give',
+      directions_click:'Directions',
+      visitor_submit:'Visitor form',
+      prayer_submit:'Prayer request',
+      event_save:'Event saved',
+      event_unsave:'Event unsaved',
+      events_open:'Events opened'
+    };
+    if(recentEl) {
+      recentEl.innerHTML=recent.length ? recent.map(item=>`
+        <div class="scheduled-item">
+          <div class="item-info">
+            <div class="item-title">${escHtml(labels[item.eventType] || item.eventType)}</div>
+            <div class="item-body">${escHtml(item.eventTitle || appAnalyticsDate(item.createdAt))}</div>
+          </div>
+        </div>
+      `).join('') : '<p class="empty-note">No engagement data yet.</p>';
+    }
+  }
+  window.loadAppEngagement=loadAppEngagement;
 
 
   // ── My Bethel Member Analytics ────────────────────────────────────

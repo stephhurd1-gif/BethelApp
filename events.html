@@ -922,9 +922,70 @@
     const auth = getAuth(firebaseApp);
     const SAVED_EVENTS_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
+    const APP_EVENT_TRACK_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/trackAppEvent';
+    const APP_INSTALL_ID_KEY = 'bethel_app_install_id';
 
     let signedInUser = null;
     const savedEventIds = new Set();
+
+
+    function getEventsInstallId() {
+      let id = localStorage.getItem(APP_INSTALL_ID_KEY);
+      if (!id) {
+        if (crypto.randomUUID) {
+          id = crypto.randomUUID().replace(/-/g,'_');
+        } else {
+          id = 'bethel_' + Date.now().toString(36) + '_' +
+            Math.random().toString(36).slice(2) +
+            Math.random().toString(36).slice(2);
+        }
+        localStorage.setItem(APP_INSTALL_ID_KEY,id);
+      }
+      return id;
+    }
+
+    function eventsDeviceType() {
+      const ua = navigator.userAgent || '';
+      if (/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)) return 'tablet';
+      if (/Mobi|iPhone|Android/i.test(ua)) return 'mobile';
+      return 'desktop';
+    }
+
+    function eventsPlatform() {
+      const ua = navigator.userAgent || '';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS/iPadOS';
+      if (/Android/i.test(ua)) return 'Android';
+      if (/Windows/i.test(ua)) return 'Windows';
+      if (/Macintosh|Mac OS X/i.test(ua)) return 'macOS';
+      if (/CrOS/i.test(ua)) return 'ChromeOS';
+      if (/Linux/i.test(ua)) return 'Linux';
+      return navigator.platform || 'unknown';
+    }
+
+    async function trackEventsEngagement(eventType, ev) {
+      try {
+        const headers = { 'Content-Type':'application/json' };
+        if (auth.currentUser) {
+          headers.Authorization = 'Bearer ' + await auth.currentUser.getIdToken();
+        }
+        await fetch(APP_EVENT_TRACK_URL,{
+          method:'POST',
+          headers,
+          body:JSON.stringify({
+            installId:getEventsInstallId(),
+            eventType,
+            eventId:ev?.id || '',
+            eventTitle:ev?.title || '',
+            platform:eventsPlatform(),
+            deviceType:eventsDeviceType()
+          }),
+          keepalive:true
+        });
+      } catch (e) {
+        console.warn('Event engagement tracking failed:',e);
+      }
+    }
 
     async function savedEventsRequest(payload) {
       if (!auth.currentUser) throw new Error('Please sign in to My Bethel first.');
@@ -1003,9 +1064,11 @@
         if (alreadySaved) {
           await savedEventsRequest({ action:'remove', eventId:ev.id });
           savedEventIds.delete(ev.id);
+          trackEventsEngagement('event_unsave', ev);
         } else {
           await savedEventsRequest({ action:'save', event:eventSavePayload(ev) });
           savedEventIds.add(ev.id);
+          trackEventsEngagement('event_save', ev);
         }
         updateSavedButtons();
       } catch (e) {

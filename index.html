@@ -1859,6 +1859,8 @@
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
     const APP_USER_GIVING_HISTORY_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMyGivingHistory';
+    const APP_USAGE_TRACK_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/trackAppUsage';
 
     let currentMemberProfile = null;
     let memberAuthInitialized = false;
@@ -2309,10 +2311,107 @@
         }
         renderMemberAuthState(user, currentMemberProfile);
         await loadMemberProfile();
+        trackAppUsage('open', isStandaloneApp());
       });
     }
 
     initMemberAuth().catch(err => console.warn('My Bethel auth init failed:', err));
+
+
+    // ── Anonymous app/PWA usage analytics ────────────────────────────
+    const APP_INSTALL_ID_KEY = 'bethel_app_install_id';
+
+    function getAppInstallId() {
+      let id = localStorage.getItem(APP_INSTALL_ID_KEY);
+      if (!id) {
+        if (crypto.randomUUID) {
+          id = crypto.randomUUID().replace(/-/g,'_');
+        } else {
+          id = 'bethel_' + Date.now().toString(36) + '_' +
+            Math.random().toString(36).slice(2) +
+            Math.random().toString(36).slice(2);
+        }
+        localStorage.setItem(APP_INSTALL_ID_KEY, id);
+      }
+      return id;
+    }
+
+    function detectDeviceType() {
+      const ua = navigator.userAgent || '';
+      if (/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)) return 'tablet';
+      if (/Mobi|iPhone|Android/i.test(ua)) return 'mobile';
+      return 'desktop';
+    }
+
+    function detectPlatform() {
+      const ua = navigator.userAgent || '';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS/iPadOS';
+      if (/Android/i.test(ua)) return 'Android';
+      if (/Windows/i.test(ua)) return 'Windows';
+      if (/Macintosh|Mac OS X/i.test(ua)) return 'macOS';
+      if (/CrOS/i.test(ua)) return 'ChromeOS';
+      if (/Linux/i.test(ua)) return 'Linux';
+      return navigator.platform || 'unknown';
+    }
+
+    function detectBrowserFamily() {
+      const ua = navigator.userAgent || '';
+      if (/Edg\//i.test(ua)) return 'Edge';
+      if (/CriOS|Chrome\//i.test(ua)) return 'Chrome';
+      if (/FxiOS|Firefox\//i.test(ua)) return 'Firefox';
+      if (/Safari\//i.test(ua) && !/Chrome|CriOS|Edg\//i.test(ua)) return 'Safari';
+      return 'Other';
+    }
+
+    function isStandaloneApp() {
+      return window.matchMedia?.('(display-mode: standalone)').matches === true ||
+             window.navigator.standalone === true;
+    }
+
+    async function trackAppUsage(eventType='open', installedOverride=false) {
+      try {
+        const payload = {
+          installId:getAppInstallId(),
+          eventType,
+          installed:installedOverride === true,
+          standalone:isStandaloneApp(),
+          platform:detectPlatform(),
+          userAgentFamily:detectBrowserFamily(),
+          deviceType:detectDeviceType(),
+          notificationPermission:
+            ('Notification' in window ? Notification.permission : 'unknown')
+        };
+
+        const headers = { 'Content-Type':'application/json' };
+
+        // Linking to a member is optional and is verified server-side.
+        try {
+          const { auth } = await loadFirebase();
+          if (auth.currentUser) {
+            headers.Authorization = 'Bearer ' + await auth.currentUser.getIdToken();
+          }
+        } catch (_) {}
+
+        await fetch(APP_USAGE_TRACK_URL, {
+          method:'POST',
+          headers,
+          body:JSON.stringify(payload),
+          keepalive:true
+        });
+      } catch (e) {
+        console.warn('App analytics tracking failed:', e);
+      }
+    }
+
+    window.addEventListener('appinstalled', () => {
+      trackAppUsage('installed', true);
+    });
+
+    // A standalone launch is itself a strong install signal on browsers that
+    // do not reliably fire appinstalled (notably iOS).
+    window.addEventListener('load', () => {
+      trackAppUsage('open', isStandaloneApp());
+    });
 
     async function saveSubscriptionToFirestore(subscription) {
       try {

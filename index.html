@@ -1577,6 +1577,7 @@
 
         document.getElementById('prayer-form').style.display = 'none';
         document.getElementById('prayer-success').style.display = 'block';
+        trackAppEvent('prayer_submit');
 
       } catch(e) {
         msg.textContent = 'Something went wrong. Please try again.';
@@ -1669,6 +1670,7 @@
         // Show success message
         document.getElementById('visitor-form').style.display = 'none';
         document.getElementById('visitor-success').classList.add('visible');
+        trackAppEvent('visitor_submit');
 
       } catch(e) {
         msg.textContent = 'Something went wrong. Please try again.';
@@ -1796,6 +1798,7 @@
         const target = btn.getAttribute('data-view');
 
         if (target === 'give') {
+          trackAppEvent('give_click');
           // Use the real top-level giving page rather than an iframe or
           // duplicate form. This is important for Cash App and digital wallets.
           window.location.href = CANONICAL_GIVING_URL;
@@ -1803,6 +1806,7 @@
         }
 
         if (target === 'events') {
+          trackAppEvent('events_open');
           // One canonical events experience for the installed app and website.
           window.location.href = CANONICAL_EVENTS_URL;
           return;
@@ -1810,6 +1814,23 @@
 
         showView(target);
       });
+    });
+
+
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('a,button');
+      if (!link) return;
+
+      const href = String(link.getAttribute('href') || '').toLowerCase();
+      const text = String(link.textContent || '').trim().toLowerCase();
+
+      if (href.includes('/watch-live') || text.includes('watch live') || text === 'open live page') {
+        trackAppEvent('watch_live_click');
+      }
+
+      if (href.includes('maps.google.com') || text.includes('get directions')) {
+        trackAppEvent('directions_click');
+      }
     });
 
     // Firebase + Push notifications
@@ -1861,6 +1882,8 @@
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMyGivingHistory';
     const APP_USAGE_TRACK_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/trackAppUsage';
+    const APP_EVENT_TRACK_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/trackAppEvent';
 
     let currentMemberProfile = null;
     let memberAuthInitialized = false;
@@ -2402,6 +2425,37 @@
         console.warn('App analytics tracking failed:', e);
       }
     }
+
+
+    async function trackAppEvent(eventType, extra={}) {
+      try {
+        const payload = {
+          installId:getAppInstallId(),
+          eventType,
+          platform:detectPlatform(),
+          deviceType:detectDeviceType(),
+          ...extra
+        };
+
+        const headers = { 'Content-Type':'application/json' };
+        try {
+          const { auth } = await loadFirebase();
+          if (auth.currentUser) {
+            headers.Authorization = 'Bearer ' + await auth.currentUser.getIdToken();
+          }
+        } catch (_) {}
+
+        await fetch(APP_EVENT_TRACK_URL, {
+          method:'POST',
+          headers,
+          body:JSON.stringify(payload),
+          keepalive:true
+        });
+      } catch (e) {
+        console.warn('App event tracking failed:', e);
+      }
+    }
+    window.trackAppEvent = trackAppEvent;
 
     window.addEventListener('appinstalled', () => {
       trackAppUsage('installed', true);

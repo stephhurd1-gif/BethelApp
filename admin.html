@@ -628,6 +628,27 @@ body[data-theme="dark"] .analytics-table td{
   flex-wrap:wrap;
 }
 
+
+  .crm-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:12px}
+  .crm-toolbar>div{flex:1;min-width:180px}
+  .crm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .crm-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .crm-form-grid .full{grid-column:1/-1}
+  .crm-member-list{display:grid;gap:10px;margin-top:12px}
+  .crm-member-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card2)}
+  .crm-member-name{font-weight:700}
+  .crm-member-meta{font-size:12px;color:var(--muted);margin-top:3px}
+  .crm-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(247,191,91,.12);font-size:11px;font-weight:700;margin-right:6px}
+  .crm-attendance-list{display:grid;gap:8px;max-height:520px;overflow:auto;margin-top:12px}
+  .crm-checkin-row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:10px}
+  .crm-checkin-row input{width:auto}
+  .crm-modal{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:1200;display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto}
+  .crm-modal.open{display:flex}
+  .crm-modal-card{width:min(820px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+  .crm-section-title{font-size:14px;font-weight:800;margin:20px 0 10px;color:var(--gold)}
+  .crm-two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.crm-grid,.crm-form-grid,.crm-two-col{grid-template-columns:1fr}.crm-form-grid .full{grid-column:auto}}
+
 </style>
 </head>
 <body>
@@ -711,7 +732,8 @@ body[data-theme="dark"] .analytics-table td{
     <button class="tab" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
     <button class="tab" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">&#128200; Website Analytics</button>
     <button class="tab" data-tab="appanalytics" data-permission="websiteAnalytics" onclick="switchTab('appanalytics')">&#128241; App Analytics</button>
-    <button class="tab" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">&#128100; Members</button>
+    <button class="tab" data-tab="crm" data-permission="crm" onclick="switchTab('crm')">&#128203; Church CRM</button>
+    <button class="tab" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">&#128100; App Members</button>
     <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Admin Users</button>
   </div>
 
@@ -1107,7 +1129,7 @@ body[data-theme="dark"] .analytics-table td{
         <div class="stat-card"><div class="stat-num" id="app-active30">—</div><div class="stat-label">Active last 30 days</div></div>
         <div class="stat-card"><div class="stat-num" id="app-opens">—</div><div class="stat-label">Recorded opens</div></div>
         <div class="stat-card"><div class="stat-num" id="app-push-granted">—</div><div class="stat-label">Notifications allowed</div></div>
-        <div class="stat-card"><div class="stat-num" id="app-linked-members">—</div><div class="stat-label">Linked to My Bethel</div></div>
+        <div class="stat-card"><div class="stat-num" id="app-linked-members">—</div><div class="stat-label">Linked to App Member</div></div>
       </div>
 
       <div class="metric-note" style="margin-top:12px;">
@@ -1167,7 +1189,7 @@ body[data-theme="dark"] .analytics-table td{
               <th>Platform</th>
               <th>Installed</th>
               <th>Notifications</th>
-              <th>My Bethel</th>
+              <th>App Member</th>
               <th>Opens</th>
             </tr>
           </thead>
@@ -1180,14 +1202,205 @@ body[data-theme="dark"] .analytics-table td{
     </div>
   </div>
 
+
+  <!-- Church CRM -->
+  <div class="tab-panel" id="tab-crm">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:4px;">&#128203; Church CRM</h2>
+          <p class="empty-note" style="margin-top:0;">Official church member records, households, birthdays, membership dates, and attendance.</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="crmExportCsv()">Export CSV</button>
+          <button class="btn" onclick="openCrmMemberModal()">+ Add Member</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="margin-top:16px;">
+        <div class="stat-card"><div class="stat-num" id="crm-active-members">—</div><div class="stat-label">Active members</div></div>
+        <div class="stat-card"><div class="stat-num" id="crm-prospective">—</div><div class="stat-label">Prospective</div></div>
+        <div class="stat-card"><div class="stat-num" id="crm-households">—</div><div class="stat-label">Households</div></div>
+        <div class="stat-card"><div class="stat-num" id="crm-not-seen">—</div><div class="stat-label">Not seen in 30 days</div></div>
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="card">
+        <h2>Upcoming Birthdays</h2>
+        <div id="crm-birthdays"><p class="empty-note">Loading…</p></div>
+      </div>
+      <div class="card">
+        <h2>Membership Anniversaries</h2>
+        <div id="crm-anniversaries"><p class="empty-note">Loading…</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="btn-row" style="justify-content:flex-start;">
+        <button class="btn" id="crm-view-members-btn" onclick="setCrmView('members')">Members</button>
+        <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
+      </div>
+
+      <div id="crm-members-view">
+        <div class="crm-toolbar">
+          <div>
+            <label>Search members</label>
+            <input id="crm-member-search" type="text" placeholder="Name, email, phone, household…" oninput="renderCrmMembers()">
+          </div>
+          <div style="max-width:210px;">
+            <label>Status</label>
+            <select id="crm-member-status-filter" onchange="renderCrmMembers()">
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="prospective">Prospective</option>
+              <option value="inactive">Inactive</option>
+              <option value="transferred">Transferred</option>
+              <option value="deceased">Deceased</option>
+            </select>
+          </div>
+        </div>
+        <div class="crm-member-list" id="crm-member-list"><p class="empty-note">Loading members…</p></div>
+      </div>
+
+      <div id="crm-attendance-view" style="display:none;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div>
+            <h3 style="margin:0;">Attendance Sessions</h3>
+            <p class="empty-note" style="margin:3px 0 0;">Create a service or event, then check off members who attended.</p>
+          </div>
+          <button class="btn" onclick="openAttendanceSessionModal()">+ New Attendance</button>
+        </div>
+        <div id="crm-attendance-sessions" class="crm-member-list"><p class="empty-note">Loading attendance…</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent Attendance</h2>
+      <div id="crm-recent-attendance"><p class="empty-note">Loading…</p></div>
+    </div>
+  </div>
+
+  <!-- CRM Member Modal -->
+  <div class="crm-modal" id="crm-member-modal" onclick="if(event.target===this) closeCrmMemberModal()">
+    <div class="crm-modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <h2 id="crm-member-modal-title" style="margin:0;">Add Member</h2>
+        <button class="btn btn-outline" onclick="closeCrmMemberModal()">Close</button>
+      </div>
+      <input type="hidden" id="crm-member-id">
+
+      <div class="crm-section-title">Member Information</div>
+      <div class="crm-form-grid">
+        <div><label>First Name *</label><input id="crm-first-name"></div>
+        <div><label>Last Name *</label><input id="crm-last-name"></div>
+        <div><label>Middle Name</label><input id="crm-middle-name"></div>
+        <div><label>Preferred Name</label><input id="crm-preferred-name"></div>
+        <div><label>Phone</label><input id="crm-phone" type="tel"></div>
+        <div><label>Email</label><input id="crm-email" type="email"></div>
+        <div><label>Birthday</label><input id="crm-birthday" type="date"></div>
+        <div><label>Membership Date</label><input id="crm-membership-date" type="date"></div>
+        <div><label>Membership Status</label>
+          <select id="crm-membership-status">
+            <option value="active">Active</option>
+            <option value="prospective">Prospective</option>
+            <option value="inactive">Inactive</option>
+            <option value="transferred">Transferred</option>
+            <option value="deceased">Deceased</option>
+          </select>
+        </div>
+        <div><label>Household / Family</label><input id="crm-household" placeholder="e.g. Hurd Household"></div>
+      </div>
+
+      <div class="crm-section-title">Address</div>
+      <div class="crm-form-grid">
+        <div class="full"><label>Street Address</label><input id="crm-address1"></div>
+        <div class="full"><label>Apartment / Unit</label><input id="crm-address2"></div>
+        <div><label>City</label><input id="crm-city"></div>
+        <div><label>State</label><input id="crm-state" value="PA"></div>
+        <div><label>ZIP</label><input id="crm-zip"></div>
+      </div>
+
+      <div class="crm-section-title">App Member Link</div>
+      <div id="crm-app-link-status" class="empty-note">Save the church member first, then you can link a matching App Member account by email.</div>
+      <div class="btn-row" style="justify-content:flex-start;">
+        <button class="btn btn-outline" id="crm-link-app-btn" onclick="crmLinkAppMember()" style="display:none;">Link Matching App Member</button>
+        <button class="btn btn-outline" id="crm-unlink-app-btn" onclick="crmUnlinkAppMember()" style="display:none;">Unlink App Member</button>
+      </div>
+
+      <div id="crm-member-history-wrap" style="display:none;">
+        <div class="crm-section-title">Attendance History</div>
+        <div id="crm-member-history"><p class="empty-note">No attendance recorded yet.</p></div>
+      </div>
+
+      <div class="status-msg" id="crm-member-msg"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="closeCrmMemberModal()">Cancel</button>
+        <button class="btn" onclick="saveCrmMember()">Save Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Attendance Session Modal -->
+  <div class="crm-modal" id="crm-session-modal" onclick="if(event.target===this) closeAttendanceSessionModal()">
+    <div class="crm-modal-card" style="max-width:620px;">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <h2 style="margin:0;">New Attendance Session</h2>
+        <button class="btn btn-outline" onclick="closeAttendanceSessionModal()">Close</button>
+      </div>
+      <div class="crm-form-grid" style="margin-top:16px;">
+        <div class="full"><label>Service / Event Name *</label><input id="crm-session-title" value="Sunday Worship"></div>
+        <div><label>Date *</label><input id="crm-session-date" type="date"></div>
+        <div><label>Time</label><input id="crm-session-time" type="time" value="09:30"></div>
+        <div class="full"><label>Notes</label><input id="crm-session-notes" placeholder="Optional"></div>
+      </div>
+      <div class="status-msg" id="crm-session-msg"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="closeAttendanceSessionModal()">Cancel</button>
+        <button class="btn" onclick="createAttendanceSession()">Create & Take Attendance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Check-in Modal -->
+  <div class="crm-modal" id="crm-checkin-modal" onclick="if(event.target===this) closeCrmCheckinModal()">
+    <div class="crm-modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <div>
+          <h2 id="crm-checkin-title" style="margin:0;">Attendance</h2>
+          <div class="empty-note" id="crm-checkin-date"></div>
+        </div>
+        <button class="btn btn-outline" onclick="closeCrmCheckinModal()">Close</button>
+      </div>
+      <input type="hidden" id="crm-checkin-session-id">
+
+      <div class="crm-toolbar">
+        <div><label>Find member</label><input id="crm-checkin-search" placeholder="Search by name…" oninput="renderCrmCheckinMembers()"></div>
+        <div style="flex:0 0 auto;min-width:auto;"><button class="btn btn-outline" onclick="crmCheckAllVisible()">Check Visible</button></div>
+        <div style="flex:0 0 auto;min-width:auto;"><button class="btn btn-outline" onclick="crmUncheckAll()">Clear All</button></div>
+      </div>
+      <div id="crm-checkin-members" class="crm-attendance-list"></div>
+
+      <div class="crm-section-title">Visitors / Guests</div>
+      <label>Guest names, one per line</label>
+      <textarea id="crm-guest-names" rows="4" placeholder="Jane Doe&#10;John Smith"></textarea>
+
+      <div class="status-msg" id="crm-checkin-msg"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="closeCrmCheckinModal()">Cancel</button>
+        <button class="btn" onclick="saveCrmAttendance()">Save Attendance</button>
+      </div>
+    </div>
+  </div>
+
   <!-- My Bethel Member Analytics -->
   <div class="tab-panel" id="tab-members">
     <div class="card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
         <div>
-          <h2 style="margin-bottom:4px;">&#128100; My Bethel Members</h2>
+          <h2 style="margin-bottom:4px;">&#128100; App Members</h2>
           <p class="empty-note" style="margin-top:0;">
-            Registered My Bethel accounts and account activity. These numbers are not the same as total PWA installs.
+            Registered app accounts and account activity. These numbers are not the same as total PWA installs.
           </p>
         </div>
         <button class="btn btn-outline" onclick="loadMemberAnalytics()">Refresh</button>
@@ -1375,6 +1588,12 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppAnalytics';
   const APP_ENGAGEMENT_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppEngagement';
+  const CRM_MEMBERS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageChurchMembers';
+  const CRM_ATTENDANCE_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAttendance';
+  const CRM_DASHBOARD_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmDashboard';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -1562,6 +1781,7 @@ body[data-theme="dark"] .analytics-table td{
     if (name === 'livestream') initLivestreamAnalytics();
     if (name === 'website') loadWebsiteAnalytics();
     if (name === 'appanalytics') loadAppAnalytics();
+    if (name === 'crm') loadCrmDashboard();
     if (name === 'members') loadMemberAnalytics();
     if (name === 'users') loadAdminUsers();
   }
@@ -2262,6 +2482,459 @@ body[data-theme="dark"] .analytics-table td{
 
 
 
+
+
+
+  // ── Church CRM ───────────────────────────────────────────────────
+  let crmMembers=[];
+  let crmAttendanceSessions=[];
+  let crmCheckinMembers=[];
+  let crmCurrentMember=null;
+
+  function crmMsg(id,text,type='') {
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.className='status-msg'+(type ? ' '+type : '');
+    el.textContent=text || '';
+  }
+
+  function crmPrettyDate(value) {
+    if(!value) return '—';
+    const raw=String(value);
+    const d=/^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? new Date(raw+'T12:00:00')
+      : new Date(raw);
+    if(Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function crmName(m) {
+    return [m.preferredName || m.firstName,m.lastName].filter(Boolean).join(' ');
+  }
+
+  async function crmRequest(url,payload={}) {
+    return await secureAdminRequest(url,payload);
+  }
+
+  async function loadCrmDashboard() {
+    if(!hasPermission('crm')) return;
+    try {
+      const [dash,members,attendance]=await Promise.all([
+        crmRequest(CRM_DASHBOARD_URL,{}),
+        crmRequest(CRM_MEMBERS_URL,{action:'list'}),
+        crmRequest(CRM_ATTENDANCE_URL,{action:'list'})
+      ]);
+
+      crmMembers=Array.isArray(members.members) ? members.members : [];
+      crmAttendanceSessions=Array.isArray(attendance.sessions) ? attendance.sessions : [];
+
+      const s=dash.summary || {};
+      memberSetMetric('crm-active-members',s.activeMembers ?? 0);
+      memberSetMetric('crm-prospective',s.prospective ?? 0);
+      memberSetMetric('crm-households',s.households ?? 0);
+      memberSetMetric('crm-not-seen',s.notSeen30 ?? 0);
+
+      renderCrmSmallList('crm-birthdays',dash.upcomingBirthdays,'No birthdays in the next 30 days.');
+      renderCrmSmallList('crm-anniversaries',dash.upcomingAnniversaries,'No membership anniversaries in the next 30 days.');
+      renderCrmRecentAttendance(dash.recentAttendance || []);
+      renderCrmMembers();
+      renderAttendanceSessions();
+    } catch(e) {
+      console.error(e);
+      const list=document.getElementById('crm-member-list');
+      if(list) list.innerHTML='<p class="empty-note" style="color:#c53030;">'+escHtml(e.message || 'Could not load CRM.')+'</p>';
+    }
+  }
+  window.loadCrmDashboard=loadCrmDashboard;
+
+  function renderCrmSmallList(id,items,emptyText) {
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(!Array.isArray(items) || !items.length) {
+      el.innerHTML='<p class="empty-note">'+escHtml(emptyText)+'</p>';
+      return;
+    }
+    el.innerHTML=items.map(item=>`
+      <div class="scheduled-item">
+        <div class="item-info">
+          <div class="item-title">${escHtml(item.name || 'Member')}</div>
+          <div class="item-body">${escHtml(crmPrettyDate(item.date))}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderCrmRecentAttendance(items) {
+    const el=document.getElementById('crm-recent-attendance');
+    if(!el) return;
+    if(!Array.isArray(items) || !items.length) {
+      el.innerHTML='<p class="empty-note">No attendance sessions yet.</p>';
+      return;
+    }
+    el.innerHTML=items.map(s=>`
+      <div class="scheduled-item">
+        <div class="item-info">
+          <div class="item-title">${escHtml(s.title || 'Service')}</div>
+          <div class="item-body">${escHtml(crmPrettyDate(s.serviceDate))}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800;">${Number(s.attendanceCount || 0)} members</div>
+          <div class="item-body">${Number(s.guestCount || 0)} guests</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function setCrmView(view) {
+    const members=view==='members';
+    document.getElementById('crm-members-view').style.display=members ? '' : 'none';
+    document.getElementById('crm-attendance-view').style.display=members ? 'none' : '';
+    document.getElementById('crm-view-members-btn').className=members ? 'btn' : 'btn btn-outline';
+    document.getElementById('crm-view-attendance-btn').className=members ? 'btn btn-outline' : 'btn';
+  }
+  window.setCrmView=setCrmView;
+
+  function renderCrmMembers() {
+    const el=document.getElementById('crm-member-list');
+    if(!el) return;
+
+    const q=(document.getElementById('crm-member-search')?.value || '').trim().toLowerCase();
+    const status=document.getElementById('crm-member-status-filter')?.value || 'all';
+
+    let list=crmMembers.filter(m=>{
+      if(status!=='all' && m.membershipStatus!==status) return false;
+      if(q) {
+        const hay=[
+          m.firstName,m.lastName,m.preferredName,m.email,m.phone,m.householdName,
+          m.address1,m.city,m.zip
+        ].join(' ').toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if(!list.length) {
+      el.innerHTML='<p class="empty-note">No members match this view.</p>';
+      return;
+    }
+
+    el.innerHTML=list.map(m=>`
+      <div class="crm-member-row">
+        <div>
+          <div class="crm-member-name">${escHtml(crmName(m) || 'Member')}</div>
+          <div class="crm-member-meta">
+            ${escHtml([m.email,m.phone,m.householdName].filter(Boolean).join(' · ') || 'No contact details')}
+          </div>
+          <div style="margin-top:7px;">
+            <span class="crm-badge">${escHtml((m.membershipStatus || 'active').replace('_',' '))}</span>
+            <span class="crm-badge">${Number(m.attendanceCount || 0)} attendance</span>
+            ${m.linkedAppUid ? '<span class="crm-badge">App Member linked</span>' : ''}
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="editCrmMember('${escHtml(m.id)}')">Open</button>
+      </div>`).join('');
+  }
+  window.renderCrmMembers=renderCrmMembers;
+
+  function clearCrmMemberForm() {
+    [
+      'crm-member-id','crm-first-name','crm-last-name','crm-middle-name','crm-preferred-name',
+      'crm-phone','crm-email','crm-birthday','crm-membership-date','crm-household',
+      'crm-address1','crm-address2','crm-city','crm-zip'
+    ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('crm-state').value='PA';
+    document.getElementById('crm-membership-status').value='active';
+    document.getElementById('crm-app-link-status').textContent='Save the church member first, then you can link a matching App Member account by email.';
+    document.getElementById('crm-link-app-btn').style.display='none';
+    document.getElementById('crm-unlink-app-btn').style.display='none';
+    document.getElementById('crm-member-history-wrap').style.display='none';
+    crmCurrentMember=null;
+    crmMsg('crm-member-msg','');
+  }
+
+  function openCrmMemberModal() {
+    clearCrmMemberForm();
+    document.getElementById('crm-member-modal-title').textContent='Add Member';
+    document.getElementById('crm-member-modal').classList.add('open');
+  }
+  window.openCrmMemberModal=openCrmMemberModal;
+
+  function closeCrmMemberModal() {
+    document.getElementById('crm-member-modal').classList.remove('open');
+  }
+  window.closeCrmMemberModal=closeCrmMemberModal;
+
+  async function editCrmMember(id) {
+    crmMsg('crm-member-msg','Loading member…','info');
+    document.getElementById('crm-member-modal').classList.add('open');
+    try {
+      const data=await crmRequest(CRM_MEMBERS_URL,{action:'get',memberId:id});
+      const m=data.member;
+      crmCurrentMember=m;
+      document.getElementById('crm-member-modal-title').textContent='Member Profile';
+      const values={
+        'crm-member-id':m.id,'crm-first-name':m.firstName,'crm-last-name':m.lastName,
+        'crm-middle-name':m.middleName,'crm-preferred-name':m.preferredName,
+        'crm-phone':m.phone,'crm-email':m.email,'crm-birthday':m.birthday,
+        'crm-membership-date':m.membershipDate,'crm-household':m.householdName,
+        'crm-address1':m.address1,'crm-address2':m.address2,'crm-city':m.city,
+        'crm-state':m.state || 'PA','crm-zip':m.zip
+      };
+      Object.entries(values).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v || ''; });
+      document.getElementById('crm-membership-status').value=m.membershipStatus || 'active';
+
+      const appStatus=document.getElementById('crm-app-link-status');
+      const linkBtn=document.getElementById('crm-link-app-btn');
+      const unlinkBtn=document.getElementById('crm-unlink-app-btn');
+      if(m.linkedAppUid) {
+        appStatus.textContent='Linked to App Member: '+(m.linkedAppEmail || m.email || 'account');
+        linkBtn.style.display='none';
+        unlinkBtn.style.display='';
+      } else {
+        appStatus.textContent=m.email
+          ? 'No App Member is linked. You can look for an App Member using this email.'
+          : 'Add an email address to link a matching App Member.';
+        linkBtn.style.display=m.email ? '' : 'none';
+        unlinkBtn.style.display='none';
+      }
+
+      const history=Array.isArray(data.attendance) ? data.attendance : [];
+      document.getElementById('crm-member-history-wrap').style.display='';
+      document.getElementById('crm-member-history').innerHTML=history.length
+        ? history.map(a=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(a.title)}</div><div class="item-body">${escHtml(crmPrettyDate(a.serviceDate))}</div></div></div>`).join('')
+        : '<p class="empty-note">No attendance recorded yet.</p>';
+
+      crmMsg('crm-member-msg','');
+    } catch(e) {
+      crmMsg('crm-member-msg',e.message || 'Could not load member.','error');
+    }
+  }
+  window.editCrmMember=editCrmMember;
+
+  async function saveCrmMember() {
+    const id=document.getElementById('crm-member-id').value;
+    const member={
+      id,
+      firstName:document.getElementById('crm-first-name').value,
+      lastName:document.getElementById('crm-last-name').value,
+      middleName:document.getElementById('crm-middle-name').value,
+      preferredName:document.getElementById('crm-preferred-name').value,
+      phone:document.getElementById('crm-phone').value,
+      email:document.getElementById('crm-email').value,
+      birthday:document.getElementById('crm-birthday').value,
+      membershipDate:document.getElementById('crm-membership-date').value,
+      membershipStatus:document.getElementById('crm-membership-status').value,
+      householdName:document.getElementById('crm-household').value,
+      address1:document.getElementById('crm-address1').value,
+      address2:document.getElementById('crm-address2').value,
+      city:document.getElementById('crm-city').value,
+      state:document.getElementById('crm-state').value,
+      zip:document.getElementById('crm-zip').value
+    };
+
+    if(crmCurrentMember?.linkedAppUid) {
+      member.linkedAppUid=crmCurrentMember.linkedAppUid;
+      member.linkedAppEmail=crmCurrentMember.linkedAppEmail || '';
+    }
+
+    crmMsg('crm-member-msg','Saving…','info');
+    try {
+      const data=await crmRequest(CRM_MEMBERS_URL,{action:'save',member});
+      crmCurrentMember=data.member;
+      document.getElementById('crm-member-id').value=data.member.id;
+      crmMsg('crm-member-msg','Member saved.','success');
+      await loadCrmDashboard();
+      await editCrmMember(data.member.id);
+    } catch(e) {
+      crmMsg('crm-member-msg',e.message || 'Could not save member.','error');
+    }
+  }
+  window.saveCrmMember=saveCrmMember;
+
+  async function crmLinkAppMember() {
+    const id=document.getElementById('crm-member-id').value;
+    const email=document.getElementById('crm-email').value.trim();
+    if(!id) return crmMsg('crm-member-msg','Save the member first.','error');
+    if(!email) return crmMsg('crm-member-msg','Add an email address first.','error');
+
+    crmMsg('crm-member-msg','Looking for matching App Member…','info');
+    try {
+      const data=await crmRequest(CRM_MEMBERS_URL,{action:'linkapp',memberId:id,email});
+      crmMsg('crm-member-msg','App Member linked.','success');
+      await editCrmMember(id);
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-member-msg',e.message || 'No matching App Member found.','error');
+    }
+  }
+  window.crmLinkAppMember=crmLinkAppMember;
+
+  async function crmUnlinkAppMember() {
+    const id=document.getElementById('crm-member-id').value;
+    if(!id) return;
+    try {
+      await crmRequest(CRM_MEMBERS_URL,{action:'unlinkapp',memberId:id});
+      crmMsg('crm-member-msg','App Member unlinked.','success');
+      await editCrmMember(id);
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-member-msg',e.message || 'Could not unlink App Member.','error');
+    }
+  }
+  window.crmUnlinkAppMember=crmUnlinkAppMember;
+
+  function renderAttendanceSessions() {
+    const el=document.getElementById('crm-attendance-sessions');
+    if(!el) return;
+    if(!crmAttendanceSessions.length) {
+      el.innerHTML='<p class="empty-note">No attendance sessions yet.</p>';
+      return;
+    }
+    el.innerHTML=crmAttendanceSessions.map(s=>`
+      <div class="crm-member-row">
+        <div>
+          <div class="crm-member-name">${escHtml(s.title || 'Service')}</div>
+          <div class="crm-member-meta">${escHtml(crmPrettyDate(s.serviceDate))}${s.serviceTime ? ' · '+escHtml(s.serviceTime) : ''}</div>
+          <div style="margin-top:7px;">
+            <span class="crm-badge">${Number(s.attendanceCount || 0)} members</span>
+            <span class="crm-badge">${Number(s.guestCount || 0)} guests</span>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="openCrmCheckin('${escHtml(s.id)}')">Take Attendance</button>
+      </div>`).join('');
+  }
+
+  function openAttendanceSessionModal() {
+    const today=new Date();
+    const local=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    document.getElementById('crm-session-date').value=local;
+    document.getElementById('crm-session-modal').classList.add('open');
+    crmMsg('crm-session-msg','');
+  }
+  window.openAttendanceSessionModal=openAttendanceSessionModal;
+
+  function closeAttendanceSessionModal() {
+    document.getElementById('crm-session-modal').classList.remove('open');
+  }
+  window.closeAttendanceSessionModal=closeAttendanceSessionModal;
+
+  async function createAttendanceSession() {
+    crmMsg('crm-session-msg','Creating…','info');
+    try {
+      const data=await crmRequest(CRM_ATTENDANCE_URL,{
+        action:'create',
+        title:document.getElementById('crm-session-title').value,
+        serviceDate:document.getElementById('crm-session-date').value,
+        serviceTime:document.getElementById('crm-session-time').value,
+        notes:document.getElementById('crm-session-notes').value
+      });
+      closeAttendanceSessionModal();
+      await loadCrmDashboard();
+      await openCrmCheckin(data.sessionId);
+    } catch(e) {
+      crmMsg('crm-session-msg',e.message || 'Could not create attendance session.','error');
+    }
+  }
+  window.createAttendanceSession=createAttendanceSession;
+
+  async function openCrmCheckin(sessionId) {
+    document.getElementById('crm-checkin-modal').classList.add('open');
+    document.getElementById('crm-checkin-members').innerHTML='<p class="empty-note">Loading members…</p>';
+    crmMsg('crm-checkin-msg','');
+    try {
+      const data=await crmRequest(CRM_ATTENDANCE_URL,{action:'get',sessionId});
+      document.getElementById('crm-checkin-session-id').value=sessionId;
+      document.getElementById('crm-checkin-title').textContent=data.session.title || 'Attendance';
+      document.getElementById('crm-checkin-date').textContent=crmPrettyDate(data.session.serviceDate);
+      document.getElementById('crm-guest-names').value=(data.session.guests || []).join('\n');
+      crmCheckinMembers=Array.isArray(data.members) ? data.members : [];
+      renderCrmCheckinMembers();
+    } catch(e) {
+      crmMsg('crm-checkin-msg',e.message || 'Could not load attendance.','error');
+    }
+  }
+  window.openCrmCheckin=openCrmCheckin;
+
+  function closeCrmCheckinModal() {
+    document.getElementById('crm-checkin-modal').classList.remove('open');
+  }
+  window.closeCrmCheckinModal=closeCrmCheckinModal;
+
+  function renderCrmCheckinMembers() {
+    const el=document.getElementById('crm-checkin-members');
+    if(!el) return;
+    const q=(document.getElementById('crm-checkin-search')?.value || '').trim().toLowerCase();
+    const list=crmCheckinMembers.filter(m=>!q || crmName(m).toLowerCase().includes(q));
+    if(!list.length) {
+      el.innerHTML='<p class="empty-note">No members found.</p>';
+      return;
+    }
+    el.innerHTML=list.map(m=>`
+      <label class="crm-checkin-row" data-crm-checkin-name="${escHtml(crmName(m).toLowerCase())}">
+        <input type="checkbox" data-crm-member-id="${escHtml(m.id)}" ${m.present ? 'checked' : ''}>
+        <span>
+          <strong>${escHtml(crmName(m))}</strong>
+          <span class="crm-member-meta" style="display:block;">${escHtml(m.householdName || m.email || '')}</span>
+        </span>
+      </label>`).join('');
+  }
+  window.renderCrmCheckinMembers=renderCrmCheckinMembers;
+
+  function crmCheckAllVisible() {
+    document.querySelectorAll('#crm-checkin-members input[type="checkbox"]').forEach(cb=>cb.checked=true);
+  }
+  window.crmCheckAllVisible=crmCheckAllVisible;
+
+  function crmUncheckAll() {
+    document.querySelectorAll('#crm-checkin-members input[type="checkbox"]').forEach(cb=>cb.checked=false);
+  }
+  window.crmUncheckAll=crmUncheckAll;
+
+  async function saveCrmAttendance() {
+    const sessionId=document.getElementById('crm-checkin-session-id').value;
+    const checked=[...document.querySelectorAll('#crm-checkin-members input[type="checkbox"]:checked')]
+      .map(cb=>cb.getAttribute('data-crm-member-id'));
+    const guests=document.getElementById('crm-guest-names').value
+      .split('\n').map(v=>v.trim()).filter(Boolean);
+
+    crmMsg('crm-checkin-msg','Saving attendance…','info');
+    try {
+      const data=await crmRequest(CRM_ATTENDANCE_URL,{
+        action:'savecheckins',
+        sessionId,
+        presentMemberIds:checked,
+        guests
+      });
+      crmMsg('crm-checkin-msg',`Saved: ${data.attendanceCount} members and ${data.guestCount} guests.`,'success');
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-checkin-msg',e.message || 'Could not save attendance.','error');
+    }
+  }
+  window.saveCrmAttendance=saveCrmAttendance;
+
+  function crmExportCsv() {
+    const headers=[
+      'First Name','Last Name','Preferred Name','Email','Phone','Birthday','Membership Date',
+      'Membership Status','Household','Address 1','Address 2','City','State','ZIP',
+      'Attendance Count','Last Attendance','App Member Linked'
+    ];
+    const rows=crmMembers.map(m=>[
+      m.firstName,m.lastName,m.preferredName,m.email,m.phone,m.birthday,m.membershipDate,
+      m.membershipStatus,m.householdName,m.address1,m.address2,m.city,m.state,m.zip,
+      m.attendanceCount,m.lastAttendanceAt,m.linkedAppUid ? 'Yes' : 'No'
+    ]);
+    const esc=v=>'"'+String(v ?? '').replace(/"/g,'""')+'"';
+    const csv=[headers,...rows].map(row=>row.map(esc).join(',')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='bethel-church-crm-members.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+  window.crmExportCsv=crmExportCsv;
 
 
   // ── App Analytics ────────────────────────────────────────────────

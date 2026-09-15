@@ -687,6 +687,55 @@
       color:#aaa;
     }
 
+
+    .saved-event-list { display:grid; gap:10px; }
+    .saved-event-item {
+      border:1px solid rgba(255,255,255,.09);
+      background:rgba(255,255,255,.045);
+      border-radius:14px;
+      padding:12px;
+    }
+    .saved-event-title {
+      color:var(--white);
+      font-size:14px;
+      font-weight:bold;
+      margin-bottom:5px;
+    }
+    .saved-event-meta {
+      color:#aaa;
+      font-size:12px;
+      line-height:1.5;
+    }
+    .saved-event-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .saved-event-actions a,
+    .saved-event-actions button {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:8px 11px;
+      font:inherit;
+      font-size:12px;
+      font-weight:bold;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .saved-event-open {
+      background:var(--gold);
+      color:var(--black);
+      border:0;
+    }
+    .saved-event-remove {
+      background:rgba(255,255,255,.06);
+      color:#ddd;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
   </style>
 </head>
 <body>
@@ -827,8 +876,18 @@
           <button class="member-secondary" type="button" onclick="memberSignOut()">Sign Out</button>
         </div>
 
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
+            <h3 style="margin:0;color:var(--gold);font-size:18px;">Saved Events</h3>
+            <button class="member-link" type="button" onclick="loadSavedEvents()">Refresh</button>
+          </div>
+          <div id="member-saved-events">
+            <div class="small-note">Loading saved events…</div>
+          </div>
+        </div>
+
         <div class="small-note" style="margin-top:16px;">
-          Saved events and giving history will appear here as My Bethel features are added.
+          Giving history will be added next and will only link after your email is verified.
         </div>
       </div>
     </div>
@@ -1717,6 +1776,8 @@
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAppUserProfile';
     const APP_USER_PROFILE_SAVE_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/saveAppUserProfile';
+    const APP_USER_SAVED_EVENTS_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
 
     let currentMemberProfile = null;
     let memberAuthInitialized = false;
@@ -1821,6 +1882,7 @@
         currentMemberProfile = data.profile || null;
         const { auth } = await loadFirebase();
         renderMemberAuthState(auth.currentUser, currentMemberProfile);
+        await loadSavedEvents();
       } catch (e) {
         console.warn('My Bethel profile load failed:', e);
         const { auth } = await loadFirebase();
@@ -1828,6 +1890,71 @@
         memberSetMsg('member-profile-msg', e.message || 'Could not load profile.', 'error');
       }
     }
+
+
+    function formatSavedEventDate(value, allDay=false) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '';
+      return new Intl.DateTimeFormat('en-US', {
+        weekday:'short',
+        month:'short',
+        day:'numeric',
+        year:'numeric',
+        ...(allDay ? {} : { hour:'numeric', minute:'2-digit' })
+      }).format(d);
+    }
+
+    async function loadSavedEvents() {
+      const container = document.getElementById('member-saved-events');
+      if (!container) return;
+      container.innerHTML = '<div class="small-note">Loading saved events…</div>';
+
+      try {
+        const data = await memberApi(APP_USER_SAVED_EVENTS_URL, { action:'list' });
+        const events = Array.isArray(data.events) ? data.events : [];
+
+        if (!events.length) {
+          container.innerHTML =
+            '<div class="small-note">You have not saved any events yet. Open Events and tap “Save Event” on anything you want to remember.</div>';
+          return;
+        }
+
+        container.innerHTML = '<div class="saved-event-list">' + events.map(ev => {
+          const date = formatSavedEventDate(ev.start, ev.allDay === true);
+          const meta = [date, ev.location || ''].filter(Boolean).join(' · ');
+          const url = ev.eventUrl || ('/events.html?event=' + encodeURIComponent(ev.eventId || ''));
+          return `<div class="saved-event-item">
+            <div class="saved-event-title">${escHtml(ev.title || 'Saved Event')}</div>
+            <div class="saved-event-meta">${escHtml(meta)}</div>
+            <div class="saved-event-actions">
+              <a class="saved-event-open" href="${escHtml(url)}">Open Event</a>
+              <button class="saved-event-remove" type="button" data-remove-saved-event="${escHtml(ev.eventId || '')}">Remove</button>
+            </div>
+          </div>`;
+        }).join('') + '</div>';
+
+        container.querySelectorAll('[data-remove-saved-event]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const eventId = btn.getAttribute('data-remove-saved-event');
+            btn.disabled = true;
+            btn.textContent = 'Removing…';
+            try {
+              await memberApi(APP_USER_SAVED_EVENTS_URL, { action:'remove', eventId });
+              await loadSavedEvents();
+            } catch (e) {
+              btn.disabled = false;
+              btn.textContent = 'Remove';
+              memberSetMsg('member-profile-msg', e.message || 'Could not remove event.', 'error');
+            }
+          });
+        });
+      } catch (e) {
+        container.innerHTML =
+          '<div class="small-note" style="color:#fc8181;">Could not load saved events.</div>';
+      }
+    }
+    window.loadSavedEvents = loadSavedEvents;
 
     async function memberSignIn(event) {
       event.preventDefault();

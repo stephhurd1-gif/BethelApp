@@ -736,6 +736,76 @@
       border:1px solid rgba(255,255,255,.10);
     }
 
+
+    .giving-history-summary {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .giving-summary-box {
+      border-radius:14px;
+      padding:12px;
+      background:rgba(247,191,91,.07);
+      border:1px solid rgba(247,191,91,.18);
+    }
+    .giving-summary-label {
+      font-size:11px;
+      color:#999;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:4px;
+    }
+    .giving-summary-value {
+      color:var(--gold);
+      font-size:19px;
+      font-weight:bold;
+    }
+    .giving-history-list { display:grid; gap:10px; }
+    .giving-history-item {
+      border:1px solid rgba(255,255,255,.09);
+      background:rgba(255,255,255,.045);
+      border-radius:14px;
+      padding:12px;
+    }
+    .giving-history-top {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .giving-history-amount {
+      color:var(--gold);
+      font-size:17px;
+      font-weight:bold;
+      white-space:nowrap;
+    }
+    .giving-history-category {
+      color:var(--white);
+      font-size:14px;
+      font-weight:bold;
+    }
+    .giving-history-meta {
+      color:#999;
+      font-size:12px;
+      line-height:1.5;
+      margin-top:5px;
+    }
+    .giving-status {
+      display:inline-block;
+      margin-top:7px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      color:#ccc;
+      font-size:11px;
+      font-weight:bold;
+    }
+    .giving-status.completed { background:rgba(66,158,64,.15); color:#8ee28c; }
+    .giving-status.pending { background:rgba(247,191,91,.12); color:var(--gold); }
+    .giving-status.refunded,
+    .giving-status.failed { background:rgba(255,77,79,.12); color:#fc8181; }
+
   </style>
 </head>
 <body>
@@ -886,8 +956,17 @@
           </div>
         </div>
 
-        <div class="small-note" style="margin-top:16px;">
-          Giving history will be added next and will only link after your email is verified.
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
+            <h3 style="margin:0;color:var(--gold);font-size:18px;">Giving History</h3>
+            <button class="member-link" type="button" onclick="loadMyGivingHistory()">Refresh</button>
+          </div>
+          <div id="member-giving-history">
+            <div class="small-note">Loading giving history…</div>
+          </div>
+          <div class="button-row" style="margin-top:12px;">
+            <a class="member-secondary" href="/give.html" style="text-decoration:none;text-align:center;">Give Now</a>
+          </div>
         </div>
       </div>
     </div>
@@ -1778,6 +1857,8 @@
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/saveAppUserProfile';
     const APP_USER_SAVED_EVENTS_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
+    const APP_USER_GIVING_HISTORY_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getMyGivingHistory';
 
     let currentMemberProfile = null;
     let memberAuthInitialized = false;
@@ -1883,6 +1964,7 @@
         const { auth } = await loadFirebase();
         renderMemberAuthState(auth.currentUser, currentMemberProfile);
         await loadSavedEvents();
+        await loadMyGivingHistory();
       } catch (e) {
         console.warn('My Bethel profile load failed:', e);
         const { auth } = await loadFirebase();
@@ -1955,6 +2037,126 @@
       }
     }
     window.loadSavedEvents = loadSavedEvents;
+
+
+    function formatGivingDate(value) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '';
+      return new Intl.DateTimeFormat('en-US', {
+        month:'short',
+        day:'numeric',
+        year:'numeric'
+      }).format(d);
+    }
+
+    function givingMethodLabel(value) {
+      const key = String(value || '').toLowerCase();
+      const labels = {
+        card:'Card',
+        apple_pay:'Apple Pay',
+        google_pay:'Google Pay',
+        cash_app:'Cash App Pay',
+        ach:'Bank Account / ACH',
+        bank_account:'Bank Account / ACH'
+      };
+      return labels[key] || (value ? String(value).replace(/_/g,' ') : 'Payment');
+    }
+
+    function givingStatusInfo(gift) {
+      if (gift.refunded) return { label:'Refunded', cls:'refunded' };
+      const status = String(gift.status || '').toUpperCase();
+      if (status === 'COMPLETED' || status === 'APPROVED') {
+        return { label:'Completed', cls:'completed' };
+      }
+      if (status === 'PENDING') return { label:'Pending', cls:'pending' };
+      if (status === 'FAILED' || status === 'CANCELED') {
+        return { label:status === 'FAILED' ? 'Failed' : 'Canceled', cls:'failed' };
+      }
+      return { label:status || 'Recorded', cls:'' };
+    }
+
+    async function loadMyGivingHistory() {
+      const container = document.getElementById('member-giving-history');
+      if (!container) return;
+
+      const { auth } = await loadFirebase();
+      const user = auth.currentUser;
+      if (!user) {
+        container.innerHTML = '<div class="small-note">Sign in to view your giving history.</div>';
+        return;
+      }
+
+      if (!user.emailVerified) {
+        container.innerHTML = `
+          <div class="small-note">
+            For your privacy, giving history is available only after your email is verified.
+            Check your inbox for the verification message, then return here and refresh.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = '<div class="small-note">Loading giving history…</div>';
+
+      try {
+        const data = await memberApi(APP_USER_GIVING_HISTORY_URL, {});
+        const gifts = Array.isArray(data.gifts) ? data.gifts : [];
+        const total = Number(data.summary?.total || 0);
+
+        if (!gifts.length) {
+          container.innerHTML = `
+            <div class="small-note">
+              No online gifts were found for <strong>${escHtml(user.email || '')}</strong>.
+              Gifts appear here when the email used for giving matches your verified My Bethel email.
+            </div>`;
+          return;
+        }
+
+        const items = gifts.map(gift => {
+          const status = givingStatusInfo(gift);
+          const date = formatGivingDate(gift.givenAt);
+          const method = givingMethodLabel(gift.paymentMethod);
+          const recurrence = gift.recurring
+            ? ' · ' + (gift.frequency ? gift.frequency.charAt(0).toUpperCase() + gift.frequency.slice(1) : 'Recurring')
+            : '';
+          return `<div class="giving-history-item">
+            <div class="giving-history-top">
+              <div>
+                <div class="giving-history-category">${escHtml(gift.category || 'Gift')}</div>
+                <div class="giving-history-meta">${escHtml([date, method].filter(Boolean).join(' · ') + recurrence)}</div>
+              </div>
+              <div class="giving-history-amount">$${Number(gift.amount || 0).toFixed(2)}</div>
+            </div>
+            <span class="giving-status ${status.cls}">${escHtml(status.label)}</span>
+          </div>`;
+        }).join('');
+
+        container.innerHTML = `
+          <div class="giving-history-summary">
+            <div class="giving-summary-box">
+              <div class="giving-summary-label">Matched gifts</div>
+              <div class="giving-summary-value">${gifts.length}</div>
+            </div>
+            <div class="giving-summary-box">
+              <div class="giving-summary-label">Recorded total</div>
+              <div class="giving-summary-value">$${total.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="giving-history-list">${items}</div>
+          <div class="small-note" style="margin-top:10px;">
+            This history reflects online gifts recorded through Bethel's giving system and is not an official tax statement.
+          </div>`;
+      } catch (e) {
+        if (String(e.message || '').toLowerCase().includes('verify')) {
+          container.innerHTML =
+            '<div class="small-note">Please verify your email before viewing giving history.</div>';
+        } else {
+          container.innerHTML =
+            '<div class="small-note" style="color:#fc8181;">Could not load giving history right now.</div>';
+        }
+      }
+    }
+    window.loadMyGivingHistory = loadMyGivingHistory;
 
     async function memberSignIn(event) {
       event.preventDefault();
@@ -2077,7 +2279,7 @@
         const { auth, sendEmailVerification } = await loadFirebase();
         if (!auth.currentUser) throw new Error('Please sign in.');
         await sendEmailVerification(auth.currentUser);
-        memberSetMsg('member-profile-msg', 'Verification email sent.', 'success');
+        memberSetMsg('member-profile-msg', 'Verification email sent. After you verify, reopen My Bethel or refresh the app to unlock giving history.', 'success');
       } catch (e) {
         memberSetMsg('member-profile-msg', e.message || 'Could not send verification email.', 'error');
       }

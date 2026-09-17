@@ -1352,7 +1352,12 @@ body[data-theme="dark"] .analytics-table td{
           </select>
         </div>
         <div><label>Household / Family</label>
-          <select id="crm-household-id" onchange="crmMemberHouseholdChanged()"><option value="">No household</option></select>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="crm-household-id" onchange="crmMemberHouseholdChanged()" style="flex:1;">
+              <option value="">No household</option>
+            </select>
+            <button type="button" class="btn btn-outline" onclick="openCrmHouseholdModalForMember()" style="white-space:nowrap;">+ New Household</button>
+          </div>
           <input id="crm-household" type="hidden">
         </div>
       </div>
@@ -2566,6 +2571,7 @@ body[data-theme="dark"] .analytics-table td{
   let crmAttendanceReport=null;
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
+  let crmHouseholdReturnToMember=false;
 
   function crmMsg(id,text,type='') {
     const el=document.getElementById(id);
@@ -2899,7 +2905,34 @@ body[data-theme="dark"] .analytics-table td{
   }
   window.renderCrmHouseholds=renderCrmHouseholds;
 
+  function openCrmHouseholdModalForMember() {
+    crmHouseholdReturnToMember=true;
+    openCrmHouseholdModal();
+
+    // Make data entry faster by suggesting a household name from the member's last name.
+    const lastName=(document.getElementById('crm-last-name')?.value || '').trim();
+    if(lastName) document.getElementById('crm-household-name').value=lastName+' Household';
+
+    // If the member form already has an address entered, carry it into the new household.
+    const fieldMap={
+      'crm-household-address1':'crm-address1',
+      'crm-household-address2':'crm-address2',
+      'crm-household-city':'crm-city',
+      'crm-household-state':'crm-state',
+      'crm-household-zip':'crm-zip',
+      'crm-household-phone':'crm-phone',
+      'crm-household-email':'crm-email'
+    };
+    Object.entries(fieldMap).forEach(([householdId,memberId])=>{
+      const householdField=document.getElementById(householdId);
+      const memberField=document.getElementById(memberId);
+      if(householdField && memberField && memberField.value) householdField.value=memberField.value;
+    });
+  }
+  window.openCrmHouseholdModalForMember=openCrmHouseholdModalForMember;
+
   function openCrmHouseholdModal() {
+    if(!crmHouseholdReturnToMember) crmHouseholdReturnToMember=false;
     ['crm-household-record-id','crm-household-name','crm-household-phone','crm-household-email','crm-household-address1','crm-household-address2','crm-household-city','crm-household-zip','crm-household-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     document.getElementById('crm-household-state').value='PA';
     document.getElementById('crm-household-modal-title').textContent='Add Household';
@@ -2909,7 +2942,10 @@ body[data-theme="dark"] .analytics-table td{
   }
   window.openCrmHouseholdModal=openCrmHouseholdModal;
 
-  function closeCrmHouseholdModal(){document.getElementById('crm-household-modal').classList.remove('open');}
+  function closeCrmHouseholdModal(){
+    document.getElementById('crm-household-modal').classList.remove('open');
+    crmHouseholdReturnToMember=false;
+  }
   window.closeCrmHouseholdModal=closeCrmHouseholdModal;
 
   async function editCrmHousehold(id) {
@@ -2928,14 +2964,51 @@ body[data-theme="dark"] .analytics-table td{
   window.editCrmHousehold=editCrmHousehold;
 
   async function saveCrmHousehold() {
-    const household={id:document.getElementById('crm-household-record-id').value,name:document.getElementById('crm-household-name').value,primaryPhone:document.getElementById('crm-household-phone').value,primaryEmail:document.getElementById('crm-household-email').value,address1:document.getElementById('crm-household-address1').value,address2:document.getElementById('crm-household-address2').value,city:document.getElementById('crm-household-city').value,state:document.getElementById('crm-household-state').value,zip:document.getElementById('crm-household-zip').value,notes:document.getElementById('crm-household-notes').value};
+    const household={
+      id:document.getElementById('crm-household-record-id').value,
+      name:document.getElementById('crm-household-name').value,
+      primaryPhone:document.getElementById('crm-household-phone').value,
+      primaryEmail:document.getElementById('crm-household-email').value,
+      address1:document.getElementById('crm-household-address1').value,
+      address2:document.getElementById('crm-household-address2').value,
+      city:document.getElementById('crm-household-city').value,
+      state:document.getElementById('crm-household-state').value,
+      zip:document.getElementById('crm-household-zip').value,
+      notes:document.getElementById('crm-household-notes').value
+    };
+
     crmMsg('crm-household-msg','Saving…','info');
+
     try {
       const data=await crmRequest(CRM_HOUSEHOLDS_URL,{action:'save',household});
+      const newHousehold=data.household;
+      const returningToMember=crmHouseholdReturnToMember;
+
       await loadCrmDashboard();
-      await editCrmHousehold(data.household.id);
-      crmMsg('crm-household-msg','Household saved.','success');
-    } catch(e){crmMsg('crm-household-msg',e.message||'Could not save household.','error');}
+
+      if(returningToMember) {
+        crmHouseholdReturnToMember=false;
+        closeCrmHouseholdModal();
+
+        populateCrmHouseholdOptions();
+        const select=document.getElementById('crm-household-id');
+        if(select) select.value=newHousehold.id;
+
+        document.getElementById('crm-household').value=newHousehold.name || '';
+        crmMemberHouseholdChanged();
+
+        crmMsg(
+          'crm-member-msg',
+          (newHousehold.name || 'New household')+' was created and selected for this member.',
+          'success'
+        );
+      } else {
+        await editCrmHousehold(newHousehold.id);
+        crmMsg('crm-household-msg','Household saved.','success');
+      }
+    } catch(e) {
+      crmMsg('crm-household-msg',e.message || 'Could not save household.','error');
+    }
   }
   window.saveCrmHousehold=saveCrmHousehold;
 

@@ -649,6 +649,109 @@ body[data-theme="dark"] .analytics-table td{
   .crm-two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:760px){.crm-grid,.crm-form-grid,.crm-two-col{grid-template-columns:1fr}.crm-form-grid .full{grid-column:auto}}
 
+
+  .admin-menu-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
+    align-items:center;
+  }
+  .admin-menu-group{
+    position:relative;
+  }
+  .admin-menu-button{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:9px 15px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.12);
+    background:transparent;
+    color:#aaa;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .admin-menu-button:hover,
+  .admin-menu-button.active,
+  .admin-menu-group.open .admin-menu-button{
+    color:var(--gold);
+    border-color:rgba(247,191,91,.55);
+    background:rgba(247,191,91,.08);
+  }
+  .menu-caret{
+    font-size:10px;
+    transition:transform .18s ease;
+  }
+  .admin-menu-group.open .menu-caret{
+    transform:rotate(180deg);
+  }
+  .admin-dropdown{
+    display:none;
+    position:absolute;
+    top:calc(100% + 7px);
+    left:0;
+    z-index:950;
+    min-width:205px;
+    padding:7px;
+    border:1px solid var(--border);
+    border-radius:13px;
+    background:var(--card);
+    box-shadow:0 18px 45px rgba(0,0,0,.28);
+  }
+  .admin-menu-group.open .admin-dropdown{
+    display:block;
+  }
+  .admin-dropdown .tab.admin-dropdown-item{
+    display:block;
+    width:100%;
+    text-align:left;
+    margin:0;
+    padding:10px 11px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:var(--text);
+    white-space:nowrap;
+    font-size:13px;
+    font-weight:700;
+  }
+  .admin-dropdown .tab.admin-dropdown-item:hover{
+    background:rgba(247,191,91,.10);
+    color:var(--gold);
+  }
+  .admin-dropdown .tab.admin-dropdown-item.active{
+    background:rgba(247,191,91,.16);
+    color:var(--gold);
+  }
+  @media(max-width:760px){
+    .admin-menu-bar{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .admin-menu-group{
+      min-width:0;
+    }
+    .admin-menu-button{
+      width:100%;
+      justify-content:space-between;
+    }
+    .admin-dropdown{
+      position:absolute;
+      min-width:100%;
+      width:max-content;
+      max-width:min(290px,calc(100vw - 28px));
+    }
+    .admin-menu-group:nth-child(even) .admin-dropdown{
+      left:auto;
+      right:0;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -721,20 +824,55 @@ body[data-theme="dark"] .analytics-table td{
   </div>
 
   <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" data-tab="send" data-permission="notifications" onclick="switchTab('send')">Send Now</button>
-    <button class="tab" data-tab="schedule" data-permission="notifications" onclick="switchTab('schedule')">Schedule</button>
-    <button class="tab" data-tab="queue" data-permission="notifications" onclick="switchTab('queue')">Scheduled Queue</button>
-    <button class="tab" data-tab="announcements" data-permission="announcements" onclick="switchTab('announcements')">Announcements</button>
-    <button class="tab" data-tab="visitors" data-permission="visitors" onclick="switchTab('visitors')">Visitors</button>
-    <button class="tab" data-tab="prayer" data-permission="prayer" onclick="switchTab('prayer')">&#128591; Prayer</button>
-    <button class="tab" data-tab="giving" data-permission="giving" onclick="switchTab('giving')">&#128181; Giving</button>
-    <button class="tab" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">&#128250; Livestream Analytics</button>
-    <button class="tab" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">&#128200; Website Analytics</button>
-    <button class="tab" data-tab="appanalytics" data-permission="websiteAnalytics" onclick="switchTab('appanalytics')">&#128241; App Analytics</button>
-    <button class="tab" data-tab="crm" data-permission="crm" onclick="switchTab('crm')">&#128203; Church CRM</button>
-    <button class="tab" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">&#128100; App Members</button>
-    <button class="tab" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">&#128101; Admin Users</button>
+  <div class="admin-menu-bar">
+    <div class="admin-menu-group" data-menu-group="app">
+      <button class="admin-menu-button active" type="button" onclick="toggleAdminMenu('app', event)">App <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item active" data-tab="send" data-permission="notifications" onclick="switchTab('send')">Send Now</button>
+        <button class="tab admin-dropdown-item" data-tab="schedule" data-permission="notifications" onclick="switchTab('schedule')">Schedule</button>
+        <button class="tab admin-dropdown-item" data-tab="queue" data-permission="notifications" onclick="switchTab('queue')">Scheduled Queue</button>
+        <button class="tab admin-dropdown-item" data-tab="announcements" data-permission="announcements" onclick="switchTab('announcements')">Announcements</button>
+        <button class="tab admin-dropdown-item" data-tab="members" data-permission="manageUsers" onclick="switchTab('members')">App Members</button>
+      </div>
+    </div>
+
+    <div class="admin-menu-group" data-menu-group="analytics">
+      <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('analytics', event)">Analytics <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item" data-tab="appanalytics" data-permission="websiteAnalytics" onclick="switchTab('appanalytics')">App Analytics</button>
+        <button class="tab admin-dropdown-item" data-tab="livestream" data-permission="livestream" onclick="switchTab('livestream')">Livestream Analytics</button>
+        <button class="tab admin-dropdown-item" data-tab="website" data-permission="websiteAnalytics" onclick="switchTab('website')">Website Analytics</button>
+      </div>
+    </div>
+
+    <div class="admin-menu-group" data-menu-group="forms">
+      <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('forms', event)">Forms <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item" data-tab="visitors" data-permission="visitors" onclick="switchTab('visitors')">Visitors</button>
+        <button class="tab admin-dropdown-item" data-tab="prayer" data-permission="prayer" onclick="switchTab('prayer')">Prayer Form</button>
+      </div>
+    </div>
+
+    <div class="admin-menu-group" data-menu-group="crm">
+      <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('crm', event)">CRM <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item" data-tab="crm" data-permission="crm" onclick="switchTab('crm')">Church CRM</button>
+      </div>
+    </div>
+
+    <div class="admin-menu-group" data-menu-group="finances">
+      <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('finances', event)">Finances <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item" data-tab="giving" data-permission="giving" onclick="switchTab('giving')">Giving Form</button>
+      </div>
+    </div>
+
+    <div class="admin-menu-group" data-menu-group="admin">
+      <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('admin', event)">Admin <span class="menu-caret">▾</span></button>
+      <div class="admin-dropdown">
+        <button class="tab admin-dropdown-item" data-tab="users" data-permission="manageUsers" onclick="switchTab('users')">Admin Users</button>
+      </div>
+    </div>
   </div>
 
   <!-- Send Now -->
@@ -1818,6 +1956,12 @@ body[data-theme="dark"] .analytics-table td{
       btn.style.display=hasPermission(btn.dataset.permission) ? '' : 'none';
     });
 
+    document.querySelectorAll('.admin-menu-group').forEach(group=>{
+      const visibleChildren=[...group.querySelectorAll('.tab[data-permission]')]
+        .filter(btn=>btn.style.display!=='none');
+      group.style.display=visibleChildren.length ? '' : 'none';
+    });
+
     const label=document.getElementById('admin-user-label');
     if(label && currentAdminProfile) {
       label.textContent=`${currentAdminProfile.displayName || currentAdminProfile.email} • ${currentAdminProfile.roleLabel}`;
@@ -1828,12 +1972,14 @@ body[data-theme="dark"] .analytics-table td{
 
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.admin-menu-button').forEach(b=>b.classList.remove('active'));
 
     if(firstAllowed) {
       firstAllowed.classList.add('active');
       const name=firstAllowed.dataset.tab;
       const panel=document.getElementById('tab-'+name);
       if(panel) panel.classList.add('active');
+      updateActiveAdminMenu(name);
     }
   }
 
@@ -1947,6 +2093,55 @@ body[data-theme="dark"] .analytics-table td{
   });
 
   // ── Tabs ──────────────────────────────────────────────────────────
+
+  const ADMIN_TAB_GROUPS={
+    send:'app',
+    schedule:'app',
+    queue:'app',
+    announcements:'app',
+    members:'app',
+    appanalytics:'analytics',
+    livestream:'analytics',
+    website:'analytics',
+    visitors:'forms',
+    prayer:'forms',
+    crm:'crm',
+    giving:'finances',
+    users:'admin'
+  };
+
+  function closeAdminMenus() {
+    document.querySelectorAll('.admin-menu-group.open').forEach(group=>group.classList.remove('open'));
+  }
+  window.closeAdminMenus=closeAdminMenus;
+
+  function toggleAdminMenu(groupName,event) {
+    event?.stopPropagation();
+    const group=document.querySelector(`.admin-menu-group[data-menu-group="${groupName}"]`);
+    if(!group || group.style.display==='none') return;
+    const willOpen=!group.classList.contains('open');
+    closeAdminMenus();
+    if(willOpen) group.classList.add('open');
+  }
+  window.toggleAdminMenu=toggleAdminMenu;
+
+  document.addEventListener('click',event=>{
+    if(!event.target.closest('.admin-menu-group')) closeAdminMenus();
+  });
+
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape') closeAdminMenus();
+  });
+
+  function updateActiveAdminMenu(tabName) {
+    const groupName=ADMIN_TAB_GROUPS[tabName];
+    document.querySelectorAll('.admin-menu-button').forEach(button=>button.classList.remove('active'));
+    if(groupName) {
+      document.querySelector(`.admin-menu-group[data-menu-group="${groupName}"] .admin-menu-button`)
+        ?.classList.add('active');
+    }
+  }
+
   function switchTab(name) {
     const button=document.querySelector(`.tab[data-tab="${name}"]`);
     if(button?.dataset.permission && !hasPermission(button.dataset.permission)) return;
@@ -1954,6 +2149,8 @@ body[data-theme="dark"] .analytics-table td{
     document.querySelectorAll('.tab').forEach(t=>{
       t.classList.toggle('active',t.dataset.tab===name);
     });
+    updateActiveAdminMenu(name);
+    closeAdminMenus();
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+name)?.classList.add('active');
 

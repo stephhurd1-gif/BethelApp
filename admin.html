@@ -1338,7 +1338,26 @@ body[data-theme="dark"] .analytics-table td{
         <div><label>Last Name *</label><input id="crm-last-name"></div>
         <div><label>Middle Name</label><input id="crm-middle-name"></div>
         <div><label>Preferred Name</label><input id="crm-preferred-name"></div>
-        <div><label>Phone</label><input id="crm-phone" type="tel"></div>
+        <div><label>Primary Phone</label><input id="crm-phone" type="tel"></div>
+        <div><label>Primary Phone Type</label>
+          <select id="crm-phone-type">
+            <option value="">Select type</option>
+            <option value="mobile">Mobile</option>
+            <option value="home">Home</option>
+            <option value="work">Work</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div><label>Secondary Phone</label><input id="crm-phone2" type="tel"></div>
+        <div><label>Secondary Phone Type</label>
+          <select id="crm-phone2-type">
+            <option value="">Select type</option>
+            <option value="mobile">Mobile</option>
+            <option value="home">Home</option>
+            <option value="work">Work</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
         <div><label>Email</label><input id="crm-email" type="email"></div>
         <div><label>Birthday</label><input id="crm-birthday" type="date"></div>
         <div><label>Membership Date</label><input id="crm-membership-date" type="date"></div>
@@ -2709,7 +2728,12 @@ body[data-theme="dark"] .analytics-table td{
         <div>
           <div class="crm-member-name">${escHtml(crmName(m) || 'Member')}</div>
           <div class="crm-member-meta">
-            ${escHtml([m.email,m.phone,m.householdName].filter(Boolean).join(' · ') || 'No contact details')}
+            ${escHtml([
+              m.email,
+              m.phone ? ((m.phoneType ? m.phoneType.charAt(0).toUpperCase()+m.phoneType.slice(1)+': ' : '') + m.phone) : '',
+              m.phone2 ? ((m.phone2Type ? m.phone2Type.charAt(0).toUpperCase()+m.phone2Type.slice(1)+': ' : '') + m.phone2) : '',
+              m.householdName
+            ].filter(Boolean).join(' · ') || 'No contact details')}
           </div>
           <div style="margin-top:7px;">
             <span class="crm-badge">${escHtml((m.membershipStatus || 'active').replace('_',' '))}</span>
@@ -2725,11 +2749,13 @@ body[data-theme="dark"] .analytics-table td{
   function clearCrmMemberForm() {
     [
       'crm-member-id','crm-first-name','crm-last-name','crm-middle-name','crm-preferred-name',
-      'crm-phone','crm-email','crm-birthday','crm-membership-date','crm-household',
+      'crm-phone','crm-phone2','crm-email','crm-birthday','crm-membership-date','crm-household',
       'crm-address1','crm-address2','crm-city','crm-zip'
     ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     document.getElementById('crm-state').value='PA';
     document.getElementById('crm-membership-status').value='active';
+    document.getElementById('crm-phone-type').value='';
+    document.getElementById('crm-phone2-type').value='';
     document.getElementById('crm-app-link-status').textContent='Save the church member first, then you can link a matching App Member account by email.';
     document.getElementById('crm-link-app-btn').style.display='none';
     document.getElementById('crm-unlink-app-btn').style.display='none';
@@ -2761,13 +2787,15 @@ body[data-theme="dark"] .analytics-table td{
       const values={
         'crm-member-id':m.id,'crm-first-name':m.firstName,'crm-last-name':m.lastName,
         'crm-middle-name':m.middleName,'crm-preferred-name':m.preferredName,
-        'crm-phone':m.phone,'crm-email':m.email,'crm-birthday':m.birthday,
+        'crm-phone':m.phone,'crm-phone2':m.phone2,'crm-email':m.email,'crm-birthday':m.birthday,
         'crm-membership-date':m.membershipDate,'crm-household':m.householdName,
         'crm-address1':m.address1,'crm-address2':m.address2,'crm-city':m.city,
         'crm-state':m.state || 'PA','crm-zip':m.zip
       };
       Object.entries(values).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v || ''; });
       document.getElementById('crm-membership-status').value=m.membershipStatus || 'active';
+      document.getElementById('crm-phone-type').value=m.phoneType || '';
+      document.getElementById('crm-phone2-type').value=m.phone2Type || '';
       populateCrmHouseholdOptions();
       document.getElementById('crm-household-id').value=m.householdId || '';
 
@@ -2808,6 +2836,9 @@ body[data-theme="dark"] .analytics-table td{
       middleName:document.getElementById('crm-middle-name').value,
       preferredName:document.getElementById('crm-preferred-name').value,
       phone:document.getElementById('crm-phone').value,
+      phoneType:document.getElementById('crm-phone-type').value,
+      phone2:document.getElementById('crm-phone2').value,
+      phone2Type:document.getElementById('crm-phone2-type').value,
       email:document.getElementById('crm-email').value,
       birthday:document.getElementById('crm-birthday').value,
       membershipDate:document.getElementById('crm-membership-date').value,

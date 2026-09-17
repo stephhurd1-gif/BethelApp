@@ -1239,6 +1239,7 @@ body[data-theme="dark"] .analytics-table td{
     <div class="card">
       <div class="btn-row" style="justify-content:flex-start;">
         <button class="btn" id="crm-view-members-btn" onclick="setCrmView('members')">Members</button>
+        <button class="btn btn-outline" id="crm-view-prospects-btn" onclick="setCrmView('prospects')">Visitors / Prospects</button>
         <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
         <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
         <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
@@ -1275,6 +1276,29 @@ body[data-theme="dark"] .analytics-table td{
         </div>
         <div id="crm-attendance-sessions" class="crm-member-list"><p class="empty-note">Loading attendance…</p></div>
 
+      </div>
+
+
+      <div id="crm-prospects-view" style="display:none;">
+        <div class="crm-toolbar">
+          <div>
+            <label>Search visitors / prospects</label>
+            <input id="crm-prospect-search" placeholder="Name, email, phone…" oninput="renderCrmProspects()">
+          </div>
+          <div style="max-width:220px;">
+            <label>Follow-up status</label>
+            <select id="crm-prospect-status-filter" onchange="renderCrmProspects()">
+              <option value="all">All statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="follow_up">Follow-up</option>
+              <option value="regular_attender">Regular attender</option>
+              <option value="not_interested">Not interested</option>
+              <option value="converted">Converted</option>
+            </select>
+          </div>
+        </div>
+        <div id="crm-prospect-list" class="crm-member-list"><p class="empty-note">Loading visitors…</p></div>
       </div>
 
       <div id="crm-households-view" style="display:none;">
@@ -1320,6 +1344,57 @@ body[data-theme="dark"] .analytics-table td{
     <div class="card">
       <h2>Recent Attendance</h2>
       <div id="crm-recent-attendance"><p class="empty-note">Loading…</p></div>
+    </div>
+  </div>
+
+
+  <!-- CRM Visitor / Prospect Modal -->
+  <div class="crm-modal" id="crm-prospect-modal" onclick="if(event.target===this) closeCrmProspectModal()">
+    <div class="crm-modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <div>
+          <h2 id="crm-prospect-modal-title" style="margin:0;">Visitor / Prospect</h2>
+          <div class="empty-note" id="crm-prospect-summary"></div>
+        </div>
+        <button class="btn btn-outline" onclick="closeCrmProspectModal()">Close</button>
+      </div>
+      <input id="crm-prospect-id" type="hidden">
+
+      <div class="crm-section-title">Contact</div>
+      <div class="crm-two-col">
+        <div><strong>Name</strong><div id="crm-prospect-name" class="empty-note"></div></div>
+        <div><strong>Phone</strong><div id="crm-prospect-phone" class="empty-note"></div></div>
+        <div><strong>Email</strong><div id="crm-prospect-email" class="empty-note"></div></div>
+        <div><strong>Address</strong><div id="crm-prospect-address" class="empty-note"></div></div>
+      </div>
+
+      <div class="crm-section-title">Follow-Up</div>
+      <div class="crm-form-grid">
+        <div><label>Status</label>
+          <select id="crm-prospect-status">
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="follow_up">Follow-up</option>
+            <option value="regular_attender">Regular attender</option>
+            <option value="not_interested">Not interested</option>
+            <option value="converted">Converted</option>
+          </select>
+        </div>
+        <div><label>Assigned To</label><input id="crm-prospect-assigned" placeholder="Pastor, steward, staff member…"></div>
+        <div class="full"><label>Staff Notes</label><textarea id="crm-prospect-staff-notes" rows="4" placeholder="Internal follow-up notes"></textarea></div>
+      </div>
+
+      <div class="crm-section-title">Visit History</div>
+      <div id="crm-prospect-visits"><p class="empty-note">No visit history yet.</p></div>
+
+      <div class="status-msg" id="crm-prospect-msg"></div>
+      <div class="btn-row" style="justify-content:space-between;">
+        <button class="btn btn-outline" onclick="deleteCrmProspect()">Delete Prospect</button>
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="startProspectConversion()">Convert to Member</button>
+          <button class="btn" onclick="saveCrmProspect()">Save Follow-Up</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1697,6 +1772,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAttendance';
   const CRM_DASHBOARD_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmDashboard';
+  const CRM_VISITORS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageCrmVisitors';
   const CRM_HOUSEHOLDS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageHouseholds';
   const CRM_ATTENDANCE_REPORT_URL =
@@ -2594,11 +2671,13 @@ body[data-theme="dark"] .analytics-table td{
 
   // ── Church CRM ───────────────────────────────────────────────────
   let crmMembers=[];
+  let crmProspects=[];
   let crmHouseholds=[];
   let crmAttendanceSessions=[];
   let crmAttendanceReport=null;
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
+  let crmConvertingProspectId='';
   let crmHouseholdReturnToMember=false;
 
   function crmMsg(id,text,type='') {
@@ -2629,16 +2708,18 @@ body[data-theme="dark"] .analytics-table td{
   async function loadCrmDashboard() {
     if(!hasPermission('crm')) return;
     try {
-      const [dash,members,attendance,households]=await Promise.all([
+      const [dash,members,attendance,households,prospects]=await Promise.all([
         crmRequest(CRM_DASHBOARD_URL,{}),
         crmRequest(CRM_MEMBERS_URL,{action:'list'}),
         crmRequest(CRM_ATTENDANCE_URL,{action:'list'}),
-        crmRequest(CRM_HOUSEHOLDS_URL,{action:'list'})
+        crmRequest(CRM_HOUSEHOLDS_URL,{action:'list'}),
+        crmRequest(CRM_VISITORS_URL,{action:'list'})
       ]);
 
       crmMembers=Array.isArray(members.members) ? members.members : [];
       crmAttendanceSessions=Array.isArray(attendance.sessions) ? attendance.sessions : [];
       crmHouseholds=Array.isArray(households.households) ? households.households : [];
+      crmProspects=Array.isArray(prospects.visitors) ? prospects.visitors : [];
 
       const s=dash.summary || {};
       memberSetMetric('crm-active-members',s.activeMembers ?? 0);
@@ -2651,6 +2732,7 @@ body[data-theme="dark"] .analytics-table td{
       renderCrmRecentAttendance(dash.recentAttendance || []);
       renderCrmMembers();
       renderCrmHouseholds();
+      renderCrmProspects();
       populateCrmHouseholdOptions();
       renderAttendanceSessions();
     } catch(e) {
@@ -2698,13 +2780,12 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    ['members','households','attendance','reports'].forEach(v=>{
-      const panel=document.getElementById('crm-'+v+'-view');
-      if(panel) panel.style.display=(v===view ? '' : 'none');
+    ['members','prospects','attendance'].forEach(v=>{
+      const el=document.getElementById('crm-'+v+'-view');
+      if(el) el.style.display=(v===view ? '' : 'none');
       const btn=document.getElementById('crm-view-'+v+'-btn');
       if(btn) btn.className=(v===view ? 'btn' : 'btn btn-outline');
     });
-    if(view==='reports' && !crmAttendanceReport) loadCrmAttendanceReport();
   }
   window.setCrmView=setCrmView;
 
@@ -2784,6 +2865,7 @@ body[data-theme="dark"] .analytics-table td{
 
   function closeCrmMemberModal() {
     document.getElementById('crm-member-modal').classList.remove('open');
+    crmConvertingProspectId='';
   }
   window.closeCrmMemberModal=closeCrmMemberModal;
 
@@ -2875,7 +2957,19 @@ body[data-theme="dark"] .analytics-table td{
       const data=await crmRequest(CRM_MEMBERS_URL,{action:'save',member});
       crmCurrentMember=data.member;
       document.getElementById('crm-member-id').value=data.member.id;
-      crmMsg('crm-member-msg','Member saved.','success');
+
+      if(crmConvertingProspectId) {
+        await crmRequest(CRM_VISITORS_URL,{
+          action:'markconverted',
+          visitorId:crmConvertingProspectId,
+          memberId:data.member.id
+        });
+        crmConvertingProspectId='';
+        crmMsg('crm-member-msg','Visitor converted to a church member.','success');
+      } else {
+        crmMsg('crm-member-msg','Member saved.','success');
+      }
+
       await loadCrmDashboard();
       await editCrmMember(data.member.id);
     } catch(e) {
@@ -3128,6 +3222,146 @@ body[data-theme="dark"] .analytics-table td{
     el.innerHTML=list.length ? list.map(m=>`<div class="crm-member-row"><div><div class="crm-member-name">${escHtml(m.name)}</div><div class="crm-member-meta">${escHtml([m.householdName,m.phone,m.email].filter(Boolean).join(' · '))}</div><div class="item-body">Last attendance: ${escHtml(crmPrettyDate(m.lastAttendanceAt))}</div></div><button class="btn btn-outline" onclick="editCrmMember('${escHtml(m.id)}')">Open</button></div>`).join('') : '<p class="empty-note">No members in this follow-up list.</p>';
   }
   window.renderCrmNotSeen=renderCrmNotSeen;
+
+
+  function crmProspectStatusLabel(status) {
+    return {
+      new:'New',
+      contacted:'Contacted',
+      follow_up:'Follow-up',
+      regular_attender:'Regular attender',
+      not_interested:'Not interested',
+      converted:'Converted'
+    }[status] || status || 'New';
+  }
+
+  function renderCrmProspects() {
+    const el=document.getElementById('crm-prospect-list');
+    if(!el) return;
+    const q=(document.getElementById('crm-prospect-search')?.value || '').trim().toLowerCase();
+    const status=document.getElementById('crm-prospect-status-filter')?.value || 'all';
+
+    const list=crmProspects.filter(v=>{
+      if(status!=='all' && v.followUpStatus!==status) return false;
+      if(q && ![v.name,v.email,v.phone,v.address,v.assignedTo].join(' ').toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    el.innerHTML=list.length ? list.map(v=>`
+      <div class="crm-member-row">
+        <div>
+          <div class="crm-member-name">${escHtml(v.name || 'Visitor')}</div>
+          <div class="crm-member-meta">${escHtml([v.email,v.phone].filter(Boolean).join(' · ') || 'No contact details')}</div>
+          <div style="margin-top:7px;">
+            <span class="crm-badge">${escHtml(crmProspectStatusLabel(v.followUpStatus))}</span>
+            <span class="crm-badge">${Number(v.visitCount || 0)} visit${Number(v.visitCount||0)===1?'':'s'}</span>
+            ${v.converted ? '<span class="crm-badge">Member created</span>' : ''}
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="openCrmProspect('${escHtml(v.id)}')">Open</button>
+      </div>`).join('') : '<p class="empty-note">No visitors match this view.</p>';
+  }
+  window.renderCrmProspects=renderCrmProspects;
+
+  async function openCrmProspect(id) {
+    document.getElementById('crm-prospect-modal').classList.add('open');
+    crmMsg('crm-prospect-msg','Loading…','info');
+    try {
+      const data=await crmRequest(CRM_VISITORS_URL,{action:'get',visitorId:id});
+      const v=data.visitor;
+      document.getElementById('crm-prospect-id').value=v.id;
+      document.getElementById('crm-prospect-name').textContent=v.name || '—';
+      document.getElementById('crm-prospect-phone').textContent=v.phone || '—';
+      document.getElementById('crm-prospect-email').textContent=v.email || '—';
+      document.getElementById('crm-prospect-address').textContent=v.address || '—';
+      document.getElementById('crm-prospect-status').value=v.followUpStatus || 'new';
+      document.getElementById('crm-prospect-assigned').value=v.assignedTo || '';
+      document.getElementById('crm-prospect-staff-notes').value=v.staffNotes || '';
+      document.getElementById('crm-prospect-summary').textContent=
+        `${Number(v.visitCount||0)} visit${Number(v.visitCount||0)===1?'':'s'} · First: ${crmPrettyDate(v.firstVisitAt)} · Most recent: ${crmPrettyDate(v.lastVisitAt)}`;
+
+      const visits=Array.isArray(data.visits) ? data.visits : [];
+      document.getElementById('crm-prospect-visits').innerHTML=visits.length ? visits.map(visit=>`
+        <div class="scheduled-item">
+          <div class="item-info">
+            <div class="item-title">${escHtml(crmPrettyDate(visit.submittedAt))}</div>
+            <div class="item-body">${escHtml([visit.source,visit.referral ? 'Referred by '+visit.referral : '',visit.followupRequested].filter(Boolean).join(' · '))}</div>
+            ${visit.notes ? `<div class="item-body" style="margin-top:4px;">${escHtml(visit.notes)}</div>` : ''}
+          </div>
+        </div>`).join('') : '<p class="empty-note">No visit history available.</p>';
+      crmMsg('crm-prospect-msg','');
+    } catch(e) {
+      crmMsg('crm-prospect-msg',e.message || 'Could not load visitor.','error');
+    }
+  }
+  window.openCrmProspect=openCrmProspect;
+
+  function closeCrmProspectModal() {
+    document.getElementById('crm-prospect-modal').classList.remove('open');
+  }
+  window.closeCrmProspectModal=closeCrmProspectModal;
+
+  async function saveCrmProspect() {
+    const id=document.getElementById('crm-prospect-id').value;
+    crmMsg('crm-prospect-msg','Saving…','info');
+    try {
+      await crmRequest(CRM_VISITORS_URL,{
+        action:'update',
+        visitorId:id,
+        followUpStatus:document.getElementById('crm-prospect-status').value,
+        assignedTo:document.getElementById('crm-prospect-assigned').value,
+        staffNotes:document.getElementById('crm-prospect-staff-notes').value
+      });
+      crmMsg('crm-prospect-msg','Follow-up saved.','success');
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-prospect-msg',e.message || 'Could not save follow-up.','error');
+    }
+  }
+  window.saveCrmProspect=saveCrmProspect;
+
+  async function deleteCrmProspect() {
+    const id=document.getElementById('crm-prospect-id').value;
+    const name=document.getElementById('crm-prospect-name').textContent || 'this prospect';
+    if(!id || !window.confirm(`Delete ${name} from the CRM visitor pipeline? This does not delete the original visitor-form submission.`)) return;
+    try {
+      await crmRequest(CRM_VISITORS_URL,{action:'delete',visitorId:id});
+      closeCrmProspectModal();
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-prospect-msg',e.message || 'Could not delete prospect.','error');
+    }
+  }
+  window.deleteCrmProspect=deleteCrmProspect;
+
+  function splitProspectName(name) {
+    const parts=String(name || '').trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return {firstName:'',lastName:''};
+    if(parts.length===1) return {firstName:parts[0],lastName:''};
+    return {firstName:parts.slice(0,-1).join(' '),lastName:parts[parts.length-1]};
+  }
+
+  async function startProspectConversion() {
+    const id=document.getElementById('crm-prospect-id').value;
+    if(!id) return;
+    const data=await crmRequest(CRM_VISITORS_URL,{action:'get',visitorId:id});
+    const v=data.visitor;
+    const names=splitProspectName(v.name);
+
+    crmConvertingProspectId=id;
+    closeCrmProspectModal();
+    openCrmMemberModal();
+
+    document.getElementById('crm-member-modal-title').textContent='Convert Visitor to Member';
+    document.getElementById('crm-first-name').value=names.firstName;
+    document.getElementById('crm-last-name').value=names.lastName;
+    document.getElementById('crm-phone').value=v.phone || '';
+    document.getElementById('crm-email').value=v.email || '';
+    document.getElementById('crm-membership-status').value='active';
+
+    crmMsg('crm-member-msg','Review the information, add the official membership date/status, then save the member.','info');
+  }
+  window.startProspectConversion=startProspectConversion;
 
   function renderAttendanceSessions() {
     const el=document.getElementById('crm-attendance-sessions');

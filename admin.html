@@ -1239,7 +1239,9 @@ body[data-theme="dark"] .analytics-table td{
     <div class="card">
       <div class="btn-row" style="justify-content:flex-start;">
         <button class="btn" id="crm-view-members-btn" onclick="setCrmView('members')">Members</button>
+        <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
         <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
+        <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
       </div>
 
       <div id="crm-members-view">
@@ -1272,6 +1274,46 @@ body[data-theme="dark"] .analytics-table td{
           <button class="btn" onclick="openAttendanceSessionModal()">+ New Attendance</button>
         </div>
         <div id="crm-attendance-sessions" class="crm-member-list"><p class="empty-note">Loading attendance…</p></div>
+
+      </div>
+
+      <div id="crm-households-view" style="display:none;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div><h3 style="margin:0;">Households</h3><p class="empty-note" style="margin:3px 0 0;">Group family members and maintain one household address.</p></div>
+          <button class="btn" onclick="openCrmHouseholdModal()">+ Add Household</button>
+        </div>
+        <div class="crm-toolbar"><div><label>Search households</label><input id="crm-household-search" placeholder="Household name, address, phone…" oninput="renderCrmHouseholds()"></div></div>
+        <div id="crm-household-list" class="crm-member-list"></div>
+      </div>
+
+      <div id="crm-reports-view" style="display:none;">
+        <div class="crm-toolbar">
+          <div style="max-width:220px;"><label>Attendance range</label>
+            <select id="crm-report-range" onchange="loadCrmAttendanceReport()">
+              <option value="30">Last 30 days</option><option value="60">Last 60 days</option>
+              <option value="90" selected>Last 90 days</option><option value="365">Last 12 months</option>
+            </select>
+          </div>
+        </div>
+        <div class="stats-grid" style="margin-top:16px;">
+          <div class="stat-card"><div class="stat-num" id="crm-report-services">—</div><div class="stat-label">Services / events</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-average">—</div><div class="stat-label">Avg member attendance</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-guests">—</div><div class="stat-label">Guest attendance</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-active">—</div><div class="stat-label">Active members</div></div>
+        </div>
+        <div class="crm-two-col" style="margin-top:16px;">
+          <div><h3>Attendance by Service</h3><div id="crm-report-sessions"></div></div>
+          <div><h3>Members by Attendance</h3><div id="crm-report-members"></div></div>
+        </div>
+        <div style="margin-top:20px;">
+          <h3>Follow-Up Lists</h3>
+          <div class="btn-row" style="justify-content:flex-start;">
+            <button class="btn btn-outline" onclick="renderCrmNotSeen(30)">Not seen 30 days</button>
+            <button class="btn btn-outline" onclick="renderCrmNotSeen(60)">Not seen 60 days</button>
+            <button class="btn btn-outline" onclick="renderCrmNotSeen(90)">Not seen 90 days</button>
+          </div>
+          <div id="crm-not-seen-list"><p class="empty-note">Choose a follow-up window.</p></div>
+        </div>
       </div>
     </div>
 
@@ -1309,7 +1351,10 @@ body[data-theme="dark"] .analytics-table td{
             <option value="deceased">Deceased</option>
           </select>
         </div>
-        <div><label>Household / Family</label><input id="crm-household" placeholder="e.g. Hurd Household"></div>
+        <div><label>Household / Family</label>
+          <select id="crm-household-id" onchange="crmMemberHouseholdChanged()"><option value="">No household</option></select>
+          <input id="crm-household" type="hidden">
+        </div>
       </div>
 
       <div class="crm-section-title">Address</div>
@@ -1338,6 +1383,31 @@ body[data-theme="dark"] .analytics-table td{
         <button class="btn btn-outline" onclick="closeCrmMemberModal()">Cancel</button>
         <button class="btn" onclick="saveCrmMember()">Save Member</button>
       </div>
+    </div>
+  </div>
+
+
+  <div class="crm-modal" id="crm-household-modal" onclick="if(event.target===this) closeCrmHouseholdModal()">
+    <div class="crm-modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <h2 id="crm-household-modal-title" style="margin:0;">Add Household</h2>
+        <button class="btn btn-outline" onclick="closeCrmHouseholdModal()">Close</button>
+      </div>
+      <input id="crm-household-record-id" type="hidden">
+      <div class="crm-form-grid" style="margin-top:16px;">
+        <div class="full"><label>Household Name *</label><input id="crm-household-name"></div>
+        <div><label>Primary Phone</label><input id="crm-household-phone" type="tel"></div>
+        <div><label>Primary Email</label><input id="crm-household-email" type="email"></div>
+        <div class="full"><label>Street Address</label><input id="crm-household-address1"></div>
+        <div class="full"><label>Apartment / Unit</label><input id="crm-household-address2"></div>
+        <div><label>City</label><input id="crm-household-city"></div>
+        <div><label>State</label><input id="crm-household-state" value="PA"></div>
+        <div><label>ZIP</label><input id="crm-household-zip"></div>
+        <div class="full"><label>Notes</label><textarea id="crm-household-notes" rows="3"></textarea></div>
+      </div>
+      <div id="crm-household-members-wrap" style="display:none;"><div class="crm-section-title">Household Members</div><div id="crm-household-members"></div></div>
+      <div class="status-msg" id="crm-household-msg"></div>
+      <div class="btn-row"><button class="btn btn-outline" onclick="closeCrmHouseholdModal()">Cancel</button><button class="btn" onclick="saveCrmHousehold()">Save Household</button></div>
     </div>
   </div>
 
@@ -1594,6 +1664,10 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageAttendance';
   const CRM_DASHBOARD_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmDashboard';
+  const CRM_HOUSEHOLDS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageHouseholds';
+  const CRM_ATTENDANCE_REPORT_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAttendanceReport';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -2487,7 +2561,9 @@ body[data-theme="dark"] .analytics-table td{
 
   // ── Church CRM ───────────────────────────────────────────────────
   let crmMembers=[];
+  let crmHouseholds=[];
   let crmAttendanceSessions=[];
+  let crmAttendanceReport=null;
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
 
@@ -2519,14 +2595,16 @@ body[data-theme="dark"] .analytics-table td{
   async function loadCrmDashboard() {
     if(!hasPermission('crm')) return;
     try {
-      const [dash,members,attendance]=await Promise.all([
+      const [dash,members,attendance,households]=await Promise.all([
         crmRequest(CRM_DASHBOARD_URL,{}),
         crmRequest(CRM_MEMBERS_URL,{action:'list'}),
-        crmRequest(CRM_ATTENDANCE_URL,{action:'list'})
+        crmRequest(CRM_ATTENDANCE_URL,{action:'list'}),
+        crmRequest(CRM_HOUSEHOLDS_URL,{action:'list'})
       ]);
 
       crmMembers=Array.isArray(members.members) ? members.members : [];
       crmAttendanceSessions=Array.isArray(attendance.sessions) ? attendance.sessions : [];
+      crmHouseholds=Array.isArray(households.households) ? households.households : [];
 
       const s=dash.summary || {};
       memberSetMetric('crm-active-members',s.activeMembers ?? 0);
@@ -2538,6 +2616,8 @@ body[data-theme="dark"] .analytics-table td{
       renderCrmSmallList('crm-anniversaries',dash.upcomingAnniversaries,'No membership anniversaries in the next 30 days.');
       renderCrmRecentAttendance(dash.recentAttendance || []);
       renderCrmMembers();
+      renderCrmHouseholds();
+      populateCrmHouseholdOptions();
       renderAttendanceSessions();
     } catch(e) {
       console.error(e);
@@ -2584,11 +2664,13 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    const members=view==='members';
-    document.getElementById('crm-members-view').style.display=members ? '' : 'none';
-    document.getElementById('crm-attendance-view').style.display=members ? 'none' : '';
-    document.getElementById('crm-view-members-btn').className=members ? 'btn' : 'btn btn-outline';
-    document.getElementById('crm-view-attendance-btn').className=members ? 'btn btn-outline' : 'btn';
+    ['members','households','attendance','reports'].forEach(v=>{
+      const panel=document.getElementById('crm-'+v+'-view');
+      if(panel) panel.style.display=(v===view ? '' : 'none');
+      const btn=document.getElementById('crm-view-'+v+'-btn');
+      if(btn) btn.className=(v===view ? 'btn' : 'btn btn-outline');
+    });
+    if(view==='reports' && !crmAttendanceReport) loadCrmAttendanceReport();
   }
   window.setCrmView=setCrmView;
 
@@ -2680,6 +2762,8 @@ body[data-theme="dark"] .analytics-table td{
       };
       Object.entries(values).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v || ''; });
       document.getElementById('crm-membership-status').value=m.membershipStatus || 'active';
+      populateCrmHouseholdOptions();
+      document.getElementById('crm-household-id').value=m.householdId || '';
 
       const appStatus=document.getElementById('crm-app-link-status');
       const linkBtn=document.getElementById('crm-link-app-btn');
@@ -2722,6 +2806,7 @@ body[data-theme="dark"] .analytics-table td{
       birthday:document.getElementById('crm-birthday').value,
       membershipDate:document.getElementById('crm-membership-date').value,
       membershipStatus:document.getElementById('crm-membership-status').value,
+      householdId:document.getElementById('crm-household-id').value,
       householdName:document.getElementById('crm-household').value,
       address1:document.getElementById('crm-address1').value,
       address2:document.getElementById('crm-address2').value,
@@ -2780,6 +2865,100 @@ body[data-theme="dark"] .analytics-table td{
     }
   }
   window.crmUnlinkAppMember=crmUnlinkAppMember;
+
+
+  function populateCrmHouseholdOptions() {
+    const select=document.getElementById('crm-household-id');
+    if(!select) return;
+    const current=select.value;
+    select.innerHTML='<option value="">No household</option>'+crmHouseholds.map(h=>`<option value="${escHtml(h.id)}">${escHtml(h.name)}</option>`).join('');
+    if([...select.options].some(o=>o.value===current)) select.value=current;
+  }
+
+  function crmMemberHouseholdChanged() {
+    const hh=crmHouseholds.find(h=>h.id===(document.getElementById('crm-household-id')?.value||''));
+    document.getElementById('crm-household').value=hh?.name || '';
+    if(hh) {
+      if(!document.getElementById('crm-address1').value) document.getElementById('crm-address1').value=hh.address1||'';
+      if(!document.getElementById('crm-city').value) document.getElementById('crm-city').value=hh.city||'';
+      if(!document.getElementById('crm-state').value) document.getElementById('crm-state').value=hh.state||'PA';
+      if(!document.getElementById('crm-zip').value) document.getElementById('crm-zip').value=hh.zip||'';
+    }
+  }
+  window.crmMemberHouseholdChanged=crmMemberHouseholdChanged;
+
+  function renderCrmHouseholds() {
+    const el=document.getElementById('crm-household-list'); if(!el) return;
+    const q=(document.getElementById('crm-household-search')?.value||'').trim().toLowerCase();
+    const list=crmHouseholds.filter(h=>!q || [h.name,h.address1,h.city,h.state,h.zip,h.primaryPhone,h.primaryEmail].join(' ').toLowerCase().includes(q));
+    el.innerHTML=list.length ? list.map(h=>`
+      <div class="crm-member-row">
+        <div><div class="crm-member-name">${escHtml(h.name)}</div><div class="crm-member-meta">${escHtml([h.address1,h.city,h.state,h.zip].filter(Boolean).join(', ')||'No address')}</div><div style="margin-top:7px;"><span class="crm-badge">${Number(h.memberCount||0)} member${Number(h.memberCount||0)===1?'':'s'}</span></div></div>
+        <button class="btn btn-outline" onclick="editCrmHousehold('${escHtml(h.id)}')">Open</button>
+      </div>`).join('') : '<p class="empty-note">No households found.</p>';
+  }
+  window.renderCrmHouseholds=renderCrmHouseholds;
+
+  function openCrmHouseholdModal() {
+    ['crm-household-record-id','crm-household-name','crm-household-phone','crm-household-email','crm-household-address1','crm-household-address2','crm-household-city','crm-household-zip','crm-household-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    document.getElementById('crm-household-state').value='PA';
+    document.getElementById('crm-household-modal-title').textContent='Add Household';
+    document.getElementById('crm-household-members-wrap').style.display='none';
+    crmMsg('crm-household-msg','');
+    document.getElementById('crm-household-modal').classList.add('open');
+  }
+  window.openCrmHouseholdModal=openCrmHouseholdModal;
+
+  function closeCrmHouseholdModal(){document.getElementById('crm-household-modal').classList.remove('open');}
+  window.closeCrmHouseholdModal=closeCrmHouseholdModal;
+
+  async function editCrmHousehold(id) {
+    document.getElementById('crm-household-modal').classList.add('open');
+    try {
+      const data=await crmRequest(CRM_HOUSEHOLDS_URL,{action:'get',householdId:id});
+      const h=data.household;
+      document.getElementById('crm-household-modal-title').textContent='Household';
+      const vals={'crm-household-record-id':h.id,'crm-household-name':h.name,'crm-household-phone':h.primaryPhone,'crm-household-email':h.primaryEmail,'crm-household-address1':h.address1,'crm-household-address2':h.address2,'crm-household-city':h.city,'crm-household-state':h.state||'PA','crm-household-zip':h.zip,'crm-household-notes':h.notes};
+      Object.entries(vals).forEach(([id,v])=>document.getElementById(id).value=v||'');
+      const members=data.members||[];
+      document.getElementById('crm-household-members-wrap').style.display='';
+      document.getElementById('crm-household-members').innerHTML=members.length ? members.map(m=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(crmName(m))}</div><div class="item-body">${escHtml(m.email||m.phone||'')}</div></div></div>`).join('') : '<p class="empty-note">No members assigned.</p>';
+    } catch(e) { crmMsg('crm-household-msg',e.message||'Could not load household.','error');}
+  }
+  window.editCrmHousehold=editCrmHousehold;
+
+  async function saveCrmHousehold() {
+    const household={id:document.getElementById('crm-household-record-id').value,name:document.getElementById('crm-household-name').value,primaryPhone:document.getElementById('crm-household-phone').value,primaryEmail:document.getElementById('crm-household-email').value,address1:document.getElementById('crm-household-address1').value,address2:document.getElementById('crm-household-address2').value,city:document.getElementById('crm-household-city').value,state:document.getElementById('crm-household-state').value,zip:document.getElementById('crm-household-zip').value,notes:document.getElementById('crm-household-notes').value};
+    crmMsg('crm-household-msg','Saving…','info');
+    try {
+      const data=await crmRequest(CRM_HOUSEHOLDS_URL,{action:'save',household});
+      await loadCrmDashboard();
+      await editCrmHousehold(data.household.id);
+      crmMsg('crm-household-msg','Household saved.','success');
+    } catch(e){crmMsg('crm-household-msg',e.message||'Could not save household.','error');}
+  }
+  window.saveCrmHousehold=saveCrmHousehold;
+
+  async function loadCrmAttendanceReport() {
+    const range=document.getElementById('crm-report-range')?.value||'90';
+    const data=await crmRequest(CRM_ATTENDANCE_REPORT_URL,{range});
+    crmAttendanceReport=data;
+    const s=data.summary||{};
+    memberSetMetric('crm-report-services',s.sessionCount??0);
+    memberSetMetric('crm-report-average',s.averageAttendance??0);
+    memberSetMetric('crm-report-guests',s.totalGuestAttendance??0);
+    memberSetMetric('crm-report-active',s.activeMembers??0);
+    document.getElementById('crm-report-sessions').innerHTML=(data.sessions||[]).map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.title)}</div><div class="item-body">${escHtml(crmPrettyDate(r.serviceDate))}</div></div><div><strong>${Number(r.attendanceCount||0)}</strong><div class="item-body">${Number(r.guestCount||0)} guests</div></div></div>`).join('') || '<p class="empty-note">No sessions in this range.</p>';
+    document.getElementById('crm-report-members').innerHTML=(data.members||[]).sort((a,b)=>b.attendancePercentage-a.attendancePercentage).map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.name)}</div><div class="item-body">${Number(r.attendanceCount||0)} services</div></div><strong>${Number(r.attendancePercentage||0)}%</strong></div>`).join('') || '<p class="empty-note">No active members.</p>';
+  }
+  window.loadCrmAttendanceReport=loadCrmAttendanceReport;
+
+  function renderCrmNotSeen(days) {
+    const el=document.getElementById('crm-not-seen-list');
+    const list=crmAttendanceReport?.notSeen?.[String(days)]||[];
+    el.innerHTML=list.length ? list.map(m=>`<div class="crm-member-row"><div><div class="crm-member-name">${escHtml(m.name)}</div><div class="crm-member-meta">${escHtml([m.householdName,m.phone,m.email].filter(Boolean).join(' · '))}</div><div class="item-body">Last attendance: ${escHtml(crmPrettyDate(m.lastAttendanceAt))}</div></div><button class="btn btn-outline" onclick="editCrmMember('${escHtml(m.id)}')">Open</button></div>`).join('') : '<p class="empty-note">No members in this follow-up list.</p>';
+  }
+  window.renderCrmNotSeen=renderCrmNotSeen;
 
   function renderAttendanceSessions() {
     const el=document.getElementById('crm-attendance-sessions');

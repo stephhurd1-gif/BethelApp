@@ -988,7 +988,11 @@ body[data-theme="dark"] .analytics-table td{
       <div class="live-toolbar">
         <div><label>Service date</label><input type="date" id="live-service-date"></div>
         <div><label>Service title</label><input type="text" id="live-service-title" value="Sunday Worship" maxlength="80"></div>
-        <div><label>In-person attendance</label><input type="number" min="0" id="live-inperson-attendance" value="0"></div>
+        <div>
+          <label>In-person attendance</label>
+          <input type="number" min="0" id="live-inperson-attendance" value="0">
+          <div id="live-attendance-source" class="empty-note" style="margin-top:5px;">Enter manually or load from CRM attendance.</div>
+        </div>
         <button class="btn btn-outline" onclick="loadLivestreamService()">Load</button>
       </div>
       <div class="platform-grid">
@@ -2825,10 +2829,49 @@ body[data-theme="dark"] .analytics-table td{
     updateAttendanceReport();
   }
 
+
+  async function syncLivestreamAttendanceFromCrm(serviceDate,title) {
+    const note=document.getElementById('live-attendance-source');
+    if(!serviceDate) {
+      if(note) note.textContent='Choose a service date to check CRM attendance.';
+      return;
+    }
+
+    try {
+      const data=await livestreamAdminRequest('attendanceForDate',{
+        serviceDate,
+        title:title || ''
+      });
+
+      if(data.found && data.attendance !== null && data.attendance !== undefined) {
+        const input=document.getElementById('live-inperson-attendance');
+        input.value=Number(data.attendance || 0);
+        updateAttendanceReport();
+
+        const members=Number(data.session?.attendanceCount || 0);
+        const guests=Number(data.session?.guestCount || 0);
+        if(note) {
+          note.textContent=`From CRM attendance: ${members} members + ${guests} guests = ${Number(data.attendance || 0)} in person. You can still edit this manually.`;
+        }
+        return;
+      }
+
+      if(data.ambiguous) {
+        if(note) note.textContent='Multiple CRM attendance sessions exist on this date. Match the service title to sync automatically.';
+      } else {
+        if(note) note.textContent='No CRM attendance sheet found for this service date. You can enter attendance manually.';
+      }
+    } catch(e) {
+      if(note) note.textContent='CRM attendance could not be loaded. Manual entry is still available.';
+    }
+  }
+  window.syncLivestreamAttendanceFromCrm=syncLivestreamAttendanceFromCrm;
+
   function renderService(d) {
     if(d.serviceDate) document.getElementById('live-service-date').value=d.serviceDate;
     document.getElementById('live-service-title').value=d.title || 'Sunday Worship';
     document.getElementById('live-inperson-attendance').value=d.inPersonAttendance ?? 0;
+    syncLivestreamAttendanceFromCrm(d.serviceDate || '', d.title || 'Sunday Worship');
     renderFacebookMetrics(d.facebook || {});
     renderYoutubeMetrics(d.youtube || {});
     updateDigitalReport(d);
@@ -4493,7 +4536,10 @@ body[data-theme="dark"] .analytics-table td{
       clearYoutubeMetrics();
       renderInteractions([]);
       document.getElementById('live-last-updated').textContent='No saved data for this service';
-      if(showErrors) liveMsg('Could not load service: '+e.message,'error');
+      const date=document.getElementById('live-service-date').value;
+      const title=document.getElementById('live-service-title').value.trim() || 'Sunday Worship';
+      await syncLivestreamAttendanceFromCrm(date,title);
+      if(showErrors) liveMsg('Could not load saved livestream data. CRM attendance was checked for this date.','error');
     }
   }
   window.loadLivestreamService=loadLivestreamService;

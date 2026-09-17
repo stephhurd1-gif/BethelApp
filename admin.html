@@ -1403,9 +1403,12 @@ body[data-theme="dark"] .analytics-table td{
       </div>
 
       <div class="status-msg" id="crm-member-msg"></div>
-      <div class="btn-row">
-        <button class="btn btn-outline" onclick="closeCrmMemberModal()">Cancel</button>
-        <button class="btn" onclick="saveCrmMember()">Save Member</button>
+      <div class="btn-row" style="justify-content:space-between;">
+        <button class="btn btn-outline" id="crm-delete-member-btn" onclick="deleteCrmMember()" style="display:none;">Delete Member</button>
+        <div class="btn-row" style="margin-left:auto;">
+          <button class="btn btn-outline" onclick="closeCrmMemberModal()">Cancel</button>
+          <button class="btn" onclick="saveCrmMember()">Save Member</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1431,7 +1434,13 @@ body[data-theme="dark"] .analytics-table td{
       </div>
       <div id="crm-household-members-wrap" style="display:none;"><div class="crm-section-title">Household Members</div><div id="crm-household-members"></div></div>
       <div class="status-msg" id="crm-household-msg"></div>
-      <div class="btn-row"><button class="btn btn-outline" onclick="closeCrmHouseholdModal()">Cancel</button><button class="btn" onclick="saveCrmHousehold()">Save Household</button></div>
+      <div class="btn-row" style="justify-content:space-between;">
+        <button class="btn btn-outline" id="crm-delete-household-btn" onclick="deleteCrmHousehold()" style="display:none;">Delete Household</button>
+        <div class="btn-row" style="margin-left:auto;">
+          <button class="btn btn-outline" onclick="closeCrmHouseholdModal()">Cancel</button>
+          <button class="btn" onclick="saveCrmHousehold()">Save Household</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2761,6 +2770,8 @@ body[data-theme="dark"] .analytics-table td{
     document.getElementById('crm-unlink-app-btn').style.display='none';
     document.getElementById('crm-member-history-wrap').style.display='none';
     crmCurrentMember=null;
+    const deleteBtn=document.getElementById('crm-delete-member-btn');
+    if(deleteBtn) deleteBtn.style.display='none';
     crmMsg('crm-member-msg','');
   }
 
@@ -2784,6 +2795,8 @@ body[data-theme="dark"] .analytics-table td{
       const m=data.member;
       crmCurrentMember=m;
       document.getElementById('crm-member-modal-title').textContent='Member Profile';
+      const deleteBtn=document.getElementById('crm-delete-member-btn');
+      if(deleteBtn) deleteBtn.style.display='';
       const values={
         'crm-member-id':m.id,'crm-first-name':m.firstName,'crm-last-name':m.lastName,
         'crm-middle-name':m.middleName,'crm-preferred-name':m.preferredName,
@@ -2870,6 +2883,32 @@ body[data-theme="dark"] .analytics-table td{
     }
   }
   window.saveCrmMember=saveCrmMember;
+
+
+  async function deleteCrmMember() {
+    const id=document.getElementById('crm-member-id').value;
+    if(!id) return;
+
+    const name=[
+      document.getElementById('crm-preferred-name').value || document.getElementById('crm-first-name').value,
+      document.getElementById('crm-last-name').value
+    ].filter(Boolean).join(' ');
+
+    const confirmed=window.confirm(
+      'Delete '+(name || 'this member')+' permanently?\n\nThis will also remove this member from recorded attendance sessions. This cannot be undone.'
+    );
+    if(!confirmed) return;
+
+    crmMsg('crm-member-msg','Deleting member…','info');
+    try {
+      await crmRequest(CRM_MEMBERS_URL,{action:'delete',memberId:id});
+      closeCrmMemberModal();
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-member-msg',e.message || 'Could not delete member.','error');
+    }
+  }
+  window.deleteCrmMember=deleteCrmMember;
 
   async function crmLinkAppMember() {
     const id=document.getElementById('crm-member-id').value;
@@ -2967,6 +3006,8 @@ body[data-theme="dark"] .analytics-table td{
     ['crm-household-record-id','crm-household-name','crm-household-phone','crm-household-email','crm-household-address1','crm-household-address2','crm-household-city','crm-household-zip','crm-household-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     document.getElementById('crm-household-state').value='PA';
     document.getElementById('crm-household-modal-title').textContent='Add Household';
+    const deleteHouseholdBtn=document.getElementById('crm-delete-household-btn');
+    if(deleteHouseholdBtn) deleteHouseholdBtn.style.display='none';
     document.getElementById('crm-household-members-wrap').style.display='none';
     crmMsg('crm-household-msg','');
     document.getElementById('crm-household-modal').classList.add('open');
@@ -2985,6 +3026,8 @@ body[data-theme="dark"] .analytics-table td{
       const data=await crmRequest(CRM_HOUSEHOLDS_URL,{action:'get',householdId:id});
       const h=data.household;
       document.getElementById('crm-household-modal-title').textContent='Household';
+      const deleteHouseholdBtn=document.getElementById('crm-delete-household-btn');
+      if(deleteHouseholdBtn) deleteHouseholdBtn.style.display='';
       const vals={'crm-household-record-id':h.id,'crm-household-name':h.name,'crm-household-phone':h.primaryPhone,'crm-household-email':h.primaryEmail,'crm-household-address1':h.address1,'crm-household-address2':h.address2,'crm-household-city':h.city,'crm-household-state':h.state||'PA','crm-household-zip':h.zip,'crm-household-notes':h.notes};
       Object.entries(vals).forEach(([id,v])=>document.getElementById(id).value=v||'');
       const members=data.members||[];
@@ -2993,6 +3036,28 @@ body[data-theme="dark"] .analytics-table td{
     } catch(e) { crmMsg('crm-household-msg',e.message||'Could not load household.','error');}
   }
   window.editCrmHousehold=editCrmHousehold;
+
+
+  async function deleteCrmHousehold() {
+    const id=document.getElementById('crm-household-record-id').value;
+    if(!id) return;
+
+    const name=document.getElementById('crm-household-name').value || 'this household';
+    const confirmed=window.confirm(
+      'Delete '+name+'?\n\nMembers in this household will NOT be deleted. They will simply be unassigned from the household.'
+    );
+    if(!confirmed) return;
+
+    crmMsg('crm-household-msg','Deleting household…','info');
+    try {
+      await crmRequest(CRM_HOUSEHOLDS_URL,{action:'delete',householdId:id});
+      closeCrmHouseholdModal();
+      await loadCrmDashboard();
+    } catch(e) {
+      crmMsg('crm-household-msg',e.message || 'Could not delete household.','error');
+    }
+  }
+  window.deleteCrmHousehold=deleteCrmHousehold;
 
   async function saveCrmHousehold() {
     const household={

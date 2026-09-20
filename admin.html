@@ -1385,6 +1385,7 @@ body[data-theme="dark"] .analytics-table td{
         <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
         <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
         <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
+        <button class="btn btn-outline" id="crm-view-audit-btn" onclick="setCrmView('audit')">Audit History</button>
       </div>
 
       <div id="crm-members-view">
@@ -1479,6 +1480,56 @@ body[data-theme="dark"] .analytics-table td{
             <button class="btn btn-outline" onclick="renderCrmNotSeen(90)">Not seen 90 days</button>
           </div>
           <div id="crm-not-seen-list"><p class="empty-note">Choose a follow-up window.</p></div>
+        </div>
+      </div>
+
+      <div id="crm-audit-view" style="display:none;">
+        <div class="crm-toolbar">
+          <div>
+            <label>Search audit history</label>
+            <input id="crm-audit-search" placeholder="Member, household, admin, action…" oninput="renderCrmAudit()">
+          </div>
+          <div style="max-width:190px;">
+            <label>Record type</label>
+            <select id="crm-audit-type" onchange="renderCrmAudit()">
+              <option value="all">All types</option>
+              <option value="member">Members</option>
+              <option value="household">Households</option>
+              <option value="attendance">Attendance</option>
+              <option value="prospect">Visitors / Prospects</option>
+            </select>
+          </div>
+          <div style="max-width:190px;">
+            <label>Action</label>
+            <select id="crm-audit-action" onchange="renderCrmAudit()">
+              <option value="all">All actions</option>
+              <option value="created">Created</option>
+              <option value="updated">Updated</option>
+              <option value="deleted">Deleted</option>
+              <option value="attendance_saved">Attendance saved</option>
+              <option value="followup_updated">Follow-up updated</option>
+              <option value="converted_to_member">Converted to member</option>
+              <option value="app_linked">App account linked</option>
+              <option value="app_unlinked">App account unlinked</option>
+            </select>
+          </div>
+          <div style="max-width:170px;">
+            <label>Time period</label>
+            <select id="crm-audit-days" onchange="renderCrmAudit()">
+              <option value="30">Last 30 days</option>
+              <option value="90" selected>Last 90 days</option>
+              <option value="365">Last 12 months</option>
+              <option value="all">All loaded</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0 14px;">
+          <p class="empty-note" id="crm-audit-count" style="margin:0;">Open Audit History to load changes.</p>
+          <button class="btn btn-outline" onclick="loadCrmAuditHistory()">Refresh</button>
+        </div>
+        <div id="crm-audit-list" class="crm-member-list">
+          <p class="empty-note">Open Audit History to load changes.</p>
         </div>
       </div>
     </div>
@@ -1920,6 +1971,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageHouseholds';
   const CRM_ATTENDANCE_REPORT_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAttendanceReport';
+  const CRM_AUDIT_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmAuditHistory';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -2915,6 +2968,7 @@ body[data-theme="dark"] .analytics-table td{
   let crmHouseholds=[];
   let crmAttendanceSessions=[];
   let crmAttendanceReport=null;
+  let crmAuditLogs=[];
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
   let crmConvertingProspectId='';
@@ -3020,7 +3074,7 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    const views=['members','prospects','households','attendance','reports'];
+    const views=['members','prospects','households','attendance','reports','audit'];
 
     views.forEach(v=>{
       const el=document.getElementById('crm-'+v+'-view');
@@ -3033,8 +3087,101 @@ body[data-theme="dark"] .analytics-table td{
     if(view==='reports') {
       loadCrmAttendanceReport();
     }
+    if(view==='audit') {
+      loadCrmAuditHistory();
+    }
   }
   window.setCrmView=setCrmView;
+
+
+  function crmAuditActionLabel(action) {
+    return {
+      created:'Created',
+      updated:'Updated',
+      deleted:'Deleted',
+      attendance_saved:'Attendance saved',
+      followup_updated:'Follow-up updated',
+      converted_to_member:'Converted to member',
+      app_linked:'App account linked',
+      app_unlinked:'App account unlinked'
+    }[action] || String(action || '').replaceAll('_',' ');
+  }
+
+  function crmAuditTypeLabel(type) {
+    return {
+      member:'Member',
+      household:'Household',
+      attendance:'Attendance',
+      prospect:'Visitor / Prospect'
+    }[type] || type || 'CRM';
+  }
+
+  async function loadCrmAuditHistory() {
+    const list=document.getElementById('crm-audit-list');
+    if(list) list.innerHTML='<p class="empty-note">Loading audit history…</p>';
+    try {
+      const data=await crmRequest(CRM_AUDIT_URL,{limit:500});
+      crmAuditLogs=Array.isArray(data.logs) ? data.logs : [];
+      renderCrmAudit();
+    } catch(e) {
+      if(list) list.innerHTML='<p class="empty-note" style="color:#c53030;">'+escHtml(e.message || 'Could not load audit history.')+'</p>';
+    }
+  }
+  window.loadCrmAuditHistory=loadCrmAuditHistory;
+
+  function renderCrmAudit() {
+    const list=document.getElementById('crm-audit-list');
+    if(!list) return;
+
+    const q=(document.getElementById('crm-audit-search')?.value || '').trim().toLowerCase();
+    const type=document.getElementById('crm-audit-type')?.value || 'all';
+    const action=document.getElementById('crm-audit-action')?.value || 'all';
+    const days=document.getElementById('crm-audit-days')?.value || '90';
+    const cutoff=days==='all' ? 0 : Date.now()-(Number(days)*86400000);
+
+    const rows=crmAuditLogs.filter(log=>{
+      if(type!=='all' && log.entityType!==type) return false;
+      if(action!=='all' && log.action!==action) return false;
+      if(cutoff) {
+        const when=Date.parse(log.createdAt || '');
+        if(!Number.isFinite(when) || when<cutoff) return false;
+      }
+      if(q) {
+        const hay=[
+          log.entityName,log.entityType,log.action,log.summary,
+          log.actorName,log.actorEmail,log.actorRole,
+          ...(Array.isArray(log.changedFields) ? log.changedFields : [])
+        ].join(' ').toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const count=document.getElementById('crm-audit-count');
+    if(count) count.textContent=`${rows.length} audit entr${rows.length===1?'y':'ies'} shown`;
+
+    if(!rows.length) {
+      list.innerHTML='<p class="empty-note">No audit entries match these filters.</p>';
+      return;
+    }
+
+    list.innerHTML=rows.map(log=>{
+      const actor=log.actorName || log.actorEmail || 'Admin';
+      const changed=Array.isArray(log.changedFields) && log.changedFields.length
+        ? `<div class="item-body" style="margin-top:5px;">Changed: ${escHtml(log.changedFields.join(', '))}</div>`
+        : '';
+      return `<div class="scheduled-item" style="align-items:flex-start;">
+        <div class="item-info">
+          <div class="item-title">${escHtml(log.entityName || crmAuditTypeLabel(log.entityType))}</div>
+          <div class="item-body">${escHtml(crmAuditTypeLabel(log.entityType))} · ${escHtml(crmAuditActionLabel(log.action))}</div>
+          <div class="item-body" style="margin-top:5px;">${escHtml(log.summary || '')}</div>
+          ${changed}
+          <div class="item-time" style="margin-top:7px;">${escHtml(actor)} · ${escHtml(formatInteractionTime(log.createdAt))}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  window.renderCrmAudit=renderCrmAudit;
 
   function renderCrmMembers() {
     const el=document.getElementById('crm-member-list');

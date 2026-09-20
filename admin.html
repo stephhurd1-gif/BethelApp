@@ -3020,12 +3020,19 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    ['members','prospects','attendance'].forEach(v=>{
+    const views=['members','prospects','households','attendance','reports'];
+
+    views.forEach(v=>{
       const el=document.getElementById('crm-'+v+'-view');
       if(el) el.style.display=(v===view ? '' : 'none');
+
       const btn=document.getElementById('crm-view-'+v+'-btn');
       if(btn) btn.className=(v===view ? 'btn' : 'btn btn-outline');
     });
+
+    if(view==='reports') {
+      loadCrmAttendanceReport();
+    }
   }
   window.setCrmView=setCrmView;
 

@@ -1383,6 +1383,7 @@ body[data-theme="dark"] .analytics-table td{
         <button class="btn" id="crm-view-members-btn" onclick="setCrmView('members')">Members</button>
         <button class="btn btn-outline" id="crm-view-prospects-btn" onclick="setCrmView('prospects')">Visitors / Prospects</button>
         <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
+        <button class="btn btn-outline" id="crm-view-groups-btn" onclick="setCrmView('groups')">Groups / Ministries</button>
         <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
         <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
         <button class="btn btn-outline" id="crm-view-audit-btn" onclick="setCrmView('audit')">Audit History</button>
@@ -1444,6 +1445,20 @@ body[data-theme="dark"] .analytics-table td{
         <div id="crm-prospect-list" class="crm-member-list"><p class="empty-note">Loading visitors…</p></div>
       </div>
 
+      <div id="crm-groups-view" style="display:none;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div>
+            <h3 style="margin:0;">Groups / Ministries</h3>
+            <p class="empty-note" style="margin:3px 0 0;">Organize members into ministries, boards, choirs, classes, and other church groups.</p>
+          </div>
+          <button class="btn" onclick="openCrmGroupModal()">+ Add Group / Ministry</button>
+        </div>
+        <div class="crm-toolbar" style="margin-top:14px;">
+          <div><label>Search groups</label><input id="crm-group-search" placeholder="Choir, ushers, trustees…" oninput="renderCrmGroups()"></div>
+        </div>
+        <div id="crm-group-list" class="crm-member-list"><p class="empty-note">Open Groups / Ministries to load groups.</p></div>
+      </div>
+
       <div id="crm-households-view" style="display:none;">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
           <div><h3 style="margin:0;">Households</h3><p class="empty-note" style="margin:3px 0 0;">Group family members and maintain one household address.</p></div>
@@ -1497,6 +1512,7 @@ body[data-theme="dark"] .analytics-table td{
               <option value="household">Households</option>
               <option value="attendance">Attendance</option>
               <option value="prospect">Visitors / Prospects</option>
+              <option value="group">Groups / Ministries</option>
             </select>
           </div>
           <div style="max-width:190px;">
@@ -1511,6 +1527,7 @@ body[data-theme="dark"] .analytics-table td{
               <option value="converted_to_member">Converted to member</option>
               <option value="app_linked">App account linked</option>
               <option value="app_unlinked">App account unlinked</option>
+              <option value="groups_updated">Groups updated</option>
             </select>
           </div>
           <div style="max-width:170px;">
@@ -1591,6 +1608,35 @@ body[data-theme="dark"] .analytics-table td{
     </div>
   </div>
 
+  <!-- CRM Group / Ministry Modal -->
+  <div class="crm-modal" id="crm-group-modal" onclick="if(event.target===this) closeCrmGroupModal()">
+    <div class="crm-modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <h2 id="crm-group-modal-title" style="margin:0;">Add Group / Ministry</h2>
+        <button class="btn btn-outline" onclick="closeCrmGroupModal()">Close</button>
+      </div>
+      <input id="crm-group-id" type="hidden">
+      <div class="crm-form-grid" style="margin-top:16px;">
+        <div class="full"><label>Group / Ministry Name *</label><input id="crm-group-name" placeholder="e.g. Senior Choir"></div>
+        <div class="full"><label>Description</label><textarea id="crm-group-description" rows="3" placeholder="Optional notes about this group"></textarea></div>
+      </div>
+
+      <div id="crm-group-roster-wrap" style="display:none;">
+        <div class="crm-section-title">Roster</div>
+        <div id="crm-group-roster"><p class="empty-note">No members assigned yet.</p></div>
+      </div>
+
+      <div class="status-msg" id="crm-group-msg"></div>
+      <div class="btn-row" style="justify-content:space-between;">
+        <button class="btn btn-outline" id="crm-delete-group-btn" onclick="deleteCrmGroup()" style="display:none;">Delete Group</button>
+        <div class="btn-row" style="margin-left:auto;">
+          <button class="btn btn-outline" onclick="closeCrmGroupModal()">Cancel</button>
+          <button class="btn" onclick="saveCrmGroup()">Save Group</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CRM Member Modal -->
   <div class="crm-modal" id="crm-member-modal" onclick="if(event.target===this) closeCrmMemberModal()">
     <div class="crm-modal-card">
@@ -1656,6 +1702,11 @@ body[data-theme="dark"] .analytics-table td{
         <div><label>City</label><input id="crm-city"></div>
         <div><label>State</label><input id="crm-state" value="PA"></div>
         <div><label>ZIP</label><input id="crm-zip"></div>
+      </div>
+
+      <div class="crm-section-title">Groups / Ministries</div>
+      <div id="crm-member-groups">
+        <p class="empty-note">Save the member first, then group assignments can be added.</p>
       </div>
 
       <div class="crm-section-title">App Member Link</div>
@@ -1973,6 +2024,8 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getAttendanceReport';
   const CRM_AUDIT_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmAuditHistory';
+  const CRM_GROUPS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageChurchGroups';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -2969,6 +3022,8 @@ body[data-theme="dark"] .analytics-table td{
   let crmAttendanceSessions=[];
   let crmAttendanceReport=null;
   let crmAuditLogs=[];
+  let crmGroups=[];
+  let crmCurrentMemberGroups=[];
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
   let crmConvertingProspectId='';
@@ -3074,7 +3129,7 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    const views=['members','prospects','households','attendance','reports','audit'];
+    const views=['members','prospects','households','groups','attendance','reports','audit'];
 
     views.forEach(v=>{
       const el=document.getElementById('crm-'+v+'-view');
@@ -3090,9 +3145,168 @@ body[data-theme="dark"] .analytics-table td{
     if(view==='audit') {
       loadCrmAuditHistory();
     }
+    if(view==='groups') {
+      loadCrmGroups();
+    }
   }
   window.setCrmView=setCrmView;
 
+
+
+  async function loadCrmGroups() {
+    const list=document.getElementById('crm-group-list');
+    if(list) list.innerHTML='<p class="empty-note">Loading groups…</p>';
+    try {
+      const data=await crmRequest(CRM_GROUPS_URL,{action:'list'});
+      crmGroups=Array.isArray(data.groups) ? data.groups : [];
+      renderCrmGroups();
+    } catch(e) {
+      if(list) list.innerHTML='<p class="empty-note" style="color:#c53030;">'+escHtml(e.message || 'Could not load groups.')+'</p>';
+    }
+  }
+  window.loadCrmGroups=loadCrmGroups;
+
+  function renderCrmGroups() {
+    const list=document.getElementById('crm-group-list');
+    if(!list) return;
+    const q=(document.getElementById('crm-group-search')?.value || '').trim().toLowerCase();
+    const rows=crmGroups.filter(g=>!q || [g.name,g.description].join(' ').toLowerCase().includes(q));
+
+    list.innerHTML=rows.length ? rows.map(g=>`
+      <div class="crm-member-row">
+        <div>
+          <div class="crm-member-name">${escHtml(g.name || 'Group')}</div>
+          <div class="crm-member-meta">${escHtml(g.description || 'No description')}</div>
+          <div style="margin-top:7px;"><span class="crm-badge">${Number(g.memberCount||0)} member${Number(g.memberCount||0)===1?'':'s'}</span></div>
+        </div>
+        <button class="btn btn-outline" onclick="editCrmGroup('${escHtml(g.id)}')">Open</button>
+      </div>`).join('') : '<p class="empty-note">No groups or ministries found.</p>';
+  }
+  window.renderCrmGroups=renderCrmGroups;
+
+  function openCrmGroupModal() {
+    document.getElementById('crm-group-id').value='';
+    document.getElementById('crm-group-name').value='';
+    document.getElementById('crm-group-description').value='';
+    document.getElementById('crm-group-modal-title').textContent='Add Group / Ministry';
+    document.getElementById('crm-group-roster-wrap').style.display='none';
+    document.getElementById('crm-delete-group-btn').style.display='none';
+    document.getElementById('crm-group-modal').classList.add('open');
+    crmMsg('crm-group-msg','');
+  }
+  window.openCrmGroupModal=openCrmGroupModal;
+
+  function closeCrmGroupModal() {
+    document.getElementById('crm-group-modal').classList.remove('open');
+  }
+  window.closeCrmGroupModal=closeCrmGroupModal;
+
+  async function editCrmGroup(id) {
+    document.getElementById('crm-group-modal').classList.add('open');
+    crmMsg('crm-group-msg','Loading…','info');
+    try {
+      const data=await crmRequest(CRM_GROUPS_URL,{action:'get',groupId:id});
+      const g=data.group;
+      document.getElementById('crm-group-id').value=g.id;
+      document.getElementById('crm-group-name').value=g.name || '';
+      document.getElementById('crm-group-description').value=g.description || '';
+      document.getElementById('crm-group-modal-title').textContent=g.name || 'Group / Ministry';
+      document.getElementById('crm-delete-group-btn').style.display='';
+      document.getElementById('crm-group-roster-wrap').style.display='';
+
+      const roster=Array.isArray(data.members) ? data.members : [];
+      document.getElementById('crm-group-roster').innerHTML=roster.length ? roster.map(m=>`
+        <div class="scheduled-item">
+          <div class="item-info">
+            <div class="item-title">${escHtml([m.preferredName || m.firstName,m.lastName].filter(Boolean).join(' '))}</div>
+            <div class="item-body">${escHtml(m.groupRole || 'Member')}</div>
+          </div>
+        </div>`).join('') : '<p class="empty-note">No members assigned yet.</p>';
+
+      crmMsg('crm-group-msg','');
+    } catch(e) {
+      crmMsg('crm-group-msg',e.message || 'Could not load group.','error');
+    }
+  }
+  window.editCrmGroup=editCrmGroup;
+
+  async function saveCrmGroup() {
+    const group={
+      id:document.getElementById('crm-group-id').value,
+      name:document.getElementById('crm-group-name').value,
+      description:document.getElementById('crm-group-description').value
+    };
+    crmMsg('crm-group-msg','Saving…','info');
+    try {
+      const data=await crmRequest(CRM_GROUPS_URL,{action:'save',group});
+      await loadCrmGroups();
+      await editCrmGroup(data.groupId);
+      crmMsg('crm-group-msg','Group / ministry saved.','success');
+    } catch(e) {
+      crmMsg('crm-group-msg',e.message || 'Could not save group.','error');
+    }
+  }
+  window.saveCrmGroup=saveCrmGroup;
+
+  async function deleteCrmGroup() {
+    const id=document.getElementById('crm-group-id').value;
+    const name=document.getElementById('crm-group-name').value || 'this group';
+    if(!id || !window.confirm(`Delete ${name}? Members will not be deleted; only their assignment to this group will be removed.`)) return;
+    try {
+      await crmRequest(CRM_GROUPS_URL,{action:'delete',groupId:id});
+      closeCrmGroupModal();
+      await loadCrmGroups();
+    } catch(e) {
+      crmMsg('crm-group-msg',e.message || 'Could not delete group.','error');
+    }
+  }
+  window.deleteCrmGroup=deleteCrmGroup;
+
+  async function loadCrmMemberGroups(memberId) {
+    const wrap=document.getElementById('crm-member-groups');
+    if(!wrap) return;
+    if(!memberId) {
+      crmCurrentMemberGroups=[];
+      wrap.innerHTML='<p class="empty-note">Save the member first, then group assignments can be added.</p>';
+      return;
+    }
+
+    wrap.innerHTML='<p class="empty-note">Loading groups…</p>';
+    try {
+      const data=await crmRequest(CRM_GROUPS_URL,{action:'membergroups',memberId});
+      crmCurrentMemberGroups=Array.isArray(data.memberships) ? data.memberships : [];
+      if(!crmCurrentMemberGroups.length) {
+        wrap.innerHTML='<p class="empty-note">No groups have been created yet. Use the Groups / Ministries section to add one.</p>';
+        return;
+      }
+
+      wrap.innerHTML=crmCurrentMemberGroups.map((g,i)=>`
+        <div class="scheduled-item" style="align-items:center;">
+          <label style="display:flex;align-items:center;gap:8px;flex:1;margin:0;">
+            <input type="checkbox" id="crm-member-group-check-${i}" ${g.selected?'checked':''}>
+            <span>${escHtml(g.groupName)}</span>
+          </label>
+          <input id="crm-member-group-role-${i}" value="${escHtml(g.role || '')}" placeholder="Role (optional)" style="max-width:190px;">
+        </div>`).join('');
+    } catch(e) {
+      wrap.innerHTML='<p class="empty-note" style="color:#c53030;">'+escHtml(e.message || 'Could not load groups.')+'</p>';
+    }
+  }
+
+  async function saveCrmMemberGroups(memberId) {
+    if(!memberId || !Array.isArray(crmCurrentMemberGroups) || !crmCurrentMemberGroups.length) return;
+    const memberships=crmCurrentMemberGroups.map((g,i)=>({
+      groupId:g.groupId,
+      selected:document.getElementById(`crm-member-group-check-${i}`)?.checked === true,
+      role:document.getElementById(`crm-member-group-role-${i}`)?.value || ''
+    })).filter(x=>x.selected).map(({groupId,role})=>({groupId,role}));
+
+    await crmRequest(CRM_GROUPS_URL,{
+      action:'savemembergroups',
+      memberId,
+      memberships
+    });
+  }
 
   function crmAuditActionLabel(action) {
     return {
@@ -3103,7 +3317,8 @@ body[data-theme="dark"] .analytics-table td{
       followup_updated:'Follow-up updated',
       converted_to_member:'Converted to member',
       app_linked:'App account linked',
-      app_unlinked:'App account unlinked'
+      app_unlinked:'App account unlinked',
+      groups_updated:'Groups updated'
     }[action] || String(action || '').replaceAll('_',' ');
   }
 
@@ -3112,7 +3327,8 @@ body[data-theme="dark"] .analytics-table td{
       member:'Member',
       household:'Household',
       attendance:'Attendance',
-      prospect:'Visitor / Prospect'
+      prospect:'Visitor / Prospect',
+      group:'Group / Ministry'
     }[type] || type || 'CRM';
   }
 
@@ -3244,6 +3460,9 @@ body[data-theme="dark"] .analytics-table td{
     document.getElementById('crm-link-app-btn').style.display='none';
     document.getElementById('crm-unlink-app-btn').style.display='none';
     document.getElementById('crm-member-history-wrap').style.display='none';
+    crmCurrentMemberGroups=[];
+    const groupsWrap=document.getElementById('crm-member-groups');
+    if(groupsWrap) groupsWrap.innerHTML='<p class="empty-note">Save the member first, then group assignments can be added.</p>';
     crmCurrentMember=null;
     const deleteBtn=document.getElementById('crm-delete-member-btn');
     if(deleteBtn) deleteBtn.style.display='none';
@@ -3304,6 +3523,7 @@ body[data-theme="dark"] .analytics-table td{
       }
 
       const history=Array.isArray(data.attendance) ? data.attendance : [];
+      await loadCrmMemberGroups(m.id);
       document.getElementById('crm-member-history-wrap').style.display='';
       document.getElementById('crm-member-history').innerHTML=history.length
         ? history.map(a=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(a.title)}</div><div class="item-body">${escHtml(crmPrettyDate(a.serviceDate))}</div></div></div>`).join('')
@@ -3351,6 +3571,9 @@ body[data-theme="dark"] .analytics-table td{
       const data=await crmRequest(CRM_MEMBERS_URL,{action:'save',member});
       crmCurrentMember=data.member;
       document.getElementById('crm-member-id').value=data.member.id;
+      if(crmCurrentMemberGroups.length) {
+        await saveCrmMemberGroups(data.member.id);
+      }
 
       if(crmConvertingProspectId) {
         await crmRequest(CRM_VISITORS_URL,{

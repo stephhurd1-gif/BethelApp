@@ -1693,9 +1693,24 @@ body[data-theme="dark"] .analytics-table td{
           </div>
           <input id="crm-household" type="hidden">
         </div>
+        <div><label>Relationship in Household</label>
+          <select id="crm-household-role">
+            <option value="">Not specified</option>
+            <option value="Head of Household">Head of Household</option>
+            <option value="Spouse / Partner">Spouse / Partner</option>
+            <option value="Child">Child</option>
+            <option value="Adult Child">Adult Child</option>
+            <option value="Parent">Parent</option>
+            <option value="Relative">Relative</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
       </div>
 
       <div class="crm-section-title">Address</div>
+      <div id="crm-household-address-note" class="empty-note" style="margin-bottom:10px;">
+        If a household is selected, this address comes from the household record and stays synchronized automatically.
+      </div>
       <div class="crm-form-grid">
         <div class="full"><label>Street Address</label><input id="crm-address1"></div>
         <div class="full"><label>Apartment / Unit</label><input id="crm-address2"></div>
@@ -3456,6 +3471,8 @@ body[data-theme="dark"] .analytics-table td{
     document.getElementById('crm-membership-status').value='active';
     document.getElementById('crm-phone-type').value='';
     document.getElementById('crm-phone2-type').value='';
+    document.getElementById('crm-household-role').value='';
+    setCrmMemberAddressMode();
     document.getElementById('crm-app-link-status').textContent='Save the church member first, then you can link a matching App Member account by email.';
     document.getElementById('crm-link-app-btn').style.display='none';
     document.getElementById('crm-unlink-app-btn').style.display='none';
@@ -3506,6 +3523,8 @@ body[data-theme="dark"] .analytics-table td{
       document.getElementById('crm-phone2-type').value=m.phone2Type || '';
       populateCrmHouseholdOptions();
       document.getElementById('crm-household-id').value=m.householdId || '';
+      document.getElementById('crm-household-role').value=m.householdRole || '';
+      setCrmMemberAddressMode();
 
       const appStatus=document.getElementById('crm-app-link-status');
       const linkBtn=document.getElementById('crm-link-app-btn');
@@ -3554,6 +3573,7 @@ body[data-theme="dark"] .analytics-table td{
       membershipStatus:document.getElementById('crm-membership-status').value,
       householdId:document.getElementById('crm-household-id').value,
       householdName:document.getElementById('crm-household').value,
+      householdRole:document.getElementById('crm-household-role').value,
       address1:document.getElementById('crm-address1').value,
       address2:document.getElementById('crm-address2').value,
       city:document.getElementById('crm-city').value,
@@ -3662,15 +3682,44 @@ body[data-theme="dark"] .analytics-table td{
     if([...select.options].some(o=>o.value===current)) select.value=current;
   }
 
-  function crmMemberHouseholdChanged() {
-    const hh=crmHouseholds.find(h=>h.id===(document.getElementById('crm-household-id')?.value||''));
-    document.getElementById('crm-household').value=hh?.name || '';
-    if(hh) {
-      if(!document.getElementById('crm-address1').value) document.getElementById('crm-address1').value=hh.address1||'';
-      if(!document.getElementById('crm-city').value) document.getElementById('crm-city').value=hh.city||'';
-      if(!document.getElementById('crm-state').value) document.getElementById('crm-state').value=hh.state||'PA';
-      if(!document.getElementById('crm-zip').value) document.getElementById('crm-zip').value=hh.zip||'';
+  function setCrmMemberAddressMode() {
+    const hasHousehold=Boolean(document.getElementById('crm-household-id')?.value);
+    ['crm-address1','crm-address2','crm-city','crm-state','crm-zip'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) {
+        el.readOnly=hasHousehold;
+        el.style.opacity=hasHousehold ? '.72' : '';
+      }
+    });
+
+    const note=document.getElementById('crm-household-address-note');
+    if(note) {
+      note.textContent=hasHousehold
+        ? 'Address is managed by the selected household. Edit the household to change the address for everyone who lives there.'
+        : 'No household selected. Enter this member’s individual address below.';
     }
+  }
+
+  function copyCrmHouseholdAddress() {
+    const hh=crmHouseholds.find(h=>h.id===(document.getElementById('crm-household-id')?.value||''));
+    if(!hh) return;
+    document.getElementById('crm-address1').value=hh.address1 || '';
+    document.getElementById('crm-address2').value=hh.address2 || '';
+    document.getElementById('crm-city').value=hh.city || '';
+    document.getElementById('crm-state').value=hh.state || 'PA';
+    document.getElementById('crm-zip').value=hh.zip || '';
+  }
+
+  function crmMemberHouseholdChanged() {
+    const select=document.getElementById('crm-household-id');
+    const hh=crmHouseholds.find(h=>h.id===(select?.value||''));
+    document.getElementById('crm-household').value=hh?.name || '';
+
+    const role=document.getElementById('crm-household-role');
+    if(!hh && role) role.value='';
+
+    if(hh) copyCrmHouseholdAddress();
+    setCrmMemberAddressMode();
   }
   window.crmMemberHouseholdChanged=crmMemberHouseholdChanged;
 
@@ -3743,7 +3792,7 @@ body[data-theme="dark"] .analytics-table td{
       Object.entries(vals).forEach(([id,v])=>document.getElementById(id).value=v||'');
       const members=data.members||[];
       document.getElementById('crm-household-members-wrap').style.display='';
-      document.getElementById('crm-household-members').innerHTML=members.length ? members.map(m=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(crmName(m))}</div><div class="item-body">${escHtml(m.email||m.phone||'')}</div></div></div>`).join('') : '<p class="empty-note">No members assigned.</p>';
+      document.getElementById('crm-household-members').innerHTML=members.length ? members.map(m=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(crmName(m))}</div><div class="item-body">${escHtml([m.householdRole || '',m.email || m.phone || ''].filter(Boolean).join(' · '))}</div></div></div>`).join('') : '<p class="empty-note">No members assigned.</p>';
     } catch(e) { crmMsg('crm-household-msg',e.message||'Could not load household.','error');}
   }
   window.editCrmHousehold=editCrmHousehold;

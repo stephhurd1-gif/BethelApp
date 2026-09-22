@@ -1477,6 +1477,20 @@ body[data-theme="dark"] .analytics-table td{
             </select>
           </div>
         </div>
+        <div style="margin-top:16px;padding:16px;border:1px solid var(--border,#ddd);border-radius:12px;">
+          <h3 style="margin-top:0;">Export & Print</h3>
+          <p class="empty-note">Download church records as CSV or print the current attendance report.</p>
+          <div class="btn-row" style="justify-content:flex-start;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="printCrmAttendanceReport()">Print Attendance Report</button>
+            <button class="btn btn-outline" onclick="exportCrmAttendanceCsv()">Attendance CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmMemberDirectoryCsv()">Member Directory CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmHouseholdDirectoryCsv()">Household Directory CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmVisitorFollowupsCsv()">Visitor Follow-Ups CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmBirthdaysCsv()">Birthdays CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmAnniversariesCsv()">Membership Anniversaries CSV</button>
+          </div>
+        </div>
+
         <div class="stats-grid" style="margin-top:16px;">
           <div class="stat-card"><div class="stat-num" id="crm-report-services">—</div><div class="stat-label">Services / events</div></div>
           <div class="stat-card"><div class="stat-num" id="crm-report-average">—</div><div class="stat-label">Avg member attendance</div></div>
@@ -1493,6 +1507,9 @@ body[data-theme="dark"] .analytics-table td{
             <button class="btn btn-outline" onclick="renderCrmNotSeen(30)">Not seen 30 days</button>
             <button class="btn btn-outline" onclick="renderCrmNotSeen(60)">Not seen 60 days</button>
             <button class="btn btn-outline" onclick="renderCrmNotSeen(90)">Not seen 90 days</button>
+            <button class="btn btn-outline" onclick="exportCrmNotSeenCsv(30)">30-Day CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmNotSeenCsv(60)">60-Day CSV</button>
+            <button class="btn btn-outline" onclick="exportCrmNotSeenCsv(90)">90-Day CSV</button>
           </div>
           <div id="crm-not-seen-list"><p class="empty-note">Choose a follow-up window.</p></div>
         </div>
@@ -3883,6 +3900,234 @@ body[data-theme="dark"] .analytics-table td{
   }
   window.saveCrmHousehold=saveCrmHousehold;
 
+
+  function crmCsvCell(value) {
+    const s=String(value ?? '');
+    return `"${s.replaceAll('"','""')}"`;
+  }
+
+  function crmDownloadCsv(filename, headers, rows) {
+    const csv=[
+      headers.map(crmCsvCell).join(','),
+      ...rows.map(row=>row.map(crmCsvCell).join(','))
+    ].join('\r\n');
+
+    const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  function crmDateStamp() {
+    const d=new Date();
+    return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+
+  function exportCrmAttendanceCsv() {
+    if(!crmAttendanceReport) {
+      alert('Open Reports and let the attendance report load first.');
+      return;
+    }
+    const range=document.getElementById('crm-report-range')?.value || '90';
+    const rows=(crmAttendanceReport.sessions || []).map(r=>[
+      r.serviceDate || '',
+      r.title || '',
+      Number(r.attendanceCount || 0),
+      Number(r.guestCount || 0),
+      Number(r.attendanceCount || 0)+Number(r.guestCount || 0)
+    ]);
+    crmDownloadCsv(
+      `bethel-attendance-${range}-days-${crmDateStamp()}.csv`,
+      ['Date','Service / Event','Member Attendance','Guests','Total Attendance'],
+      rows
+    );
+  }
+  window.exportCrmAttendanceCsv=exportCrmAttendanceCsv;
+
+  function exportCrmMemberDirectoryCsv() {
+    const rows=(crmMembers || []).map(m=>[
+      crmName(m),
+      m.membershipStatus || '',
+      m.householdName || '',
+      m.householdRole || '',
+      m.phone || '',
+      m.phoneType || '',
+      m.phone2 || '',
+      m.phone2Type || '',
+      m.email || '',
+      m.address1 || '',
+      m.address2 || '',
+      m.city || '',
+      m.state || '',
+      m.zip || '',
+      m.birthday || '',
+      m.membershipDate || '',
+      Number(m.attendanceCount || 0),
+      m.lastAttendanceAt || ''
+    ]);
+    crmDownloadCsv(
+      `bethel-member-directory-${crmDateStamp()}.csv`,
+      ['Name','Membership Status','Household','Household Relationship','Phone','Phone Type','Second Phone','Second Phone Type','Email','Street Address','Address 2','City','State','ZIP','Birthday','Membership Date','Attendance Count','Last Attendance'],
+      rows
+    );
+  }
+  window.exportCrmMemberDirectoryCsv=exportCrmMemberDirectoryCsv;
+
+  function exportCrmHouseholdDirectoryCsv() {
+    const rows=(crmHouseholds || []).map(h=>[
+      h.name || '',
+      Number(h.memberCount || 0),
+      h.primaryPhone || '',
+      h.primaryEmail || '',
+      h.address1 || '',
+      h.address2 || '',
+      h.city || '',
+      h.state || '',
+      h.zip || '',
+      h.notes || ''
+    ]);
+    crmDownloadCsv(
+      `bethel-household-directory-${crmDateStamp()}.csv`,
+      ['Household','Members','Primary Phone','Primary Email','Street Address','Address 2','City','State','ZIP','Notes'],
+      rows
+    );
+  }
+  window.exportCrmHouseholdDirectoryCsv=exportCrmHouseholdDirectoryCsv;
+
+  function exportCrmVisitorFollowupsCsv() {
+    const rows=(crmProspects || [])
+      .filter(v=>v.followUpStatus !== 'converted' && v.followUpStatus !== 'not_interested')
+      .sort((a,b)=>(a.followUpDueDate || '9999-12-31').localeCompare(b.followUpDueDate || '9999-12-31'))
+      .map(v=>[
+        v.name || '',
+        v.phone || '',
+        v.email || '',
+        crmProspectStatusLabel(v.followUpStatus),
+        v.followUpDueDate || '',
+        v.assignedTo || '',
+        Number(v.visitCount || 0),
+        v.firstVisitAt || '',
+        v.lastVisitAt || '',
+        v.followupRequested || '',
+        v.staffNotes || ''
+      ]);
+    crmDownloadCsv(
+      `bethel-visitor-followups-${crmDateStamp()}.csv`,
+      ['Name','Phone','Email','Status','Follow-Up Due','Assigned To','Visit Count','First Visit','Most Recent Visit','Requested Follow-Up','Staff Notes'],
+      rows
+    );
+  }
+  window.exportCrmVisitorFollowupsCsv=exportCrmVisitorFollowupsCsv;
+
+  function crmAnnualEventRows(fieldName) {
+    const today=new Date();
+    const currentYear=today.getFullYear();
+    return (crmMembers || [])
+      .filter(m=>m[fieldName] && m.active !== false && m.membershipStatus !== 'deceased')
+      .map(m=>{
+        const raw=String(m[fieldName]);
+        const parts=raw.split('-').map(Number);
+        if(parts.length!==3) return null;
+        let next=new Date(currentYear,parts[1]-1,parts[2],12,0,0);
+        const todayStart=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+        if(next < todayStart) next.setFullYear(currentYear+1);
+        const nextIso=new Date(next.getTime()-next.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        return [crmName(m),raw,nextIso,m.phone || '',m.email || '',m.householdName || ''];
+      })
+      .filter(Boolean)
+      .sort((a,b)=>a[2].localeCompare(b[2]));
+  }
+
+  function exportCrmBirthdaysCsv() {
+    crmDownloadCsv(
+      `bethel-birthdays-${crmDateStamp()}.csv`,
+      ['Name','Birthday','Next Birthday','Phone','Email','Household'],
+      crmAnnualEventRows('birthday')
+    );
+  }
+  window.exportCrmBirthdaysCsv=exportCrmBirthdaysCsv;
+
+  function exportCrmAnniversariesCsv() {
+    crmDownloadCsv(
+      `bethel-membership-anniversaries-${crmDateStamp()}.csv`,
+      ['Name','Membership Date','Next Anniversary','Phone','Email','Household'],
+      crmAnnualEventRows('membershipDate')
+    );
+  }
+  window.exportCrmAnniversariesCsv=exportCrmAnniversariesCsv;
+
+  function printCrmAttendanceReport() {
+    if(!crmAttendanceReport) {
+      alert('Open Reports and let the attendance report load first.');
+      return;
+    }
+
+    const range=document.getElementById('crm-report-range')?.value || '90';
+    const s=crmAttendanceReport.summary || {};
+    const sessions=crmAttendanceReport.sessions || [];
+    const members=[...(crmAttendanceReport.members || [])]
+      .sort((a,b)=>Number(b.attendancePercentage || 0)-Number(a.attendancePercentage || 0));
+
+    const sessionRows=sessions.map(r=>`
+      <tr>
+        <td>${escHtml(crmPrettyDate(r.serviceDate))}</td>
+        <td>${escHtml(r.title || '')}</td>
+        <td>${Number(r.attendanceCount || 0)}</td>
+        <td>${Number(r.guestCount || 0)}</td>
+        <td>${Number(r.attendanceCount || 0)+Number(r.guestCount || 0)}</td>
+      </tr>`).join('');
+
+    const memberRows=members.map(r=>`
+      <tr>
+        <td>${escHtml(r.name || '')}</td>
+        <td>${Number(r.attendanceCount || 0)}</td>
+        <td>${Number(r.attendancePercentage || 0)}%</td>
+      </tr>`).join('');
+
+    const w=window.open('','_blank','width=1000,height=800');
+    if(!w) {
+      alert('Your browser blocked the print window. Please allow pop-ups for this site and try again.');
+      return;
+    }
+
+    w.document.write(`<!doctype html>
+      <html><head><meta charset="utf-8"><title>Bethel Attendance Report</title>
+      <style>
+        body{font-family:Arial,sans-serif;color:#111;margin:32px;}
+        h1{margin-bottom:4px;} h2{margin-top:28px;}
+        .sub{color:#555;margin-bottom:20px;}
+        .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0;}
+        .metric{border:1px solid #bbb;border-radius:8px;padding:12px;}
+        .num{font-size:24px;font-weight:700;}
+        table{width:100%;border-collapse:collapse;margin-top:10px;}
+        th,td{border:1px solid #ccc;padding:8px;text-align:left;}
+        th{background:#f1f1f1;}
+        @media print{body{margin:15mm}.no-print{display:none}}
+      </style></head><body>
+      <h1>Bethel African Methodist Episcopal Church</h1>
+      <div class="sub">Attendance Report · Last ${escHtml(range)} days · Printed ${escHtml(new Date().toLocaleDateString())}</div>
+      <div class="metrics">
+        <div class="metric"><div class="num">${Number(s.sessionCount || 0)}</div><div>Services / Events</div></div>
+        <div class="metric"><div class="num">${Number(s.averageAttendance || 0)}</div><div>Average Member Attendance</div></div>
+        <div class="metric"><div class="num">${Number(s.totalGuestAttendance || 0)}</div><div>Guest Attendance</div></div>
+        <div class="metric"><div class="num">${Number(s.activeMembers || 0)}</div><div>Active Members</div></div>
+      </div>
+      <h2>Attendance by Service</h2>
+      <table><thead><tr><th>Date</th><th>Service / Event</th><th>Members</th><th>Guests</th><th>Total</th></tr></thead><tbody>${sessionRows}</tbody></table>
+      <h2>Members by Attendance</h2>
+      <table><thead><tr><th>Member</th><th>Services Attended</th><th>Attendance %</th></tr></thead><tbody>${memberRows}</tbody></table>
+      <div class="no-print" style="margin-top:20px;"><button onclick="window.print()">Print / Save as PDF</button></div>
+      </body></html>`);
+    w.document.close();
+    w.focus();
+  }
+  window.printCrmAttendanceReport=printCrmAttendanceReport;
+
   async function loadCrmAttendanceReport() {
     const range=document.getElementById('crm-report-range')?.value||'90';
     const data=await crmRequest(CRM_ATTENDANCE_REPORT_URL,{range});
@@ -3896,6 +4141,24 @@ body[data-theme="dark"] .analytics-table td{
     document.getElementById('crm-report-members').innerHTML=(data.members||[]).sort((a,b)=>b.attendancePercentage-a.attendancePercentage).map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.name)}</div><div class="item-body">${Number(r.attendanceCount||0)} services</div></div><strong>${Number(r.attendancePercentage||0)}%</strong></div>`).join('') || '<p class="empty-note">No active members.</p>';
   }
   window.loadCrmAttendanceReport=loadCrmAttendanceReport;
+
+
+  function exportCrmNotSeenCsv(days) {
+    const list=crmAttendanceReport?.notSeen?.[String(days)] || [];
+    const rows=list.map(m=>[
+      m.name || '',
+      m.householdName || '',
+      m.phone || '',
+      m.email || '',
+      m.lastAttendanceAt || ''
+    ]);
+    crmDownloadCsv(
+      `bethel-not-seen-${days}-days-${crmDateStamp()}.csv`,
+      ['Name','Household','Phone','Email','Last Attendance'],
+      rows
+    );
+  }
+  window.exportCrmNotSeenCsv=exportCrmNotSeenCsv;
 
   function renderCrmNotSeen(days) {
     const el=document.getElementById('crm-not-seen-list');

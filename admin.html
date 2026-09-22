@@ -1552,6 +1552,19 @@ body[data-theme="dark"] .analytics-table td{
     </div>
 
     <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:4px;">Needs Follow-Up</h2>
+          <p class="empty-note" style="margin:0;">Upcoming and overdue visitor/prospect follow-ups.</p>
+        </div>
+        <button class="btn btn-outline" onclick="setCrmView('prospects')">Open Visitors / Prospects</button>
+      </div>
+      <div id="crm-followup-dashboard" style="margin-top:12px;">
+        <p class="empty-note">No follow-ups scheduled.</p>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Recent Attendance</h2>
       <div id="crm-recent-attendance"><p class="empty-note">Loading…</p></div>
     </div>
@@ -1591,6 +1604,7 @@ body[data-theme="dark"] .analytics-table td{
           </select>
         </div>
         <div><label>Assigned To</label><input id="crm-prospect-assigned" placeholder="Pastor, steward, staff member…"></div>
+        <div><label>Follow-Up Due Date</label><input id="crm-prospect-followup-due" type="date"></div>
         <div class="full"><label>Staff Notes</label><textarea id="crm-prospect-staff-notes" rows="4" placeholder="Internal follow-up notes"></textarea></div>
       </div>
 
@@ -3093,6 +3107,7 @@ body[data-theme="dark"] .analytics-table td{
 
       renderCrmSmallList('crm-birthdays',dash.upcomingBirthdays,'No birthdays in the next 30 days.');
       renderCrmSmallList('crm-anniversaries',dash.upcomingAnniversaries,'No membership anniversaries in the next 30 days.');
+      renderCrmFollowUpDashboard(dash.needsFollowUp || []);
       renderCrmRecentAttendance(dash.recentAttendance || []);
       renderCrmMembers();
       renderCrmHouseholds();
@@ -3901,6 +3916,51 @@ body[data-theme="dark"] .analytics-table td{
     }[status] || status || 'New';
   }
 
+
+  function crmFollowUpLabel(v) {
+    if(!v?.followUpDueDate) return '';
+    const today=new Date();
+    const local=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const overdue=v.followUpDueDate < local &&
+      v.followUpStatus !== 'converted' &&
+      v.followUpStatus !== 'not_interested';
+    return `${overdue ? 'OVERDUE · ' : ''}Follow-up ${v.followUpDueDate}`;
+  }
+
+  function renderCrmFollowUpDashboard(items) {
+    const el=document.getElementById('crm-followup-dashboard');
+    if(!el) return;
+    const rows=Array.isArray(items) ? items : [];
+    if(!rows.length) {
+      el.innerHTML='<p class="empty-note">No visitor follow-ups are currently scheduled.</p>';
+      return;
+    }
+
+    const today=new Date();
+    const local=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const overdue=rows.filter(v=>v.followUpDueDate && v.followUpDueDate < local);
+    const upcoming=rows.filter(v=>v.followUpDueDate && v.followUpDueDate >= local);
+
+    const renderRows=list=>list.slice(0,8).map(v=>`
+      <div class="scheduled-item">
+        <div class="item-info">
+          <div class="item-title">${escHtml(v.name || 'Visitor / Prospect')}</div>
+          <div class="item-body">${escHtml(v.followUpDueDate || '')}${v.assignedTo ? ' · '+escHtml(v.assignedTo) : ''}</div>
+          <div class="item-body">${escHtml(crmProspectStatusLabel(v.followUpStatus))}</div>
+        </div>
+        <button class="btn btn-outline" onclick="openCrmProspect('${escHtml(v.id)}')">Open</button>
+      </div>`).join('');
+
+    let html='';
+    if(overdue.length) {
+      html+=`<div class="crm-section-title" style="margin-top:0;">Overdue (${overdue.length})</div>${renderRows(overdue)}`;
+    }
+    if(upcoming.length) {
+      html+=`<div class="crm-section-title">Upcoming (${upcoming.length})</div>${renderRows(upcoming)}`;
+    }
+    el.innerHTML=html;
+  }
+
   function renderCrmProspects() {
     const el=document.getElementById('crm-prospect-list');
     if(!el) return;
@@ -3917,7 +3977,7 @@ body[data-theme="dark"] .analytics-table td{
       <div class="crm-member-row">
         <div>
           <div class="crm-member-name">${escHtml(v.name || 'Visitor')}</div>
-          <div class="crm-member-meta">${escHtml([v.email,v.phone].filter(Boolean).join(' · ') || 'No contact details')}</div>
+          <div class="crm-member-meta">${escHtml([v.email,v.phone].filter(Boolean).join(' · ') || 'No contact details')}${crmFollowUpLabel(v) ? ' · '+escHtml(crmFollowUpLabel(v)) : ''}</div>
           <div style="margin-top:7px;">
             <span class="crm-badge">${escHtml(crmProspectStatusLabel(v.followUpStatus))}</span>
             <span class="crm-badge">${Number(v.visitCount || 0)} visit${Number(v.visitCount||0)===1?'':'s'}</span>
@@ -3941,6 +4001,7 @@ body[data-theme="dark"] .analytics-table td{
       document.getElementById('crm-prospect-email').textContent=v.email || '—';
       document.getElementById('crm-prospect-address').textContent=v.address || '—';
       document.getElementById('crm-prospect-status').value=v.followUpStatus || 'new';
+      document.getElementById('crm-prospect-followup-due').value=v.followUpDueDate || '';
       document.getElementById('crm-prospect-assigned').value=v.assignedTo || '';
       document.getElementById('crm-prospect-staff-notes').value=v.staffNotes || '';
       document.getElementById('crm-prospect-summary').textContent=
@@ -3975,6 +4036,7 @@ body[data-theme="dark"] .analytics-table td{
         action:'update',
         visitorId:id,
         followUpStatus:document.getElementById('crm-prospect-status').value,
+        followUpDueDate:document.getElementById('crm-prospect-followup-due').value,
         assignedTo:document.getElementById('crm-prospect-assigned').value,
         staffNotes:document.getElementById('crm-prospect-staff-notes').value
       });

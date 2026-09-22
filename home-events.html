@@ -296,7 +296,7 @@
         <h2>Upcoming at Bethel</h2>
         <p class="sub">What’s happening next in worship, community, ministry, and more.</p>
       </div>
-      <a class="all-link" href="https://events.bethelamelancaster.com" target="_top">View All Events</a>
+      <a class="all-link" href="https://events.bethelamelancaster.com/" target="_top">View All Events</a>
     </div>
 
     <div id="loading" class="state">Loading upcoming events…</div>
@@ -321,6 +321,7 @@
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
     const EVENT_IMAGE_FEED_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getEventFlyers';
+    const FLYER_ROWS_CACHE_KEY = 'bethel_event_flyer_rows_v2';
 
     const categoryIcons = {
       'Worship':'✦','Faith & Study':'✧','Youth':'★','Community':'♥',
@@ -471,15 +472,51 @@
       return m?m[1]:'';
     }
 
-    async function loadFlyerRows(){
+    function readFlyerRowsCache(){
       try{
-        const r=await fetch(EVENT_IMAGE_FEED_URL,{cache:'default'});
-        if(!r.ok)return[];
+        const saved=JSON.parse(
+          localStorage.getItem(FLYER_ROWS_CACHE_KEY)||'null'
+        );
+        return saved&&Array.isArray(saved.rows)?saved.rows:[];
+      }catch(_){return[]}
+    }
+
+    function writeFlyerRowsCache(rows){
+      if(!Array.isArray(rows)||!rows.length)return;
+
+      try{
+        localStorage.setItem(FLYER_ROWS_CACHE_KEY,JSON.stringify({
+          savedAt:Date.now(),
+          rows
+        }));
+      }catch(_){}
+    }
+
+    async function loadFlyerRows(){
+      const cached=readFlyerRowsCache();
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),20000);
+
+      try{
+        const r=await fetch(EVENT_IMAGE_FEED_URL,{
+          cache:'default',
+          signal:controller.signal
+        });
+        if(!r.ok)throw new Error('Flyer feed returned '+r.status);
         const p=await r.json();
-        return p&&Array.isArray(p.events)?p.events:[];
+        const rows=p&&Array.isArray(p.events)?p.events:[];
+
+        if(rows.length){
+          writeFlyerRowsCache(rows);
+          return rows;
+        }
+
+        return cached;
       }catch(err){
         console.warn('Could not load flyer metadata:',err);
-        return[];
+        return cached;
+      }finally{
+        clearTimeout(timeout);
       }
     }
 
@@ -565,7 +602,7 @@
       const month=new Intl.DateTimeFormat('en-US',{month:'short'}).format(ev.start);
       const dow=new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(ev.start);
       const time=ev.allDay?'All day':formatTime(ev.start);
-      const href='https://events.bethelamelancaster.com?event='+encodeURIComponent(ev.id);
+      const href='https://events.bethelamelancaster.com/?event='+encodeURIComponent(ev.id);
       const dateText=formatDate(ev.start)+(ev.allDay?'':' · '+time);
       const locationText=ev.location||'Bethel AME Lancaster';
 
@@ -767,7 +804,7 @@
       }catch(err){
         if(!showedCache){
           document.getElementById('loading').innerHTML=
-            'Upcoming events are temporarily unavailable. <a href="https://events.bethelamelancaster.com" target="_top" style="color:#f7bf5b">View the Events page</a>.';
+            'Upcoming events are temporarily unavailable. <a href="https://events.bethelamelancaster.com/" target="_top" style="color:#f7bf5b">View the Events page</a>.';
           reportHeight();
         }
         console.warn('Homepage events load error:',err);

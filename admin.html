@@ -1634,6 +1634,21 @@ body[data-theme="dark"] .analytics-table td{
           </div>
           <input id="crm-comm-campaign-id" type="hidden">
           <div class="status-msg" id="crm-comm-msg"></div>
+          <div class="crm-section-title">4. Microsoft 365 Email</div>
+          <div style="padding:14px;border:1px solid var(--border,#ddd);border-radius:10px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+              <div>
+                <strong id="crm-email-config-title">Microsoft 365 connection not checked</strong>
+                <div class="empty-note" id="crm-email-config-detail">The Firebase backend must be connected to Bethel's Microsoft 365 tenant before email can be sent.</div>
+              </div>
+              <button class="btn btn-outline" onclick="checkCrmEmailStatus()">Check Connection</button>
+            </div>
+            <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+              <button class="btn" id="crm-send-email-btn" onclick="sendCrmEmailNow()" disabled>Send Email Now</button>
+            </div>
+            <p class="empty-note" style="margin-bottom:0;">Messages are sent individually through Microsoft Graph so recipients do not see one another's addresses. A Microsoft “accepted” response means the message was accepted for processing, not that final delivery is guaranteed.</p>
+          </div>
+
         </div>
 
         <div id="crm-comm-templates-view" style="display:none;">
@@ -1763,6 +1778,7 @@ body[data-theme="dark"] .analytics-table td{
               <option value="app_linked">App account linked</option>
               <option value="app_unlinked">App account unlinked</option>
               <option value="groups_updated">Groups updated</option>
+              <option value="email_sent">Email sent</option>
             </select>
           </div>
           <div style="max-width:170px;">
@@ -2293,6 +2309,10 @@ body[data-theme="dark"] .analytics-table td{
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageChurchGroups';
   const CRM_COMMUNICATIONS_URL =
     'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageCrmCommunications';
+  const CRM_EMAIL_STATUS_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getCrmEmailStatus';
+  const CRM_EMAIL_SEND_URL =
+    'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/sendCrmEmailCampaign';
 
   async function idToken() {
     const user=auth.currentUser;
@@ -3295,6 +3315,8 @@ body[data-theme="dark"] .analytics-table td{
   let crmCommunicationTemplates=[];
   let crmSavedAudiences=[];
   let crmCommunicationCampaigns=[];
+  let crmEmailConfigured=false;
+  let crmEmailSenderMailbox='';
   let crmCurrentMemberGroups=[];
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
@@ -3461,6 +3483,7 @@ body[data-theme="dark"] .analytics-table td{
       renderCrmCommunicationTemplates();
       renderCrmCommunicationHistory();
       await buildCrmCommunicationAudience();
+      await checkCrmEmailStatus(false);
     } catch(e) {
       crmMsg('crm-comm-msg',e.message || 'Could not load communications center.','error');
     }
@@ -3889,11 +3912,103 @@ Bethel AME Lancaster`;
       const refresh=await crmRequest(CRM_COMMUNICATIONS_URL,{action:'list'});
       crmCommunicationCampaigns=refresh.campaigns || [];
       renderCrmCommunicationHistory();
+      return data.id;
     } catch(e) {
       crmMsg('crm-comm-msg',e.message || 'Could not save communication.','error');
+      return '';
     }
   }
   window.saveCrmCommunicationCampaign=saveCrmCommunicationCampaign;
+
+
+  async function checkCrmEmailStatus(showMessage=true) {
+    const title=document.getElementById('crm-email-config-title');
+    const detail=document.getElementById('crm-email-config-detail');
+    const sendBtn=document.getElementById('crm-send-email-btn');
+
+    try {
+      const data=await crmRequest(CRM_EMAIL_STATUS_URL,{});
+      crmEmailConfigured=data.configured===true;
+      crmEmailSenderMailbox=data.senderMailbox || '';
+
+      if(title) title.textContent=crmEmailConfigured ? 'Microsoft 365 email connected' : 'Microsoft 365 email not configured';
+      if(detail) detail.textContent=crmEmailConfigured
+        ? `Email will be sent from ${data.senderName || 'Bethel AME Lancaster'} <${crmEmailSenderMailbox}>.`
+        : 'Add the Microsoft tenant/app credentials and sender mailbox to the Firebase Functions environment.';
+      if(sendBtn) sendBtn.disabled=!crmEmailConfigured;
+
+      if(showMessage) crmMsg('crm-comm-msg',crmEmailConfigured ? 'Microsoft 365 connection is configured.' : 'Microsoft 365 email still needs to be configured.',crmEmailConfigured ? 'success' : 'info');
+    } catch(e) {
+      crmEmailConfigured=false;
+      if(title) title.textContent='Microsoft 365 connection could not be checked';
+      if(detail) detail.textContent=e.message || 'Connection check failed.';
+      if(sendBtn) sendBtn.disabled=true;
+      if(showMessage) crmMsg('crm-comm-msg',e.message || 'Could not check Microsoft 365 connection.','error');
+    }
+  }
+  window.checkCrmEmailStatus=checkCrmEmailStatus;
+
+  async function sendCrmEmailNow() {
+    if(!crmEmailConfigured) {
+      return crmMsg('crm-comm-msg','Microsoft 365 email is not configured yet.','error');
+    }
+
+    const subject=document.getElementById('crm-comm-subject')?.value.trim() || '';
+    const body=document.getElementById('crm-comm-message')?.value.trim() || '';
+    if(!subject || !body) {
+      return crmMsg('crm-comm-msg','Enter both a subject and message before sending.','error');
+    }
+
+    const emailRecipients=crmCommunicationAudience.filter(p=>p.email);
+    if(!emailRecipients.length) {
+      return crmMsg('crm-comm-msg','There are no email addresses in the current audience.','error');
+    }
+
+    let campaignId=document.getElementById('crm-comm-campaign-id')?.value || '';
+    if(!campaignId) {
+      campaignId=await saveCrmCommunicationCampaign();
+      if(!campaignId) return;
+    }
+
+    const confirmText=
+      `Send this email from ${crmEmailSenderMailbox} to ${emailRecipients.length} recipient${emailRecipients.length===1?'':'s'}?\n\n`+
+      `Each recipient will receive an individual message.`;
+    if(!window.confirm(confirmText)) return;
+
+    const btn=document.getElementById('crm-send-email-btn');
+    if(btn) {
+      btn.disabled=true;
+      btn.textContent='Sending…';
+    }
+    crmMsg('crm-comm-msg',`Submitting ${emailRecipients.length} email${emailRecipients.length===1?'':'s'} to Microsoft 365…`,'info');
+
+    try {
+      const data=await crmRequest(CRM_EMAIL_SEND_URL,{
+        campaignId,
+        recipients:emailRecipients.map(p=>({id:p.id,source:p.source}))
+      });
+
+      crmMsg(
+        'crm-comm-msg',
+        `Microsoft accepted ${Number(data.accepted || 0)} message${Number(data.accepted || 0)===1?'':'s'} for processing`+
+          `${Number(data.failed || 0) ? `; ${Number(data.failed || 0)} failed.` : '.'}`,
+        Number(data.failed || 0) ? 'info' : 'success'
+      );
+
+      document.getElementById('crm-comm-status').value='completed';
+      const refresh=await crmRequest(CRM_COMMUNICATIONS_URL,{action:'list'});
+      crmCommunicationCampaigns=refresh.campaigns || [];
+      renderCrmCommunicationHistory();
+    } catch(e) {
+      crmMsg('crm-comm-msg',e.message || 'Could not send email.','error');
+    } finally {
+      if(btn) {
+        btn.disabled=!crmEmailConfigured;
+        btn.textContent='Send Email Now';
+      }
+    }
+  }
+  window.sendCrmEmailNow=sendCrmEmailNow;
 
   function resetCrmCommunicationComposer() {
     ['crm-comm-campaign-id','crm-comm-campaign-name','crm-comm-subject','crm-comm-message','crm-comm-scheduled-for'].forEach(id=>{
@@ -4009,6 +4124,7 @@ Bethel AME Lancaster`;
         <div>
           <div class="crm-member-name">${escHtml(c.name || 'Communication')}</div>
           <div class="crm-member-meta">${escHtml(String(c.status || 'draft').replaceAll('_',' '))} · ${Number(c.recipientCount || 0)} recipients · ${escHtml(c.audienceName || 'Custom audience')}</div>
+          ${c.lastEmailSendAt ? `<div class="item-body">Microsoft 365: ${Number(c.emailAcceptedCount || 0)} accepted${Number(c.emailFailedCount || 0) ? ' · '+Number(c.emailFailedCount || 0)+' failed' : ''}</div>` : ''}
           <div class="item-body">${escHtml(c.subject || 'No subject')}</div>
           ${c.scheduledFor ? `<div class="item-body">Planned: ${escHtml(c.scheduledFor.replace('T',' '))}</div>` : ''}
           <div class="item-body">Updated: ${escHtml(formatInteractionTime(c.updatedAt))}</div>

@@ -768,13 +768,6 @@
     @media (prefers-reduced-motion:reduce) {
       *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
     }
-  
-    .btn.saved-event-btn.saved {
-      background:rgba(66,158,64,.16);
-      border-color:rgba(66,158,64,.48);
-      color:#8ee28c;
-    }
-
   </style>
 </head>
 
@@ -906,202 +899,12 @@
   <script type="module">
     import ICAL from 'https://cdn.jsdelivr.net/npm/ical.js@2.2.1/dist/ical.min.js';
 
-    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
-    const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyCb41gB_xrNzLwMKWw0DMD7w63rLg3QWmY",
-      authDomain: "bethelapp-f2d4e.firebaseapp.com",
-      projectId: "bethelapp-f2d4e",
-      storageBucket: "bethelapp-f2d4e.firebasestorage.app",
-      messagingSenderId: "512787123423",
-      appId: "1:512787123423:web:80ed5589e9f20d3005ad6a"
-    };
-
-    const firebaseApp = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
-    const auth = getAuth(firebaseApp);
-    const SAVED_EVENTS_URL =
-      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/manageSavedEvents';
-    const APP_EVENT_TRACK_URL =
-      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/trackAppEvent';
-    const APP_INSTALL_ID_KEY = 'bethel_app_install_id';
-
-    let signedInUser = null;
-    const savedEventIds = new Set();
-
-
-    function getEventsInstallId() {
-      let id = localStorage.getItem(APP_INSTALL_ID_KEY);
-      if (!id) {
-        if (crypto.randomUUID) {
-          id = crypto.randomUUID().replace(/-/g,'_');
-        } else {
-          id = 'bethel_' + Date.now().toString(36) + '_' +
-            Math.random().toString(36).slice(2) +
-            Math.random().toString(36).slice(2);
-        }
-        localStorage.setItem(APP_INSTALL_ID_KEY,id);
-      }
-      return id;
-    }
-
-    function eventsDeviceType() {
-      const ua = navigator.userAgent || '';
-      if (/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)) return 'tablet';
-      if (/Mobi|iPhone|Android/i.test(ua)) return 'mobile';
-      return 'desktop';
-    }
-
-    function eventsPlatform() {
-      const ua = navigator.userAgent || '';
-      if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS/iPadOS';
-      if (/Android/i.test(ua)) return 'Android';
-      if (/Windows/i.test(ua)) return 'Windows';
-      if (/Macintosh|Mac OS X/i.test(ua)) return 'macOS';
-      if (/CrOS/i.test(ua)) return 'ChromeOS';
-      if (/Linux/i.test(ua)) return 'Linux';
-      return navigator.platform || 'unknown';
-    }
-
-    async function trackEventsEngagement(eventType, ev) {
-      try {
-        const headers = { 'Content-Type':'application/json' };
-        if (auth.currentUser) {
-          headers.Authorization = 'Bearer ' + await auth.currentUser.getIdToken();
-        }
-        await fetch(APP_EVENT_TRACK_URL,{
-          method:'POST',
-          headers,
-          body:JSON.stringify({
-            installId:getEventsInstallId(),
-            eventType,
-            eventId:ev?.id || '',
-            eventTitle:ev?.title || '',
-            platform:eventsPlatform(),
-            deviceType:eventsDeviceType()
-          }),
-          keepalive:true
-        });
-      } catch (e) {
-        console.warn('Event engagement tracking failed:',e);
-      }
-    }
-
-    async function savedEventsRequest(payload) {
-      if (!auth.currentUser) throw new Error('Please sign in to My Bethel first.');
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(SAVED_EVENTS_URL, {
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':`Bearer ${token}`
-        },
-        body:JSON.stringify(payload)
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || data.success === false) {
-        throw new Error(data.error || 'Saved event request failed.');
-      }
-      return data;
-    }
-
-    async function refreshSavedEventIds() {
-      savedEventIds.clear();
-      if (!auth.currentUser) {
-        updateSavedButtons();
-        return;
-      }
-      try {
-        const data = await savedEventsRequest({ action:'list' });
-        (data.events || []).forEach(ev => savedEventIds.add(String(ev.eventId || ev.id || '')));
-      } catch (e) {
-        console.warn('Could not load saved events:', e);
-      }
-      updateSavedButtons();
-    }
-
-    function updateSavedButtons() {
-      document.querySelectorAll('[data-save-event]').forEach(btn => {
-        const id = btn.getAttribute('data-save-event');
-        const saved = savedEventIds.has(id);
-        btn.classList.toggle('saved', saved);
-        btn.textContent = saved ? '✓ Saved' : '♡ Save Event';
-        btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
-      });
-    }
-
-    function eventSavePayload(ev) {
-      const pageUrl = new URL(location.href);
-      pageUrl.search = '';
-      pageUrl.searchParams.set('event', ev.id);
-      return {
-        id:ev.id,
-        title:ev.title,
-        start:ev.start?.toISOString?.() || '',
-        end:ev.end?.toISOString?.() || '',
-        allDay:ev.allDay === true,
-        location:ev.location || '',
-        category:ev.category || '',
-        image:ev.image || '',
-        eventUrl:pageUrl.toString()
-      };
-    }
-
-    async function toggleSavedEvent(ev, button=null) {
-      if (!auth.currentUser) {
-        const goSignIn = confirm('Sign in to My Bethel to save events. Open the app sign-in now?');
-        if (goSignIn) location.href = '/?mybethel=1';
-        return;
-      }
-
-      const alreadySaved = savedEventIds.has(ev.id);
-      if (button) {
-        button.disabled = true;
-        button.textContent = alreadySaved ? 'Removing…' : 'Saving…';
-      }
-
-      try {
-        if (alreadySaved) {
-          await savedEventsRequest({ action:'remove', eventId:ev.id });
-          savedEventIds.delete(ev.id);
-          trackEventsEngagement('event_unsave', ev);
-        } else {
-          await savedEventsRequest({ action:'save', event:eventSavePayload(ev) });
-          savedEventIds.add(ev.id);
-          trackEventsEngagement('event_save', ev);
-        }
-        updateSavedButtons();
-      } catch (e) {
-        alert(e.message || 'Could not update saved event.');
-        updateSavedButtons();
-      } finally {
-        if (button) button.disabled = false;
-      }
-    }
-
-    function bindSaveButtons() {
-      document.querySelectorAll('[data-save-event]').forEach(btn => {
-        btn.onclick = () => {
-          const ev = eventById(btn.getAttribute('data-save-event'));
-          if (ev) toggleSavedEvent(ev, btn);
-        };
-      });
-      updateSavedButtons();
-    }
-
-    onAuthStateChanged(auth, user => {
-      signedInUser = user || null;
-      refreshSavedEventIds();
-    });
-
-
     const EVENTS_FEED_URL =
       'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getPublicCalendarIcs';
 
-    // One-time setup: paste the deployed Google Apps Script Web App URL here.
-    // Staff never need to touch this again. They simply attach a flyer image
-    // to the Google Calendar event.
-    const EVENT_IMAGE_FEED_URL = 'https://script.google.com/macros/s/AKfycbx_TICD7MK8tTZdPYCOyzQINqsN6G53utHKd9E0T4ddKwa83RJ9aftOwlkawh_CC6fc7A/exec';
+    const EVENT_IMAGE_FEED_URL =
+      'https://us-central1-bethelapp-f2d4e.cloudfunctions.net/getEventFlyers';
+    const EVENT_IMAGE_CACHE_KEY = 'bethel_event_images_v2';
 
     const state = {
       events: [],
@@ -1449,74 +1252,69 @@
       return { start:now, end:addDays(today, 90) };
     }
 
-    function loadCalendarAttachmentImages() {
-      return new Promise(resolve => {
-        if (!EVENT_IMAGE_FEED_URL ||
-            EVENT_IMAGE_FEED_URL.includes('PASTE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
-          resolve({});
-          return;
+    function readEventImageCache() {
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem(EVENT_IMAGE_CACHE_KEY) || 'null'
+        );
+        return saved && saved.images && typeof saved.images === 'object'
+          ? saved.images
+          : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function writeEventImageCache(images) {
+      if (!images || !Object.keys(images).length) return;
+
+      try {
+        localStorage.setItem(EVENT_IMAGE_CACHE_KEY, JSON.stringify({
+          savedAt: Date.now(),
+          images: images
+        }));
+      } catch (_) {}
+    }
+
+    async function loadCalendarAttachmentImages() {
+      const cached = readEventImageCache();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      try {
+        const response = await fetch(EVENT_IMAGE_FEED_URL, {
+          cache: 'default',
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error('Flyer feed returned ' + response.status);
         }
 
-        const callbackName =
-          '__bethelEventImages_' + Math.random().toString(36).slice(2);
+        const payload = await response.json();
+        const imageMap = {};
+        const rows = payload && Array.isArray(payload.events)
+          ? payload.events
+          : [];
 
-        let finished = false;
-        const cleanup = () => {
-          try { delete window[callbackName]; } catch (_) {}
-          const node = document.getElementById(callbackName);
-          if (node) node.remove();
-        };
+        rows.forEach(row => {
+          if (row && row.iCalUID && row.imageUrl) {
+            imageMap[String(row.iCalUID)] = String(row.imageUrl);
+          }
+        });
 
-        const timeout = setTimeout(() => {
-          if (finished) return;
-          finished = true;
-          cleanup();
-          console.warn('Event image feed timed out.');
-          resolve({});
-        }, 12000);
+        if (Object.keys(imageMap).length) {
+          writeEventImageCache(imageMap);
+          return imageMap;
+        }
 
-        window[callbackName] = payload => {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timeout);
-
-          const imageMap = {};
-          const rows = payload && Array.isArray(payload.events)
-            ? payload.events
-            : [];
-
-          rows.forEach(row => {
-            if (row && row.iCalUID && row.imageUrl) {
-              imageMap[String(row.iCalUID)] = String(row.imageUrl);
-            }
-          });
-
-          cleanup();
-          resolve(imageMap);
-        };
-
-        const script = document.createElement('script');
-        script.id = callbackName;
-        script.async = true;
-
-        const separator = EVENT_IMAGE_FEED_URL.includes('?') ? '&' : '?';
-        script.src =
-          EVENT_IMAGE_FEED_URL +
-          separator +
-          'callback=' + encodeURIComponent(callbackName) +
-          '&t=' + Date.now();
-
-        script.onerror = () => {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timeout);
-          cleanup();
-          console.warn('Could not load event attachment images.');
-          resolve({});
-        };
-
-        document.head.appendChild(script);
-      });
+        return cached;
+      } catch (err) {
+        console.warn('Could not refresh event attachment images:', err);
+        return cached;
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
     function applyCalendarAttachmentImages(imageMap) {
@@ -1599,7 +1397,6 @@
             ${ev.description ? `<p class="event-excerpt">${esc(ev.description)}</p>` : ''}
             <div class="card-actions">
               <button class="btn primary" type="button" data-open-event="${ev.id}">Event Details</button>
-              <button class="btn saved-event-btn" type="button" data-save-event="${ev.id}" aria-pressed="false">♡ Save Event</button>
               <a class="btn" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">+ Calendar</a>
             </div>
           </div>
@@ -1840,7 +1637,6 @@
       document.querySelectorAll('[data-open-event]').forEach(btn => {
         btn.onclick = () => openEvent(btn.dataset.openEvent);
       });
-      bindSaveButtons();
     }
 
     function openEvent(id, updateUrl=true) {
@@ -1866,8 +1662,7 @@
       }
 
       const actions = [
-        `<a class="btn primary" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">Add to Calendar</a>`,
-        `<button class="btn saved-event-btn" type="button" data-save-event="${ev.id}" aria-pressed="${savedEventIds.has(ev.id) ? 'true' : 'false'}">${savedEventIds.has(ev.id) ? '✓ Saved' : '♡ Save Event'}</button>`
+        `<a class="btn primary" href="${googleCalendarLink(ev)}" target="_blank" rel="noopener">Add to Calendar</a>`
       ];
 
       if (ev.location) {
@@ -1882,7 +1677,6 @@
       document.getElementById('modal-actions').innerHTML = actions.join('');
 
       document.getElementById('share-event-btn').onclick = () => shareEvent(ev);
-      bindSaveButtons();
 
       const modal = document.getElementById('event-modal');
       modal.classList.add('open');

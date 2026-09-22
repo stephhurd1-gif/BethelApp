@@ -662,6 +662,22 @@ body[data-theme="dark"] .analytics-table td{
   .crm-report-table th,.crm-report-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left;font-size:12px}
   .crm-report-table th{color:var(--muted);font-weight:800}
 
+  .comm-step{border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:16px;background:var(--card2)}
+  .comm-step-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .comm-step-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#111;font-weight:900;flex:0 0 auto}
+  .comm-step h3{margin:0}
+  .comm-summary{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-top:12px}
+  .comm-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .comm-details{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+  .comm-details summary{cursor:pointer;font-weight:800;color:var(--muted)}
+  .comm-token-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+  .comm-token{font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:999px;background:transparent;color:inherit;cursor:pointer}
+  .comm-send-card{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+  .comm-send-card .btn{min-width:170px}
+  .comm-quick-grid{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,1fr);gap:12px}
+  @media(max-width:760px){.comm-quick-grid{grid-template-columns:1fr}}
+
+
 
 
   .admin-menu-bar{
@@ -1550,191 +1566,229 @@ body[data-theme="dark"] .analytics-table td{
     <div class="card">
       <div class="crm-page-heading"><div><h2>Communications</h2><p class="empty-note" style="margin:0;">Audience building, templates, email preparation, scheduling, and history.</p></div></div>
       <div id="crm-communications-view">
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-top:6px;">
           <div>
             <h3 style="margin:0;">Communications Center</h3>
-            <p class="empty-note" style="margin:3px 0 0;">Build audiences, save reusable templates, prepare communications, and keep a history. Nothing is sent automatically.</p>
+            <p class="empty-note" style="margin:4px 0 0;">Create and send personalized church email without exposing recipient addresses.</p>
           </div>
-          <button class="btn btn-outline" onclick="loadCrmCommunicationWorkspace()">Refresh</button>
+          <div style="text-align:right;">
+            <strong id="crm-email-config-title">Checking Microsoft 365…</strong>
+            <div class="empty-note" id="crm-email-config-detail"></div>
+          </div>
         </div>
 
         <div class="btn-row" style="justify-content:flex-start;margin-top:16px;">
-          <button class="btn" id="crm-comm-tab-compose" onclick="setCrmCommunicationView('compose')">Compose</button>
+          <button class="btn" id="crm-comm-tab-compose" onclick="setCrmCommunicationView('compose')">New Email</button>
           <button class="btn btn-outline" id="crm-comm-tab-templates" onclick="setCrmCommunicationView('templates')">Templates</button>
-          <button class="btn btn-outline" id="crm-comm-tab-history" onclick="setCrmCommunicationView('history')">History / Schedule</button>
+          <button class="btn btn-outline" id="crm-comm-tab-history" onclick="setCrmCommunicationView('history')">History</button>
         </div>
 
         <div id="crm-comm-compose-view">
-          <div class="crm-section-title">1. Build Audience</div>
-          <div class="crm-form-grid">
-            <div>
-              <label>Saved Audience</label>
-              <div style="display:flex;gap:8px;">
-                <select id="crm-comm-saved-audience" onchange="loadSavedCrmAudience()" style="flex:1;">
-                  <option value="">Build a new audience</option>
+          <div class="comm-step">
+            <div class="comm-step-head">
+              <div class="comm-step-num">1</div>
+              <div><h3>Choose recipients</h3><div class="empty-note">Pick a common audience or use a saved list.</div></div>
+            </div>
+
+            <div class="comm-quick-grid">
+              <div>
+                <label>Quick audience</label>
+                <select id="crm-comm-quick-audience" onchange="applyCrmQuickAudience()">
+                  <option value="active">All active members</option>
+                  <option value="group">A group / ministry</option>
+                  <option value="visitor_followup">Visitors needing follow-up</option>
+                  <option value="not_seen_30">Members not seen in 30 days</option>
+                  <option value="not_seen_60">Members not seen in 60 days</option>
+                  <option value="not_seen_90">Members not seen in 90 days</option>
+                  <option value="selected">Choose individual members</option>
+                  <option value="advanced">Custom / advanced filters</option>
                 </select>
-                <button class="btn btn-outline" onclick="saveCurrentCrmAudience()">Save</button>
+              </div>
+              <div>
+                <label>Saved audience</label>
+                <div style="display:flex;gap:8px;">
+                  <select id="crm-comm-saved-audience" onchange="loadSavedCrmAudience()" style="flex:1;">
+                    <option value="">None</option>
+                  </select>
+                  <button class="btn btn-outline" onclick="saveCurrentCrmAudience()">Save</button>
+                </div>
               </div>
             </div>
-            <div>
-              <label>Member Status</label>
-              <select id="crm-comm-member-status" onchange="buildCrmCommunicationAudience()">
-                <option value="active">Active Members</option>
-                <option value="all">All Non-Deceased Members</option>
-                <option value="prospective">Prospective Members</option>
-                <option value="inactive">Inactive Members</option>
-              </select>
-            </div>
-            <div>
+
+            <div id="crm-comm-quick-group-wrap" style="display:none;margin-top:12px;">
               <label>Group / Ministry</label>
               <select id="crm-comm-group" onchange="buildCrmCommunicationAudience()">
-                <option value="">Any group / ministry</option>
+                <option value="">Choose a group / ministry</option>
               </select>
             </div>
-            <div>
-              <label>Attendance</label>
-              <select id="crm-comm-notseen" onchange="buildCrmCommunicationAudience()">
-                <option value="0">Any attendance</option>
-                <option value="30">Not seen in 30 days</option>
-                <option value="60">Not seen in 60 days</option>
-                <option value="90">Not seen in 90 days</option>
-              </select>
-            </div>
-            <div>
-              <label>Visitors / Prospects</label>
-              <select id="crm-comm-visitor-filter" onchange="buildCrmCommunicationAudience()">
-                <option value="none">Do not include visitors</option>
-                <option value="followup">Visitors needing follow-up</option>
-                <option value="new">New visitors</option>
-                <option value="contacted">Contacted visitors</option>
-                <option value="follow_up">Follow-up status</option>
-                <option value="regular_attender">Regular attenders</option>
-                <option value="all">All open visitors</option>
-              </select>
-            </div>
-            <div>
-              <label>Household Handling</label>
-              <select id="crm-comm-household-mode" onchange="buildCrmCommunicationAudience()">
-                <option value="everyone">Include everyone</option>
-                <option value="one">One contact per household</option>
-              </select>
-            </div>
-          </div>
 
-          <div style="margin-top:14px;">
-            <label style="display:flex;align-items:center;gap:8px;">
-              <input type="checkbox" id="crm-comm-use-selected" onchange="crmCommSelectedModeChanged()">
-              <span>Use only manually selected members</span>
-            </label>
-          </div>
-
-          <div id="crm-comm-selected-members-wrap" style="display:none;margin-top:14px;">
-            <div class="crm-toolbar">
-              <div><label>Search Members</label><input id="crm-comm-member-search" placeholder="Name, email, phone…" oninput="renderCrmCommunicationMemberPicker()"></div>
-              <div style="max-width:180px;display:flex;align-items:flex-end;"><button class="btn btn-outline" onclick="crmCommSelectAllVisible()">Select All Visible</button></div>
-              <div style="max-width:160px;display:flex;align-items:flex-end;"><button class="btn btn-outline" onclick="crmCommClearSelected()">Clear</button></div>
-            </div>
-            <div id="crm-comm-member-picker" class="crm-member-list"></div>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;">
-            <div>
-              <strong id="crm-comm-audience-count">0 people</strong>
-              <div class="empty-note" id="crm-comm-contact-counts">0 with email · 0 with phone · 0 missing both</div>
-            </div>
-            <div class="btn-row" style="justify-content:flex-end;">
-              <button class="btn btn-outline" onclick="copyCrmCommunicationEmails()">Copy Emails</button>
-              <button class="btn btn-outline" onclick="copyCrmCommunicationPhones()">Copy Phones</button>
-              <button class="btn btn-outline" onclick="exportCrmCommunicationAudience()">Audience CSV</button>
-            </div>
-          </div>
-          <div id="crm-comm-audience-list" class="crm-member-list" style="margin-top:12px;"></div>
-
-          <div class="crm-section-title">2. Compose</div>
-          <div class="crm-form-grid">
-            <div>
-              <label>Load Template</label>
-              <select id="crm-comm-template-select" onchange="applyCrmCommunicationTemplate()">
-                <option value="">Choose a saved template</option>
-              </select>
-            </div>
-            <div>
-              <label>Channel</label>
-              <select id="crm-comm-channel">
-                <option value="general">General / Copy-Paste</option>
-                <option value="email">Email</option>
-                <option value="text">Text / SMS</option>
-              </select>
-            </div>
-            <div class="full">
-              <label>Communication Name</label>
-              <input id="crm-comm-campaign-name" placeholder="e.g. October Choir Meeting Reminder">
-            </div>
-            <div class="full">
-              <label>Subject / Title</label>
-              <input id="crm-comm-subject" placeholder="Message subject">
-            </div>
-            <div class="full">
-              <label>Message</label>
-              <textarea id="crm-comm-message" rows="9" placeholder="Write your message here. Personalization fields: {{firstName}}, {{preferredName}}, {{lastName}}, {{household}}, {{group}}"></textarea>
-              <div class="empty-note" style="margin-top:5px;">Personalization fields are previewed here but are not automatically mail-merged until sending is connected.</div>
-            </div>
-          </div>
-
-          <div class="btn-row" style="justify-content:flex-start;">
-            <button class="btn btn-outline" onclick="generateCrmCommunicationDraft()">Generate Starter Draft</button>
-            <button class="btn btn-outline" onclick="previewCrmPersonalization()">Preview Personalization</button>
-            <button class="btn btn-outline" onclick="copyCrmCommunicationDraft()">Copy Draft</button>
-          </div>
-
-          <div id="crm-comm-preview" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--border,#ddd);border-radius:10px;"></div>
-
-          <div class="crm-section-title">3. Save / Review / Schedule</div>
-          <div class="crm-form-grid">
-            <div>
-              <label>Status</label>
-              <select id="crm-comm-status" onchange="crmCommStatusChanged()">
-                <option value="draft">Draft</option>
-                <option value="ready">Ready for Review</option>
-                <option value="scheduled">Scheduled / Planned</option>
-                <option value="completed">Sent / Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div id="crm-comm-schedule-wrap" style="display:none;">
-              <label>Planned Date & Time</label>
-              <input id="crm-comm-scheduled-for" type="datetime-local">
-            </div>
-          </div>
-          <p class="empty-note">Scheduling here records when you intend to send it; it does not automatically send email or SMS.</p>
-          <div class="btn-row" style="justify-content:flex-start;">
-            <button class="btn" onclick="saveCrmCommunicationCampaign()">Save Communication</button>
-            <button class="btn btn-outline" onclick="saveCurrentDraftAsTemplate()">Save Draft as Template</button>
-            <button class="btn btn-outline" onclick="resetCrmCommunicationComposer()">New Communication</button>
-          </div>
-          <input id="crm-comm-campaign-id" type="hidden">
-          <div class="status-msg" id="crm-comm-msg"></div>
-          <div class="crm-section-title">4. Microsoft 365 Email</div>
-          <div style="padding:14px;border:1px solid var(--border,#ddd);border-radius:10px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-              <div>
-                <strong id="crm-email-config-title">Microsoft 365 connection not checked</strong>
-                <div class="empty-note" id="crm-email-config-detail">The Firebase backend must be connected to Bethel's Microsoft 365 tenant before email can be sent.</div>
+            <div id="crm-comm-selected-members-wrap" style="display:none;margin-top:14px;">
+              <div class="crm-toolbar">
+                <div><label>Search members</label><input id="crm-comm-member-search" placeholder="Name, email, phone…" oninput="renderCrmCommunicationMemberPicker()"></div>
+                <div style="max-width:170px;display:flex;align-items:flex-end;"><button class="btn btn-outline" onclick="crmCommSelectAllVisible()">Select visible</button></div>
+                <div style="max-width:120px;display:flex;align-items:flex-end;"><button class="btn btn-outline" onclick="crmCommClearSelected()">Clear</button></div>
               </div>
-              <button class="btn btn-outline" onclick="checkCrmEmailStatus()">Check Connection</button>
+              <div id="crm-comm-member-picker" class="crm-member-list"></div>
             </div>
-            <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
-              <button class="btn" id="crm-send-email-btn" onclick="sendCrmEmailNow()" disabled>Send Email Now</button>
+
+            <details class="comm-details" id="crm-comm-advanced-details">
+              <summary>More audience filters</summary>
+              <div class="crm-form-grid" style="margin-top:12px;">
+                <div>
+                  <label>Member status</label>
+                  <select id="crm-comm-member-status" onchange="buildCrmCommunicationAudience()">
+                    <option value="active">Active members</option>
+                    <option value="all">All non-deceased members</option>
+                    <option value="prospective">Prospective members</option>
+                    <option value="inactive">Inactive members</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Attendance</label>
+                  <select id="crm-comm-notseen" onchange="buildCrmCommunicationAudience()">
+                    <option value="0">Any attendance</option>
+                    <option value="30">Not seen in 30 days</option>
+                    <option value="60">Not seen in 60 days</option>
+                    <option value="90">Not seen in 90 days</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Visitors / prospects</label>
+                  <select id="crm-comm-visitor-filter" onchange="buildCrmCommunicationAudience()">
+                    <option value="none">Do not include visitors</option>
+                    <option value="followup">Visitors needing follow-up</option>
+                    <option value="new">New visitors</option>
+                    <option value="contacted">Contacted visitors</option>
+                    <option value="follow_up">Follow-up status</option>
+                    <option value="regular_attender">Regular attenders</option>
+                    <option value="all">All open visitors</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Households</label>
+                  <select id="crm-comm-household-mode" onchange="buildCrmCommunicationAudience()">
+                    <option value="everyone">Email each person</option>
+                    <option value="one">One person per household</option>
+                  </select>
+                </div>
+              </div>
+              <label style="display:none;">
+                <input type="checkbox" id="crm-comm-use-selected" onchange="crmCommSelectedModeChanged()">
+                Use selected members
+              </label>
+            </details>
+
+            <div class="comm-summary">
+              <div>
+                <strong id="crm-comm-audience-count">0 people</strong>
+                <div class="empty-note" id="crm-comm-contact-counts">0 with email · 0 with phone · 0 missing both</div>
+              </div>
+              <div class="comm-actions">
+                <button class="btn btn-outline" onclick="exportCrmCommunicationAudience()">Export list</button>
+                <details>
+                  <summary class="btn btn-outline" style="list-style:none;cursor:pointer;">View recipients</summary>
+                  <div id="crm-comm-audience-list" class="crm-member-list" style="margin-top:10px;min-width:min(720px,85vw);"></div>
+                </details>
+              </div>
             </div>
-            <p class="empty-note" style="margin-bottom:0;">Messages are sent individually through Microsoft Graph so recipients do not see one another's addresses. A Microsoft “accepted” response means the message was accepted for processing, not that final delivery is guaranteed.</p>
           </div>
 
+          <div class="comm-step">
+            <div class="comm-step-head">
+              <div class="comm-step-num">2</div>
+              <div><h3>Write the email</h3><div class="empty-note">Use a template or write a new message.</div></div>
+            </div>
+
+            <div class="crm-form-grid">
+              <div>
+                <label>Template <span class="empty-note">(optional)</span></label>
+                <select id="crm-comm-template-select" onchange="applyCrmCommunicationTemplate()">
+                  <option value="">No template</option>
+                </select>
+              </div>
+              <div>
+                <label>Internal name <span class="empty-note">(for history)</span></label>
+                <input id="crm-comm-campaign-name" placeholder="e.g. October Choir Reminder">
+              </div>
+              <div class="full">
+                <label>Subject</label>
+                <input id="crm-comm-subject" placeholder="Email subject">
+              </div>
+              <div class="full">
+                <label>Message</label>
+                <textarea id="crm-comm-message" rows="10" placeholder="Write your email here…"></textarea>
+                <div class="comm-token-row">
+                  <span class="empty-note" style="padding-top:5px;">Personalize:</span>
+                  <button type="button" class="comm-token" onclick="insertCrmCommToken('{{preferredName}}')">Preferred name</button>
+                  <button type="button" class="comm-token" onclick="insertCrmCommToken('{{firstName}}')">First name</button>
+                  <button type="button" class="comm-token" onclick="insertCrmCommToken('{{lastName}}')">Last name</button>
+                  <button type="button" class="comm-token" onclick="insertCrmCommToken('{{household}}')">Household</button>
+                  <button type="button" class="comm-token" onclick="insertCrmCommToken('{{group}}')">Group</button>
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="crm-comm-channel" value="email">
+            <div class="comm-actions" style="margin-top:12px;">
+              <button class="btn btn-outline" onclick="generateCrmCommunicationDraft()">Starter draft</button>
+              <button class="btn btn-outline" onclick="previewCrmPersonalization()">Preview</button>
+              <button class="btn btn-outline" onclick="saveCurrentDraftAsTemplate()">Save as template</button>
+            </div>
+            <div id="crm-comm-preview" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--border,#ddd);border-radius:10px;"></div>
+          </div>
+
+          <div class="comm-step">
+            <div class="comm-step-head">
+              <div class="comm-step-num">3</div>
+              <div><h3>Send</h3><div class="empty-note">Review the audience and message, then send through Microsoft 365.</div></div>
+            </div>
+
+            <div class="comm-send-card">
+              <div>
+                <strong id="crm-comm-send-summary">Ready when your email is complete.</strong>
+                <div class="empty-note">Emails are sent individually so recipients never see the full mailing list.</div>
+              </div>
+              <button class="btn" id="crm-send-email-btn" onclick="sendCrmEmailNow()" disabled>Send Email</button>
+            </div>
+
+            <details class="comm-details">
+              <summary>Save, schedule, or other options</summary>
+              <div class="crm-form-grid" style="margin-top:12px;">
+                <div>
+                  <label>Status</label>
+                  <select id="crm-comm-status" onchange="crmCommStatusChanged()">
+                    <option value="draft">Draft</option>
+                    <option value="ready">Ready for review</option>
+                    <option value="scheduled">Scheduled / planned</option>
+                    <option value="completed">Sent / completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div id="crm-comm-schedule-wrap" style="display:none;">
+                  <label>Planned date & time</label>
+                  <input id="crm-comm-scheduled-for" type="datetime-local">
+                </div>
+              </div>
+              <p class="empty-note">A planned date is recorded in the CRM; it does not automatically send the email.</p>
+              <div class="comm-actions">
+                <button class="btn btn-outline" onclick="saveCrmCommunicationCampaign()">Save communication</button>
+                <button class="btn btn-outline" onclick="resetCrmCommunicationComposer()">Clear / new email</button>
+                <button class="btn btn-outline" onclick="copyCrmCommunicationDraft()">Copy draft</button>
+                <button class="btn btn-outline" onclick="copyCrmCommunicationEmails()">Copy email addresses</button>
+                <button class="btn btn-outline" onclick="checkCrmEmailStatus()">Recheck Microsoft 365</button>
+              </div>
+            </details>
+
+            <input id="crm-comm-campaign-id" type="hidden">
+            <div class="status-msg" id="crm-comm-msg"></div>
+          </div>
         </div>
 
         <div id="crm-comm-templates-view" style="display:none;">
           <div class="crm-section-title">Saved Templates</div>
+          <p class="empty-note">Create reusable messages for visitor follow-up, events, ministries, care, birthdays, and recurring announcements.</p>
           <div class="crm-form-grid">
-            <div><label>Template Name</label><input id="crm-template-name" placeholder="Visitor Follow-Up"></div>
+            <div><label>Template name</label><input id="crm-template-name" placeholder="Visitor Follow-Up"></div>
             <div><label>Category</label>
               <select id="crm-template-category">
                 <option value="general">General</option>
@@ -1745,12 +1799,8 @@ body[data-theme="dark"] .analytics-table td{
                 <option value="birthday">Birthday / Anniversary</option>
               </select>
             </div>
-            <div><label>Channel</label>
-              <select id="crm-template-channel">
-                <option value="general">General</option><option value="email">Email</option><option value="text">Text / SMS</option>
-              </select>
-            </div>
-            <div class="full"><label>Subject / Title</label><input id="crm-template-subject"></div>
+            <input type="hidden" id="crm-template-channel" value="email">
+            <div class="full"><label>Subject</label><input id="crm-template-subject"></div>
             <div class="full"><label>Message</label><textarea id="crm-template-body" rows="8"></textarea></div>
           </div>
           <input id="crm-template-id" type="hidden">
@@ -1762,14 +1812,16 @@ body[data-theme="dark"] .analytics-table td{
         </div>
 
         <div id="crm-comm-history-view" style="display:none;">
-          <div class="crm-section-title">Communication History & Planned Messages</div>
+          <div class="crm-section-title">Communication History</div>
           <div class="crm-toolbar">
             <div><label>Search</label><input id="crm-comm-history-search" placeholder="Name, subject, audience…" oninput="renderCrmCommunicationHistory()"></div>
             <div style="max-width:190px;"><label>Status</label>
               <select id="crm-comm-history-status" onchange="renderCrmCommunicationHistory()">
                 <option value="all">All statuses</option>
-                <option value="draft">Draft</option><option value="ready">Ready for Review</option>
-                <option value="scheduled">Scheduled</option><option value="completed">Completed</option>
+                <option value="draft">Draft</option>
+                <option value="ready">Ready for review</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
@@ -3609,6 +3661,55 @@ body[data-theme="dark"] .analytics-table td{
   }
   window.setCrmCommunicationView=setCrmCommunicationView;
 
+
+  function applyCrmQuickAudience() {
+    const choice=document.getElementById('crm-comm-quick-audience')?.value || 'active';
+    document.getElementById('crm-comm-member-status').value='active';
+    document.getElementById('crm-comm-notseen').value='0';
+    document.getElementById('crm-comm-visitor-filter').value='none';
+    document.getElementById('crm-comm-household-mode').value='everyone';
+    document.getElementById('crm-comm-use-selected').checked=false;
+
+    const groupWrap=document.getElementById('crm-comm-quick-group-wrap');
+    const selectedWrap=document.getElementById('crm-comm-selected-members-wrap');
+    const advanced=document.getElementById('crm-comm-advanced-details');
+    if(groupWrap) groupWrap.style.display='none';
+    if(selectedWrap) selectedWrap.style.display='none';
+    if(advanced) advanced.open=false;
+
+    if(choice==='group') {
+      if(groupWrap) groupWrap.style.display='';
+    } else if(choice==='visitor_followup') {
+      document.getElementById('crm-comm-visitor-filter').value='followup';
+    } else if(choice==='not_seen_30') {
+      document.getElementById('crm-comm-notseen').value='30';
+    } else if(choice==='not_seen_60') {
+      document.getElementById('crm-comm-notseen').value='60';
+    } else if(choice==='not_seen_90') {
+      document.getElementById('crm-comm-notseen').value='90';
+    } else if(choice==='selected') {
+      document.getElementById('crm-comm-use-selected').checked=true;
+      if(selectedWrap) selectedWrap.style.display='';
+      renderCrmCommunicationMemberPicker();
+    } else if(choice==='advanced') {
+      if(advanced) advanced.open=true;
+    }
+    buildCrmCommunicationAudience();
+  }
+  window.applyCrmQuickAudience=applyCrmQuickAudience;
+
+  function insertCrmCommToken(token) {
+    const el=document.getElementById('crm-comm-message');
+    if(!el) return;
+    const start=el.selectionStart ?? el.value.length;
+    const end=el.selectionEnd ?? el.value.length;
+    el.value=el.value.slice(0,start)+token+el.value.slice(end);
+    const next=start+token.length;
+    el.focus();
+    el.setSelectionRange(next,next);
+  }
+  window.insertCrmCommToken=insertCrmCommToken;
+
   async function loadCrmCommunicationWorkspace() {
     try {
       if(!crmMembers.length || !crmProspects.length || !crmHouseholds.length) {
@@ -3726,6 +3827,8 @@ body[data-theme="dark"] .analytics-table td{
       let notSeenIds=await crmCommGetNotSeenIds(c.notSeenDays);
 
       let members=crmMembers.filter(m=>m.active!==false && m.membershipStatus!=='deceased');
+      const quickAudience=document.getElementById('crm-comm-quick-audience')?.value || '';
+      if(quickAudience==='visitor_followup') members=[];
       if(c.memberStatuses.length) members=members.filter(m=>c.memberStatuses.includes(m.membershipStatus));
       if(groupIds) members=members.filter(m=>groupIds.has(m.id));
       if(notSeenIds) members=members.filter(m=>notSeenIds.has(m.id));
@@ -3789,6 +3892,12 @@ body[data-theme="dark"] .analytics-table td{
       `${crmCommunicationAudience.length} ${crmCommunicationAudience.length===1?'person':'people'}`;
     document.getElementById('crm-comm-contact-counts').textContent=
       `${emails} with email · ${phones} with phone · ${neither} missing both`;
+    const sendSummary=document.getElementById('crm-comm-send-summary');
+    if(sendSummary) {
+      sendSummary.textContent=emails
+        ? `${emails} email recipient${emails===1?'':'s'} ready to send.`
+        : 'Choose an audience with at least one email address.';
+    }
 
     list.innerHTML=crmCommunicationAudience.length ? crmCommunicationAudience.map(p=>`
       <div class="crm-member-row">
@@ -3802,7 +3911,9 @@ body[data-theme="dark"] .analytics-table td{
 
   function crmCommSelectedModeChanged() {
     const enabled=document.getElementById('crm-comm-use-selected')?.checked === true;
-    document.getElementById('crm-comm-selected-members-wrap').style.display=enabled ? '' : 'none';
+    const wrap=document.getElementById('crm-comm-selected-members-wrap');
+    if(wrap) wrap.style.display=enabled ? '' : 'none';
+    if(enabled) renderCrmCommunicationMemberPicker();
     buildCrmCommunicationAudience();
   }
   window.crmCommSelectedModeChanged=crmCommSelectedModeChanged;
@@ -3905,6 +4016,10 @@ body[data-theme="dark"] .analytics-table td{
     const a=crmSavedAudiences.find(x=>x.id===id);
     if(!a) return;
     const c=a.criteria || {};
+    const quick=document.getElementById('crm-comm-quick-audience');
+    if(quick) quick.value='advanced';
+    const advanced=document.getElementById('crm-comm-advanced-details');
+    if(advanced) advanced.open=true;
 
     document.getElementById('crm-comm-member-status').value=
       (c.memberStatuses?.length===1 ? c.memberStatuses[0] : 'all');
@@ -4161,7 +4276,7 @@ Bethel AME Lancaster`;
       const el=document.getElementById(id); if(el) el.value='';
     });
     document.getElementById('crm-comm-status').value='draft';
-    document.getElementById('crm-comm-channel').value='general';
+    document.getElementById('crm-comm-channel').value='email';
     document.getElementById('crm-comm-preview').style.display='none';
     crmCommStatusChanged();
     crmMsg('crm-comm-msg','');
@@ -4195,7 +4310,7 @@ Bethel AME Lancaster`;
       const el=document.getElementById(id); if(el) el.value='';
     });
     document.getElementById('crm-template-category').value='general';
-    document.getElementById('crm-template-channel').value='general';
+    document.getElementById('crm-template-channel').value='email';
   }
   window.clearCrmCommunicationTemplateForm=clearCrmCommunicationTemplateForm;
 
@@ -4297,6 +4412,10 @@ Bethel AME Lancaster`;
     crmCommStatusChanged();
 
     const criteria=c.audienceCriteria || {};
+    const quick=document.getElementById('crm-comm-quick-audience');
+    if(quick) quick.value='advanced';
+    const advanced=document.getElementById('crm-comm-advanced-details');
+    if(advanced) advanced.open=true;
     document.getElementById('crm-comm-member-status').value=
       criteria.memberStatuses?.length===1 ? criteria.memberStatuses[0] : 'all';
     document.getElementById('crm-comm-group').value=criteria.groupId || '';
@@ -4328,6 +4447,10 @@ Bethel AME Lancaster`;
     setCrmView('communications');
     setTimeout(async ()=>{
       await loadCrmCommunicationWorkspace();
+      const quick=document.getElementById('crm-comm-quick-audience');
+      if(quick) quick.value='group';
+      const groupWrap=document.getElementById('crm-comm-quick-group-wrap');
+      if(groupWrap) groupWrap.style.display='';
       document.getElementById('crm-comm-group').value=groupId;
       await buildCrmCommunicationAudience();
     },50);

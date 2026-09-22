@@ -649,6 +649,20 @@ body[data-theme="dark"] .analytics-table td{
   .crm-two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:760px){.crm-grid,.crm-form-grid,.crm-two-col{grid-template-columns:1fr}.crm-form-grid .full{grid-column:auto}}
 
+  .crm-page-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+  .crm-page-heading h2{margin:0 0 4px}
+  .crm-trend-chart{display:flex;align-items:flex-end;gap:8px;height:230px;padding:18px 8px 34px;border:1px solid var(--border);border-radius:12px;overflow-x:auto;background:var(--card2)}
+  .crm-trend-column{min-width:54px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative}
+  .crm-trend-bars{height:100%;display:flex;align-items:flex-end;gap:3px}
+  .crm-trend-bar{width:18px;min-height:2px;border-radius:5px 5px 0 0;background:var(--gold)}
+  .crm-trend-bar.guest{opacity:.48}
+  .crm-trend-label{position:absolute;bottom:-26px;font-size:10px;color:var(--muted);white-space:nowrap}
+  .crm-trend-value{font-size:9px;color:var(--muted);margin-bottom:3px}
+  .crm-report-table{width:100%;border-collapse:collapse}
+  .crm-report-table th,.crm-report-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left;font-size:12px}
+  .crm-report-table th{color:var(--muted);font-weight:800}
+
+
 
   .admin-menu-bar{
     display:flex;
@@ -856,7 +870,15 @@ body[data-theme="dark"] .analytics-table td{
     <div class="admin-menu-group" data-menu-group="crm">
       <button class="admin-menu-button" type="button" onclick="toggleAdminMenu('crm', event)">CRM <span class="menu-caret">▾</span></button>
       <div class="admin-dropdown">
-        <button class="tab admin-dropdown-item" data-tab="crm" data-permission="crm" onclick="switchTab('crm')">Church CRM</button>
+        <button class="tab admin-dropdown-item" data-tab="crm" data-permission="crm" onclick="switchTab('crm')">CRM Dashboard</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-members" data-permission="crm" onclick="switchTab('crm-members')">Members</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-prospects" data-permission="crm" onclick="switchTab('crm-prospects')">Visitors / Prospects</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-households" data-permission="crm" onclick="switchTab('crm-households')">Households</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-groups" data-permission="crm" onclick="switchTab('crm-groups')">Groups / Ministries</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-communications" data-permission="crm" onclick="switchTab('crm-communications')">Communications</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-attendance" data-permission="crm" onclick="switchTab('crm-attendance')">Attendance</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-reports" data-permission="crm" onclick="switchTab('crm-reports')">Reports</button>
+        <button class="tab admin-dropdown-item" data-tab="crm-audit" data-permission="crm" onclick="switchTab('crm-audit')">Audit History</button>
       </div>
     </div>
 
@@ -1367,6 +1389,20 @@ body[data-theme="dark"] .analytics-table td{
       </div>
     </div>
 
+    <div class="card">
+      <h2>CRM Sections</h2>
+      <div class="btn-row" style="justify-content:flex-start;flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="switchTab('crm-members')">Members</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-prospects')">Visitors / Prospects</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-households')">Households</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-groups')">Groups / Ministries</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-communications')">Communications</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-attendance')">Attendance</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-reports')">Reports</button>
+        <button class="btn btn-outline" onclick="switchTab('crm-audit')">Audit History</button>
+      </div>
+    </div>
+
     <div class="feature-grid">
       <div class="card">
         <h2>Upcoming Birthdays</h2>
@@ -1379,17 +1415,50 @@ body[data-theme="dark"] .analytics-table td{
     </div>
 
     <div class="card">
-      <div class="btn-row" style="justify-content:flex-start;">
-        <button class="btn" id="crm-view-members-btn" onclick="setCrmView('members')">Members</button>
-        <button class="btn btn-outline" id="crm-view-prospects-btn" onclick="setCrmView('prospects')">Visitors / Prospects</button>
-        <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
-        <button class="btn btn-outline" id="crm-view-groups-btn" onclick="setCrmView('groups')">Groups / Ministries</button>
-        <button class="btn btn-outline" id="crm-view-communications-btn" onclick="setCrmView('communications')">Communications</button>
-        <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
-        <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
-        <button class="btn btn-outline" id="crm-view-audit-btn" onclick="setCrmView('audit')">Audit History</button>
-      </div>
 
+
+      
+
+      
+
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:4px;">Needs Follow-Up</h2>
+          <p class="empty-note" style="margin:0;">Upcoming and overdue visitor/prospect follow-ups.</p>
+        </div>
+        <button class="btn btn-outline" onclick="switchTab('crm-prospects')">Open Visitors / Prospects</button>
+      </div>
+      <div id="crm-followup-dashboard" style="margin-top:12px;">
+        <p class="empty-note">No follow-ups scheduled.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent Attendance</h2>
+      <div id="crm-recent-attendance"><p class="empty-note">Loading…</p></div>
+    </div>
+  </div>
+
+
+
+  <div class="tab-panel" id="tab-crm-members">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Members</h2><p class="empty-note" style="margin:0;">Official church member records and contact information.</p></div></div>
       <div id="crm-members-view">
         <div class="crm-toolbar">
           <div>
@@ -1410,21 +1479,14 @@ body[data-theme="dark"] .analytics-table td{
         </div>
         <div class="crm-member-list" id="crm-member-list"><p class="empty-note">Loading members…</p></div>
       </div>
-
-      <div id="crm-attendance-view" style="display:none;">
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
-          <div>
-            <h3 style="margin:0;">Attendance Sessions</h3>
-            <p class="empty-note" style="margin:3px 0 0;">Create a service or event, then check off members who attended.</p>
-          </div>
-          <button class="btn" onclick="openAttendanceSessionModal()">+ New Attendance</button>
-        </div>
-        <div id="crm-attendance-sessions" class="crm-member-list"><p class="empty-note">Loading attendance…</p></div>
-
-      </div>
+    </div>
+  </div>
 
 
-      <div id="crm-prospects-view" style="display:none;">
+  <div class="tab-panel" id="tab-crm-prospects">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Visitors / Prospects</h2><p class="empty-note" style="margin:0;">Visitor follow-up, visit history, and conversion to member records.</p></div></div>
+      <div id="crm-prospects-view">
         <div class="crm-toolbar">
           <div>
             <label>Search visitors / prospects</label>
@@ -1445,8 +1507,29 @@ body[data-theme="dark"] .analytics-table td{
         </div>
         <div id="crm-prospect-list" class="crm-member-list"><p class="empty-note">Loading visitors…</p></div>
       </div>
+    </div>
+  </div>
 
-      <div id="crm-groups-view" style="display:none;">
+
+  <div class="tab-panel" id="tab-crm-households">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Households</h2><p class="empty-note" style="margin:0;">Household records and shared addresses.</p></div></div>
+      <div id="crm-households-view">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div><h3 style="margin:0;">Households</h3><p class="empty-note" style="margin:3px 0 0;">Group family members and maintain one household address.</p></div>
+          <button class="btn" onclick="openCrmHouseholdModal()">+ Add Household</button>
+        </div>
+        <div class="crm-toolbar"><div><label>Search households</label><input id="crm-household-search" placeholder="Household name, address, phone…" oninput="renderCrmHouseholds()"></div></div>
+        <div id="crm-household-list" class="crm-member-list"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="tab-panel" id="tab-crm-groups">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Groups / Ministries</h2><p class="empty-note" style="margin:0;">Ministries, boards, choirs, classes, and rosters.</p></div></div>
+      <div id="crm-groups-view">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
           <div>
             <h3 style="margin:0;">Groups / Ministries</h3>
@@ -1459,17 +1542,14 @@ body[data-theme="dark"] .analytics-table td{
         </div>
         <div id="crm-group-list" class="crm-member-list"><p class="empty-note">Open Groups / Ministries to load groups.</p></div>
       </div>
+    </div>
+  </div>
 
-      <div id="crm-households-view" style="display:none;">
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
-          <div><h3 style="margin:0;">Households</h3><p class="empty-note" style="margin:3px 0 0;">Group family members and maintain one household address.</p></div>
-          <button class="btn" onclick="openCrmHouseholdModal()">+ Add Household</button>
-        </div>
-        <div class="crm-toolbar"><div><label>Search households</label><input id="crm-household-search" placeholder="Household name, address, phone…" oninput="renderCrmHouseholds()"></div></div>
-        <div id="crm-household-list" class="crm-member-list"></div>
-      </div>
 
-      <div id="crm-communications-view" style="display:none;">
+  <div class="tab-panel" id="tab-crm-communications">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Communications</h2><p class="empty-note" style="margin:0;">Audience building, templates, email preparation, scheduling, and history.</p></div></div>
+      <div id="crm-communications-view">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
           <div>
             <h3 style="margin:0;">Communications Center</h3>
@@ -1697,21 +1777,100 @@ body[data-theme="dark"] .analytics-table td{
           <div id="crm-comm-history-list" class="crm-member-list"></div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div id="crm-reports-view" style="display:none;">
+
+  <div class="tab-panel" id="tab-crm-attendance">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Attendance</h2><p class="empty-note" style="margin:0;">Create service or event attendance sessions and record check-ins.</p></div></div>
+      <div id="crm-attendance-view">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div>
+            <h3 style="margin:0;">Attendance Sessions</h3>
+            <p class="empty-note" style="margin:3px 0 0;">Create a service or event, then check off members who attended.</p>
+          </div>
+          <button class="btn" onclick="openAttendanceSessionModal()">+ New Attendance</button>
+        </div>
+        <div id="crm-attendance-sessions" class="crm-member-list"><p class="empty-note">Loading attendance…</p></div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <div class="tab-panel" id="tab-crm-reports">
+    <div class="card">
+      
+      <div id="crm-reports-view">
+        <div class="crm-page-heading">
+          <div>
+            <h2>CRM Reports</h2>
+            <p class="empty-note" style="margin:0;">Attendance trends, year-to-year comparisons, follow-up lists, directories, and printable reporting.</p>
+          </div>
+        </div>
+
         <div class="crm-toolbar">
-          <div style="max-width:220px;"><label>Attendance range</label>
-            <select id="crm-report-range" onchange="loadCrmAttendanceReport()">
-              <option value="30">Last 30 days</option><option value="60">Last 60 days</option>
-              <option value="90" selected>Last 90 days</option><option value="365">Last 12 months</option>
+          <div style="max-width:230px;">
+            <label>Report period</label>
+            <select id="crm-report-period" onchange="crmReportPeriodChanged()">
+              <option value="this_week">This week</option>
+              <option value="last_4_weeks">Last 4 weeks</option>
+              <option value="this_month">This month</option>
+              <option value="last_3_months">Last 3 months</option>
+              <option value="this_year" selected>This year</option>
+              <option value="last_12_months">Last 12 months</option>
+              <option value="previous_year">Previous calendar year</option>
+              <option value="all_years">All available years</option>
+              <option value="custom">Custom dates</option>
+            </select>
+          </div>
+          <div id="crm-report-custom-start-wrap" style="display:none;max-width:190px;">
+            <label>Start date</label>
+            <input id="crm-report-start" type="date" onchange="loadCrmAttendanceReport()">
+          </div>
+          <div id="crm-report-custom-end-wrap" style="display:none;max-width:190px;">
+            <label>End date</label>
+            <input id="crm-report-end" type="date" onchange="loadCrmAttendanceReport()">
+          </div>
+          <div style="max-width:180px;">
+            <label>Trend grouping</label>
+            <select id="crm-report-groupby" onchange="loadCrmAttendanceReport()">
+              <option value="auto" selected>Automatic</option>
+              <option value="day">Daily</option>
+              <option value="week">Weekly</option>
+              <option value="month">Monthly</option>
+              <option value="year">Yearly</option>
             </select>
           </div>
         </div>
+
+        <div class="empty-note" id="crm-report-period-label" style="margin-top:8px;"></div>
+
+        <div class="stats-grid" style="margin-top:16px;">
+          <div class="stat-card"><div class="stat-num" id="crm-report-services">—</div><div class="stat-label">Services / events</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-average">—</div><div class="stat-label">Avg member attendance</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-guests">—</div><div class="stat-label">Guest attendance</div></div>
+          <div class="stat-card"><div class="stat-num" id="crm-report-total">—</div><div class="stat-label">Total attendance</div></div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3 style="margin-top:0;">Attendance Trend</h3>
+          <p class="empty-note" id="crm-trend-description">Member attendance and guest attendance over the selected period.</p>
+          <div id="crm-report-trend-chart"><p class="empty-note">Load a report to view trends.</p></div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3 style="margin-top:0;">Year-to-Year Comparison</h3>
+          <p class="empty-note">Calendar-year totals appear once attendance data exists for more than one year.</p>
+          <div id="crm-report-year-comparison"><p class="empty-note">No yearly comparison available yet.</p></div>
+        </div>
+
         <div style="margin-top:16px;padding:16px;border:1px solid var(--border,#ddd);border-radius:12px;">
           <h3 style="margin-top:0;">Export & Print</h3>
-          <p class="empty-note">Download church records as CSV or print the current attendance report.</p>
+          <p class="empty-note">The attendance printout uses the exact report period selected above.</p>
           <div class="btn-row" style="justify-content:flex-start;flex-wrap:wrap;">
-            <button class="btn btn-outline" onclick="printCrmAttendanceReport()">Print Attendance Report</button>
+            <button class="btn" onclick="printCrmAttendanceReport()">Print / Save Report as PDF</button>
             <button class="btn btn-outline" onclick="exportCrmAttendanceCsv()">Attendance CSV</button>
             <button class="btn btn-outline" onclick="exportCrmMemberDirectoryCsv()">Member Directory CSV</button>
             <button class="btn btn-outline" onclick="exportCrmHouseholdDirectoryCsv()">Household Directory CSV</button>
@@ -1721,19 +1880,14 @@ body[data-theme="dark"] .analytics-table td{
           </div>
         </div>
 
-        <div class="stats-grid" style="margin-top:16px;">
-          <div class="stat-card"><div class="stat-num" id="crm-report-services">—</div><div class="stat-label">Services / events</div></div>
-          <div class="stat-card"><div class="stat-num" id="crm-report-average">—</div><div class="stat-label">Avg member attendance</div></div>
-          <div class="stat-card"><div class="stat-num" id="crm-report-guests">—</div><div class="stat-label">Guest attendance</div></div>
-          <div class="stat-card"><div class="stat-num" id="crm-report-active">—</div><div class="stat-label">Active members</div></div>
-        </div>
         <div class="crm-two-col" style="margin-top:16px;">
           <div><h3>Attendance by Service</h3><div id="crm-report-sessions"></div></div>
           <div><h3>Members by Attendance</h3><div id="crm-report-members"></div></div>
         </div>
+
         <div style="margin-top:20px;">
           <h3>Follow-Up Lists</h3>
-          <div class="btn-row" style="justify-content:flex-start;">
+          <div class="btn-row" style="justify-content:flex-start;flex-wrap:wrap;">
             <button class="btn btn-outline" onclick="renderCrmNotSeen(30)">Not seen 30 days</button>
             <button class="btn btn-outline" onclick="renderCrmNotSeen(60)">Not seen 60 days</button>
             <button class="btn btn-outline" onclick="renderCrmNotSeen(90)">Not seen 90 days</button>
@@ -1744,8 +1898,14 @@ body[data-theme="dark"] .analytics-table td{
           <div id="crm-not-seen-list"><p class="empty-note">Choose a follow-up window.</p></div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div id="crm-audit-view" style="display:none;">
+
+  <div class="tab-panel" id="tab-crm-audit">
+    <div class="card">
+      <div class="crm-page-heading"><div><h2>Audit History</h2><p class="empty-note" style="margin:0;">Review changes made to CRM records and communications.</p></div></div>
+      <div id="crm-audit-view">
         <div class="crm-toolbar">
           <div>
             <label>Search audit history</label>
@@ -1801,26 +1961,7 @@ body[data-theme="dark"] .analytics-table td{
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-        <div>
-          <h2 style="margin-bottom:4px;">Needs Follow-Up</h2>
-          <p class="empty-note" style="margin:0;">Upcoming and overdue visitor/prospect follow-ups.</p>
-        </div>
-        <button class="btn btn-outline" onclick="setCrmView('prospects')">Open Visitors / Prospects</button>
-      </div>
-      <div id="crm-followup-dashboard" style="margin-top:12px;">
-        <p class="empty-note">No follow-ups scheduled.</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Recent Attendance</h2>
-      <div id="crm-recent-attendance"><p class="empty-note">Loading…</p></div>
-    </div>
   </div>
-
 
   <!-- CRM Visitor / Prospect Modal -->
   <div class="crm-modal" id="crm-prospect-modal" onclick="if(event.target===this) closeCrmProspectModal()">
@@ -2560,6 +2701,14 @@ body[data-theme="dark"] .analytics-table td{
     if (name === 'website') loadWebsiteAnalytics();
     if (name === 'appanalytics') loadAppAnalytics();
     if (name === 'crm') loadCrmDashboard();
+    if (name === 'crm-members') loadCrmPage('members');
+    if (name === 'crm-prospects') loadCrmPage('prospects');
+    if (name === 'crm-households') loadCrmPage('households');
+    if (name === 'crm-groups') loadCrmPage('groups');
+    if (name === 'crm-communications') loadCrmPage('communications');
+    if (name === 'crm-attendance') loadCrmPage('attendance');
+    if (name === 'crm-reports') loadCrmPage('reports');
+    if (name === 'crm-audit') loadCrmPage('audit');
     if (name === 'members') loadMemberAnalytics();
     if (name === 'users') loadAdminUsers();
   }
@@ -3423,29 +3572,26 @@ body[data-theme="dark"] .analytics-table td{
       </div>`).join('');
   }
 
-  function setCrmView(view) {
-    const views=['members','prospects','households','groups','communications','attendance','reports','audit'];
-
-    views.forEach(v=>{
-      const el=document.getElementById('crm-'+v+'-view');
-      if(el) el.style.display=(v===view ? '' : 'none');
-
-      const btn=document.getElementById('crm-view-'+v+'-btn');
-      if(btn) btn.className=(v===view ? 'btn' : 'btn btn-outline');
-    });
-
+  async function loadCrmPage(view) {
+    if(!hasPermission('crm')) return;
+    if(!crmMembers.length || !crmHouseholds.length || !crmProspects.length || !crmAttendanceSessions.length) {
+      await loadCrmDashboard();
+    }
+    if(view==='groups') await loadCrmGroups();
+    if(view==='communications') await loadCrmCommunicationWorkspace();
     if(view==='reports') {
-      loadCrmAttendanceReport();
+      crmReportPeriodChanged(false);
+      await loadCrmAttendanceReport();
     }
-    if(view==='audit') {
-      loadCrmAuditHistory();
-    }
-    if(view==='groups') {
-      loadCrmGroups();
-    }
-    if(view==='communications') {
-      loadCrmCommunicationWorkspace();
-    }
+    if(view==='audit') await loadCrmAuditHistory();
+
+    const inner=document.getElementById('crm-'+view+'-view');
+    if(inner) inner.style.display='';
+  }
+  window.loadCrmPage=loadCrmPage;
+
+  function setCrmView(view) {
+    switchTab('crm-'+view);
   }
   window.setCrmView=setCrmView;
 
@@ -4928,7 +5074,7 @@ Bethel AME Lancaster`;
       alert('Open Reports and let the attendance report load first.');
       return;
     }
-    const range=document.getElementById('crm-report-range')?.value || '90';
+    const range=(crmAttendanceReport?.rangeLabel || 'selected-period').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').toLowerCase();
     const rows=(crmAttendanceReport.sessions || []).map(r=>[
       r.serviceDate || '',
       r.title || '',
@@ -5058,64 +5204,69 @@ Bethel AME Lancaster`;
 
   function printCrmAttendanceReport() {
     if(!crmAttendanceReport) {
-      alert('Open Reports and let the attendance report load first.');
+      alert('Open Reports and let the report load first.');
       return;
     }
 
-    const range=document.getElementById('crm-report-range')?.value || '90';
     const s=crmAttendanceReport.summary || {};
     const sessions=crmAttendanceReport.sessions || [];
     const members=[...(crmAttendanceReport.members || [])]
       .sort((a,b)=>Number(b.attendancePercentage || 0)-Number(a.attendancePercentage || 0));
+    const trend=crmAttendanceReport.trend || [];
+    const years=crmAttendanceReport.yearComparison || [];
+    const rangeLabel=crmAttendanceReport.rangeLabel || 'Selected period';
 
     const sessionRows=sessions.map(r=>`
-      <tr>
-        <td>${escHtml(crmPrettyDate(r.serviceDate))}</td>
-        <td>${escHtml(r.title || '')}</td>
-        <td>${Number(r.attendanceCount || 0)}</td>
-        <td>${Number(r.guestCount || 0)}</td>
-        <td>${Number(r.attendanceCount || 0)+Number(r.guestCount || 0)}</td>
-      </tr>`).join('');
+      <tr><td>${escHtml(crmPrettyDate(r.serviceDate))}</td><td>${escHtml(r.title || '')}</td>
+      <td>${Number(r.attendanceCount || 0)}</td><td>${Number(r.guestCount || 0)}</td>
+      <td>${Number(r.attendanceCount || 0)+Number(r.guestCount || 0)}</td></tr>`).join('');
 
     const memberRows=members.map(r=>`
-      <tr>
-        <td>${escHtml(r.name || '')}</td>
-        <td>${Number(r.attendanceCount || 0)}</td>
-        <td>${Number(r.attendancePercentage || 0)}%</td>
-      </tr>`).join('');
+      <tr><td>${escHtml(r.name || '')}</td><td>${Number(r.attendanceCount || 0)}</td>
+      <td>${Number(r.attendancePercentage || 0)}%</td></tr>`).join('');
 
-    const w=window.open('','_blank','width=1000,height=800');
+    const trendRows=trend.map(r=>`
+      <tr><td>${escHtml(r.label || r.bucket || '')}</td><td>${Number(r.sessions || 0)}</td>
+      <td>${Number(r.memberAttendance || 0)}</td><td>${Number(r.guestAttendance || 0)}</td>
+      <td>${Number(r.totalAttendance || 0)}</td><td>${Number(r.averageTotalAttendance || 0)}</td></tr>`).join('');
+
+    const yearRows=years.map((r,i)=>{
+      const prev=i>0 ? years[i-1] : null;
+      const change=prev && Number(prev.totalAttendance||0)
+        ? ((Number(r.totalAttendance||0)-Number(prev.totalAttendance||0))/Number(prev.totalAttendance||0))*100
+        : null;
+      return `<tr><td>${escHtml(r.year)}</td><td>${Number(r.sessionCount||0)}</td>
+      <td>${Number(r.memberAttendance||0)}</td><td>${Number(r.guestAttendance||0)}</td>
+      <td>${Number(r.totalAttendance||0)}</td><td>${Number(r.averageTotalAttendance||0)}</td>
+      <td>${change===null?'—':`${change>=0?'+':''}${change.toFixed(1)}%`}</td></tr>`;
+    }).join('');
+
+    const w=window.open('','_blank','width=1100,height=850');
     if(!w) {
       alert('Your browser blocked the print window. Please allow pop-ups for this site and try again.');
       return;
     }
 
-    w.document.write(`<!doctype html>
-      <html><head><meta charset="utf-8"><title>Bethel Attendance Report</title>
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Bethel CRM Report</title>
       <style>
-        body{font-family:Arial,sans-serif;color:#111;margin:32px;}
-        h1{margin-bottom:4px;} h2{margin-top:28px;}
-        .sub{color:#555;margin-bottom:20px;}
-        .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0;}
-        .metric{border:1px solid #bbb;border-radius:8px;padding:12px;}
-        .num{font-size:24px;font-weight:700;}
-        table{width:100%;border-collapse:collapse;margin-top:10px;}
-        th,td{border:1px solid #ccc;padding:8px;text-align:left;}
-        th{background:#f1f1f1;}
-        @media print{body{margin:15mm}.no-print{display:none}}
+        body{font-family:Arial,sans-serif;color:#111;margin:32px}h1{margin-bottom:4px}h2{margin-top:28px}
+        .sub{color:#555;margin-bottom:20px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+        .metric{border:1px solid #bbb;border-radius:8px;padding:12px}.num{font-size:24px;font-weight:700}
+        table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ccc;padding:7px;text-align:left;font-size:12px}
+        th{background:#f1f1f1}@media print{body{margin:12mm}.no-print{display:none}h2{page-break-after:avoid}table{page-break-inside:auto}tr{page-break-inside:avoid}}
       </style></head><body>
       <h1>Bethel African Methodist Episcopal Church</h1>
-      <div class="sub">Attendance Report · Last ${escHtml(range)} days · Printed ${escHtml(new Date().toLocaleDateString())}</div>
+      <div class="sub">CRM Attendance Report · ${escHtml(rangeLabel)} · Printed ${escHtml(new Date().toLocaleDateString())}</div>
       <div class="metrics">
-        <div class="metric"><div class="num">${Number(s.sessionCount || 0)}</div><div>Services / Events</div></div>
-        <div class="metric"><div class="num">${Number(s.averageAttendance || 0)}</div><div>Average Member Attendance</div></div>
-        <div class="metric"><div class="num">${Number(s.totalGuestAttendance || 0)}</div><div>Guest Attendance</div></div>
-        <div class="metric"><div class="num">${Number(s.activeMembers || 0)}</div><div>Active Members</div></div>
+        <div class="metric"><div class="num">${Number(s.sessionCount||0)}</div><div>Services / Events</div></div>
+        <div class="metric"><div class="num">${Number(s.averageAttendance||0)}</div><div>Avg Member Attendance</div></div>
+        <div class="metric"><div class="num">${Number(s.totalGuestAttendance||0)}</div><div>Guest Attendance</div></div>
+        <div class="metric"><div class="num">${Number(s.totalAttendance||0)}</div><div>Total Attendance</div></div>
       </div>
-      <h2>Attendance by Service</h2>
-      <table><thead><tr><th>Date</th><th>Service / Event</th><th>Members</th><th>Guests</th><th>Total</th></tr></thead><tbody>${sessionRows}</tbody></table>
-      <h2>Members by Attendance</h2>
-      <table><thead><tr><th>Member</th><th>Services Attended</th><th>Attendance %</th></tr></thead><tbody>${memberRows}</tbody></table>
+      <h2>Trend</h2><table><thead><tr><th>Period</th><th>Sessions</th><th>Members</th><th>Guests</th><th>Total</th><th>Avg / Service</th></tr></thead><tbody>${trendRows}</tbody></table>
+      <h2>Year-to-Year</h2><table><thead><tr><th>Year</th><th>Services</th><th>Members</th><th>Guests</th><th>Total</th><th>Avg / Service</th><th>Change</th></tr></thead><tbody>${yearRows}</tbody></table>
+      <h2>Attendance by Service</h2><table><thead><tr><th>Date</th><th>Service / Event</th><th>Members</th><th>Guests</th><th>Total</th></tr></thead><tbody>${sessionRows}</tbody></table>
+      <h2>Members by Attendance</h2><table><thead><tr><th>Member</th><th>Services Attended</th><th>Attendance %</th></tr></thead><tbody>${memberRows}</tbody></table>
       <div class="no-print" style="margin-top:20px;"><button onclick="window.print()">Print / Save as PDF</button></div>
       </body></html>`);
     w.document.close();
@@ -5123,17 +5274,179 @@ Bethel AME Lancaster`;
   }
   window.printCrmAttendanceReport=printCrmAttendanceReport;
 
+  function crmLocalIsoDate(d) {
+    return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+
+  function crmReportDatesForPreset(preset) {
+    const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    let start=new Date(today), end=new Date(today);
+
+    if(preset==='this_week') {
+      const day=today.getDay();
+      const diff=day===0 ? 6 : day-1;
+      start.setDate(today.getDate()-diff);
+    } else if(preset==='last_4_weeks') {
+      start.setDate(today.getDate()-27);
+    } else if(preset==='this_month') {
+      start=new Date(today.getFullYear(),today.getMonth(),1);
+    } else if(preset==='last_3_months') {
+      start=new Date(today.getFullYear(),today.getMonth()-2,1);
+    } else if(preset==='this_year') {
+      start=new Date(today.getFullYear(),0,1);
+    } else if(preset==='last_12_months') {
+      start=new Date(today.getFullYear(),today.getMonth()-11,1);
+    } else if(preset==='previous_year') {
+      start=new Date(today.getFullYear()-1,0,1);
+      end=new Date(today.getFullYear()-1,11,31);
+    } else if(preset==='all_years') {
+      return {startDate:'',endDate:'',label:'All available attendance history'};
+    } else if(preset==='custom') {
+      return {
+        startDate:document.getElementById('crm-report-start')?.value || '',
+        endDate:document.getElementById('crm-report-end')?.value || '',
+        label:'Custom date range'
+      };
+    }
+
+    return {
+      startDate:crmLocalIsoDate(start),
+      endDate:crmLocalIsoDate(end),
+      label:`${crmPrettyDate(crmLocalIsoDate(start))} – ${crmPrettyDate(crmLocalIsoDate(end))}`
+    };
+  }
+
+  function crmReportPeriodChanged(reload=true) {
+    const preset=document.getElementById('crm-report-period')?.value || 'this_year';
+    const custom=preset==='custom';
+    const sw=document.getElementById('crm-report-custom-start-wrap');
+    const ew=document.getElementById('crm-report-custom-end-wrap');
+    if(sw) sw.style.display=custom ? '' : 'none';
+    if(ew) ew.style.display=custom ? '' : 'none';
+
+    if(custom) {
+      const today=new Date();
+      const first=new Date(today.getFullYear(),today.getMonth(),1);
+      const start=document.getElementById('crm-report-start');
+      const end=document.getElementById('crm-report-end');
+      if(start && !start.value) start.value=crmLocalIsoDate(first);
+      if(end && !end.value) end.value=crmLocalIsoDate(today);
+    }
+    if(reload) loadCrmAttendanceReport();
+  }
+  window.crmReportPeriodChanged=crmReportPeriodChanged;
+
+  function renderCrmTrendChart(trend,groupBy) {
+    const el=document.getElementById('crm-report-trend-chart');
+    if(!el) return;
+    if(!Array.isArray(trend) || !trend.length) {
+      el.innerHTML='<p class="empty-note">No attendance data exists for this period.</p>';
+      return;
+    }
+
+    const max=Math.max(1,...trend.map(r=>Number(r.totalAttendance || 0)));
+    const labelFor=row=>{
+      if(groupBy==='year') return row.label || row.bucket;
+      if(groupBy==='month') {
+        const [y,m]=String(row.bucket||'').split('-');
+        return new Date(Number(y),Number(m)-1,1).toLocaleDateString([], {month:'short',year:'2-digit'});
+      }
+      if(groupBy==='week') return row.label || String(row.bucket||'').slice(5);
+      return row.label || String(row.bucket||'').slice(5);
+    };
+
+    el.innerHTML=`<div class="crm-trend-chart">${trend.map(r=>{
+      const member=Number(r.memberAttendance || 0);
+      const guest=Number(r.guestAttendance || 0);
+      const memberH=Math.max(member ? 3 : 0,Math.round((member/max)*165));
+      const guestH=Math.max(guest ? 3 : 0,Math.round((guest/max)*165));
+      return `<div class="crm-trend-column" title="${escHtml(labelFor(r))}: ${member} members, ${guest} guests">
+        <div class="crm-trend-value">${member+guest}</div>
+        <div class="crm-trend-bars">
+          <div class="crm-trend-bar" style="height:${memberH}px"></div>
+          <div class="crm-trend-bar guest" style="height:${guestH}px"></div>
+        </div>
+        <div class="crm-trend-label">${escHtml(labelFor(r))}</div>
+      </div>`;
+    }).join('')}</div>
+    <div class="empty-note" style="margin-top:8px;">Solid = member attendance · lighter = guests</div>`;
+  }
+
+  function renderCrmYearComparison(rows) {
+    const el=document.getElementById('crm-report-year-comparison');
+    if(!el) return;
+    if(!Array.isArray(rows) || !rows.length) {
+      el.innerHTML='<p class="empty-note">Year-to-year comparisons will appear once attendance is recorded.</p>';
+      return;
+    }
+    el.innerHTML=`<div style="overflow-x:auto;"><table class="crm-report-table">
+      <thead><tr><th>Year</th><th>Services</th><th>Member attendance</th><th>Guests</th><th>Total</th><th>Avg / service</th><th>Change vs prior year</th></tr></thead>
+      <tbody>${rows.map((r,i)=>{
+        const prev=i>0 ? rows[i-1] : null;
+        const change=prev && Number(prev.totalAttendance||0)
+          ? ((Number(r.totalAttendance||0)-Number(prev.totalAttendance||0))/Number(prev.totalAttendance||0))*100
+          : null;
+        return `<tr>
+          <td><strong>${escHtml(r.year)}</strong></td>
+          <td>${Number(r.sessionCount||0)}</td>
+          <td>${Number(r.memberAttendance||0)}</td>
+          <td>${Number(r.guestAttendance||0)}</td>
+          <td>${Number(r.totalAttendance||0)}</td>
+          <td>${Number(r.averageTotalAttendance||0)}</td>
+          <td>${change===null ? '—' : `${change>=0?'+':''}${change.toFixed(1)}%`}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }
+
   async function loadCrmAttendanceReport() {
-    const range=document.getElementById('crm-report-range')?.value||'90';
-    const data=await crmRequest(CRM_ATTENDANCE_REPORT_URL,{range});
+    const preset=document.getElementById('crm-report-period')?.value || 'this_year';
+    const dates=crmReportDatesForPreset(preset);
+    const groupBy=document.getElementById('crm-report-groupby')?.value || 'auto';
+
+    if(preset==='custom' && (!dates.startDate || !dates.endDate)) return;
+    if(dates.startDate && dates.endDate && dates.startDate>dates.endDate) {
+      const label=document.getElementById('crm-report-period-label');
+      if(label) label.textContent='Start date must be on or before the end date.';
+      return;
+    }
+
+    const data=await crmRequest(CRM_ATTENDANCE_REPORT_URL,{
+      preset,
+      startDate:dates.startDate,
+      endDate:dates.endDate,
+      groupBy
+    });
     crmAttendanceReport=data;
+
     const s=data.summary||{};
     memberSetMetric('crm-report-services',s.sessionCount??0);
     memberSetMetric('crm-report-average',s.averageAttendance??0);
     memberSetMetric('crm-report-guests',s.totalGuestAttendance??0);
-    memberSetMetric('crm-report-active',s.activeMembers??0);
-    document.getElementById('crm-report-sessions').innerHTML=(data.sessions||[]).map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.title)}</div><div class="item-body">${escHtml(crmPrettyDate(r.serviceDate))}</div></div><div><strong>${Number(r.attendanceCount||0)}</strong><div class="item-body">${Number(r.guestCount||0)} guests</div></div></div>`).join('') || '<p class="empty-note">No sessions in this range.</p>';
-    document.getElementById('crm-report-members').innerHTML=(data.members||[]).sort((a,b)=>b.attendancePercentage-a.attendancePercentage).map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.name)}</div><div class="item-body">${Number(r.attendanceCount||0)} services</div></div><strong>${Number(r.attendancePercentage||0)}%</strong></div>`).join('') || '<p class="empty-note">No active members.</p>';
+    memberSetMetric('crm-report-total',s.totalAttendance??0);
+
+    const periodLabel=document.getElementById('crm-report-period-label');
+    if(periodLabel) periodLabel.textContent=data.rangeLabel || dates.label || '';
+
+    const trendDescription=document.getElementById('crm-trend-description');
+    if(trendDescription) trendDescription.textContent=
+      `Member and guest attendance grouped ${data.groupBy==='day'?'daily':data.groupBy==='week'?'weekly':data.groupBy==='month'?'monthly':'yearly'} for ${data.rangeLabel || 'the selected period'}.`;
+
+    renderCrmTrendChart(data.trend || [],data.groupBy || 'month');
+    renderCrmYearComparison(data.yearComparison || []);
+
+    document.getElementById('crm-report-sessions').innerHTML=(data.sessions||[]).map(r=>`
+      <div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.title)}</div>
+      <div class="item-body">${escHtml(crmPrettyDate(r.serviceDate))}</div></div>
+      <div><strong>${Number(r.attendanceCount||0)}</strong><div class="item-body">${Number(r.guestCount||0)} guests</div></div></div>`
+    ).join('') || '<p class="empty-note">No sessions in this range.</p>';
+
+    document.getElementById('crm-report-members').innerHTML=(data.members||[])
+      .sort((a,b)=>b.attendancePercentage-a.attendancePercentage)
+      .map(r=>`<div class="scheduled-item"><div class="item-info"><div class="item-title">${escHtml(r.name)}</div>
+      <div class="item-body">${Number(r.attendanceCount||0)} services</div></div><strong>${Number(r.attendancePercentage||0)}%</strong></div>`
+      ).join('') || '<p class="empty-note">No active members.</p>';
   }
   window.loadCrmAttendanceReport=loadCrmAttendanceReport;
 

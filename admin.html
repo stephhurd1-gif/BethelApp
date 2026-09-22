@@ -1384,6 +1384,7 @@ body[data-theme="dark"] .analytics-table td{
         <button class="btn btn-outline" id="crm-view-prospects-btn" onclick="setCrmView('prospects')">Visitors / Prospects</button>
         <button class="btn btn-outline" id="crm-view-households-btn" onclick="setCrmView('households')">Households</button>
         <button class="btn btn-outline" id="crm-view-groups-btn" onclick="setCrmView('groups')">Groups / Ministries</button>
+        <button class="btn btn-outline" id="crm-view-communications-btn" onclick="setCrmView('communications')">Communications</button>
         <button class="btn btn-outline" id="crm-view-attendance-btn" onclick="setCrmView('attendance')">Attendance</button>
         <button class="btn btn-outline" id="crm-view-reports-btn" onclick="setCrmView('reports')">Reports</button>
         <button class="btn btn-outline" id="crm-view-audit-btn" onclick="setCrmView('audit')">Audit History</button>
@@ -1466,6 +1467,97 @@ body[data-theme="dark"] .analytics-table td{
         </div>
         <div class="crm-toolbar"><div><label>Search households</label><input id="crm-household-search" placeholder="Household name, address, phone…" oninput="renderCrmHouseholds()"></div></div>
         <div id="crm-household-list" class="crm-member-list"></div>
+      </div>
+
+      <div id="crm-communications-view" style="display:none;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <div>
+            <h3 style="margin:0;">Communications</h3>
+            <p class="empty-note" style="margin:3px 0 0;">Build a contact list and draft a message. This workspace does not send email or text messages.</p>
+          </div>
+        </div>
+
+        <div class="crm-form-grid" style="margin-top:16px;">
+          <div>
+            <label>Audience</label>
+            <select id="crm-comm-audience-type" onchange="crmCommunicationAudienceChanged()">
+              <option value="active_members">All Active Members</option>
+              <option value="group">Group / Ministry</option>
+              <option value="visitor_followup">Visitors Needing Follow-Up</option>
+              <option value="not_seen_30">Members Not Seen in 30 Days</option>
+              <option value="not_seen_60">Members Not Seen in 60 Days</option>
+              <option value="not_seen_90">Members Not Seen in 90 Days</option>
+              <option value="selected_members">Selected Members</option>
+            </select>
+          </div>
+
+          <div id="crm-comm-group-wrap" style="display:none;">
+            <label>Group / Ministry</label>
+            <select id="crm-comm-group" onchange="buildCrmCommunicationAudience()">
+              <option value="">Choose a group</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Draft Type</label>
+            <select id="crm-comm-draft-type">
+              <option value="general">General Update</option>
+              <option value="event">Event / Service Reminder</option>
+              <option value="followup">Follow-Up</option>
+              <option value="ministry">Ministry / Group Message</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="crm-comm-selected-members-wrap" style="display:none;margin-top:16px;">
+          <div class="crm-section-title" style="margin-top:0;">Choose Members</div>
+          <div class="crm-toolbar">
+            <div>
+              <label>Search members</label>
+              <input id="crm-comm-member-search" placeholder="Search by name, email, phone…" oninput="renderCrmCommunicationMemberPicker()">
+            </div>
+            <div style="max-width:180px;display:flex;align-items:flex-end;">
+              <button class="btn btn-outline" onclick="crmCommSelectAllVisible()">Select All Visible</button>
+            </div>
+            <div style="max-width:180px;display:flex;align-items:flex-end;">
+              <button class="btn btn-outline" onclick="crmCommClearSelected()">Clear Selection</button>
+            </div>
+          </div>
+          <div id="crm-comm-member-picker" class="crm-member-list"></div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <strong id="crm-comm-audience-count">0 people</strong>
+            <div class="empty-note" id="crm-comm-contact-counts">0 email addresses · 0 phone numbers</div>
+          </div>
+          <div class="btn-row" style="justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="copyCrmCommunicationEmails()">Copy Emails</button>
+            <button class="btn btn-outline" onclick="copyCrmCommunicationPhones()">Copy Phones</button>
+            <button class="btn btn-outline" onclick="exportCrmCommunicationAudience()">Audience CSV</button>
+          </div>
+        </div>
+
+        <div id="crm-comm-audience-list" class="crm-member-list" style="margin-top:12px;">
+          <p class="empty-note">Choose an audience to preview contacts.</p>
+        </div>
+
+        <div class="crm-section-title">Message Draft</div>
+        <div class="crm-form-grid">
+          <div class="full">
+            <label>Subject / Title</label>
+            <input id="crm-comm-subject" placeholder="Message subject">
+          </div>
+          <div class="full">
+            <label>Message</label>
+            <textarea id="crm-comm-message" rows="8" placeholder="Write or generate a draft message here."></textarea>
+          </div>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn" onclick="generateCrmCommunicationDraft()">Generate Starter Draft</button>
+          <button class="btn btn-outline" onclick="copyCrmCommunicationDraft()">Copy Draft</button>
+        </div>
+        <div class="status-msg" id="crm-comm-msg"></div>
       </div>
 
       <div id="crm-reports-view" style="display:none;">
@@ -3069,6 +3161,8 @@ body[data-theme="dark"] .analytics-table td{
   let crmAttendanceReport=null;
   let crmAuditLogs=[];
   let crmGroups=[];
+  let crmCommunicationAudience=[];
+  let crmCommunicationSelectedMemberIds=new Set();
   let crmCurrentMemberGroups=[];
   let crmCheckinMembers=[];
   let crmCurrentMember=null;
@@ -3176,7 +3270,7 @@ body[data-theme="dark"] .analytics-table td{
   }
 
   function setCrmView(view) {
-    const views=['members','prospects','households','groups','attendance','reports','audit'];
+    const views=['members','prospects','households','groups','communications','attendance','reports','audit'];
 
     views.forEach(v=>{
       const el=document.getElementById('crm-'+v+'-view');
@@ -3195,10 +3289,321 @@ body[data-theme="dark"] .analytics-table td{
     if(view==='groups') {
       loadCrmGroups();
     }
+    if(view==='communications') {
+      loadCrmCommunicationWorkspace();
+    }
   }
   window.setCrmView=setCrmView;
 
 
+
+
+  async function loadCrmCommunicationWorkspace() {
+    try {
+      if(!crmMembers.length || !crmProspects.length) {
+        await loadCrmDashboard();
+      }
+
+      if(!crmGroups.length) {
+        const groupData=await crmRequest(CRM_GROUPS_URL,{action:'list'});
+        crmGroups=Array.isArray(groupData.groups) ? groupData.groups : [];
+      }
+
+      const groupSelect=document.getElementById('crm-comm-group');
+      if(groupSelect) {
+        const current=groupSelect.value;
+        groupSelect.innerHTML='<option value="">Choose a group</option>'+
+          crmGroups.map(g=>`<option value="${escHtml(g.id)}">${escHtml(g.name)}</option>`).join('');
+        if(current && crmGroups.some(g=>g.id===current)) groupSelect.value=current;
+      }
+
+      renderCrmCommunicationMemberPicker();
+      await buildCrmCommunicationAudience();
+    } catch(e) {
+      crmMsg('crm-comm-msg',e.message || 'Could not load communications workspace.','error');
+    }
+  }
+  window.loadCrmCommunicationWorkspace=loadCrmCommunicationWorkspace;
+
+  function crmCommunicationAudienceChanged() {
+    const type=document.getElementById('crm-comm-audience-type')?.value || 'active_members';
+    const groupWrap=document.getElementById('crm-comm-group-wrap');
+    const selectedWrap=document.getElementById('crm-comm-selected-members-wrap');
+
+    if(groupWrap) groupWrap.style.display=type==='group' ? '' : 'none';
+    if(selectedWrap) selectedWrap.style.display=type==='selected_members' ? '' : 'none';
+
+    renderCrmCommunicationMemberPicker();
+    buildCrmCommunicationAudience();
+  }
+  window.crmCommunicationAudienceChanged=crmCommunicationAudienceChanged;
+
+  function crmCommPersonFromMember(m) {
+    return {
+      id:m.id,
+      source:'member',
+      name:crmName(m),
+      email:m.email || '',
+      phone:m.phone || m.phone2 || '',
+      household:m.householdName || '',
+      status:m.membershipStatus || '',
+      detail:m.householdName || m.membershipStatus || 'Member'
+    };
+  }
+
+  function crmCommPersonFromProspect(v) {
+    return {
+      id:v.id,
+      source:'prospect',
+      name:v.name || 'Visitor / Prospect',
+      email:v.email || '',
+      phone:v.phone || '',
+      household:'',
+      status:crmProspectStatusLabel(v.followUpStatus),
+      detail:[
+        crmProspectStatusLabel(v.followUpStatus),
+        v.followUpDueDate ? 'Due '+v.followUpDueDate : '',
+        v.assignedTo || ''
+      ].filter(Boolean).join(' · ')
+    };
+  }
+
+  async function buildCrmCommunicationAudience() {
+    const type=document.getElementById('crm-comm-audience-type')?.value || 'active_members';
+    crmMsg('crm-comm-msg','');
+
+    try {
+      let people=[];
+
+      if(type==='active_members') {
+        people=crmMembers
+          .filter(m=>m.active!==false && m.membershipStatus==='active')
+          .map(crmCommPersonFromMember);
+      }
+
+      if(type==='group') {
+        const groupId=document.getElementById('crm-comm-group')?.value || '';
+        if(groupId) {
+          const data=await crmRequest(CRM_GROUPS_URL,{action:'get',groupId});
+          people=(data.members || []).map(m=>({
+            ...crmCommPersonFromMember(m),
+            detail:[m.groupRole || 'Member',data.group?.name || 'Group'].filter(Boolean).join(' · ')
+          }));
+        }
+      }
+
+      if(type==='visitor_followup') {
+        people=crmProspects
+          .filter(v=>
+            v.followUpStatus !== 'converted' &&
+            v.followUpStatus !== 'not_interested' &&
+            (
+              v.followUpDueDate ||
+              v.followUpStatus==='new' ||
+              v.followUpStatus==='contacted' ||
+              v.followUpStatus==='follow_up'
+            )
+          )
+          .map(crmCommPersonFromProspect);
+      }
+
+      if(type==='not_seen_30' || type==='not_seen_60' || type==='not_seen_90') {
+        if(!crmAttendanceReport) {
+          crmAttendanceReport=await crmRequest(CRM_ATTENDANCE_REPORT_URL,{range:'90'});
+        }
+        const days=type.split('_').pop();
+        const rows=crmAttendanceReport?.notSeen?.[String(days)] || [];
+        people=rows.map(m=>({
+          id:m.id,
+          source:'member',
+          name:m.name || '',
+          email:m.email || '',
+          phone:m.phone || '',
+          household:m.householdName || '',
+          status:`Not seen ${days} days`,
+          detail:`Last attendance: ${crmPrettyDate(m.lastAttendanceAt)}`
+        }));
+      }
+
+      if(type==='selected_members') {
+        people=crmMembers
+          .filter(m=>crmCommunicationSelectedMemberIds.has(m.id))
+          .map(crmCommPersonFromMember);
+      }
+
+      crmCommunicationAudience=people
+        .filter((p,index,arr)=>p.id && arr.findIndex(x=>x.source===p.source && x.id===p.id)===index)
+        .sort((a,b)=>(a.name || '').localeCompare(b.name || ''));
+
+      renderCrmCommunicationAudience();
+    } catch(e) {
+      crmCommunicationAudience=[];
+      renderCrmCommunicationAudience();
+      crmMsg('crm-comm-msg',e.message || 'Could not build audience.','error');
+    }
+  }
+  window.buildCrmCommunicationAudience=buildCrmCommunicationAudience;
+
+  function renderCrmCommunicationAudience() {
+    const list=document.getElementById('crm-comm-audience-list');
+    if(!list) return;
+
+    const emails=crmCommunicationAudience.filter(p=>p.email).length;
+    const phones=crmCommunicationAudience.filter(p=>p.phone).length;
+    const count=document.getElementById('crm-comm-audience-count');
+    const counts=document.getElementById('crm-comm-contact-counts');
+
+    if(count) count.textContent=`${crmCommunicationAudience.length} ${crmCommunicationAudience.length===1?'person':'people'}`;
+    if(counts) counts.textContent=`${emails} email address${emails===1?'':'es'} · ${phones} phone number${phones===1?'':'s'}`;
+
+    if(!crmCommunicationAudience.length) {
+      list.innerHTML='<p class="empty-note">No contacts are currently in this audience.</p>';
+      return;
+    }
+
+    list.innerHTML=crmCommunicationAudience.map(p=>`
+      <div class="crm-member-row">
+        <div>
+          <div class="crm-member-name">${escHtml(p.name || 'Contact')}</div>
+          <div class="crm-member-meta">${escHtml([p.email,p.phone].filter(Boolean).join(' · ') || 'No email or phone on file')}</div>
+          ${p.detail ? `<div class="item-body" style="margin-top:4px;">${escHtml(p.detail)}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  function renderCrmCommunicationMemberPicker() {
+    const el=document.getElementById('crm-comm-member-picker');
+    if(!el) return;
+
+    const q=(document.getElementById('crm-comm-member-search')?.value || '').trim().toLowerCase();
+    const rows=crmMembers
+      .filter(m=>m.active!==false && m.membershipStatus!=='deceased')
+      .filter(m=>!q || [
+        crmName(m),m.email,m.phone,m.phone2,m.householdName
+      ].join(' ').toLowerCase().includes(q))
+      .sort((a,b)=>crmName(a).localeCompare(crmName(b)));
+
+    el.innerHTML=rows.length ? rows.map(m=>`
+      <label class="crm-checkin-row" data-crm-comm-member-id="${escHtml(m.id)}">
+        <input type="checkbox"
+          data-crm-comm-member-check="${escHtml(m.id)}"
+          ${crmCommunicationSelectedMemberIds.has(m.id) ? 'checked' : ''}
+          onchange="crmCommunicationMemberToggled('${escHtml(m.id)}',this.checked)">
+        <span>
+          <strong>${escHtml(crmName(m))}</strong>
+          <span class="crm-member-meta" style="display:block;">${escHtml([m.email,m.phone,m.householdName].filter(Boolean).join(' · '))}</span>
+        </span>
+      </label>`).join('') : '<p class="empty-note">No members match your search.</p>';
+  }
+  window.renderCrmCommunicationMemberPicker=renderCrmCommunicationMemberPicker;
+
+  function crmCommunicationMemberToggled(id,checked) {
+    if(checked) crmCommunicationSelectedMemberIds.add(id);
+    else crmCommunicationSelectedMemberIds.delete(id);
+    buildCrmCommunicationAudience();
+  }
+  window.crmCommunicationMemberToggled=crmCommunicationMemberToggled;
+
+  function crmCommSelectAllVisible() {
+    document.querySelectorAll('[data-crm-comm-member-check]').forEach(input=>{
+      input.checked=true;
+      crmCommunicationSelectedMemberIds.add(input.dataset.crmCommMemberCheck);
+    });
+    buildCrmCommunicationAudience();
+  }
+  window.crmCommSelectAllVisible=crmCommSelectAllVisible;
+
+  function crmCommClearSelected() {
+    crmCommunicationSelectedMemberIds.clear();
+    renderCrmCommunicationMemberPicker();
+    buildCrmCommunicationAudience();
+  }
+  window.crmCommClearSelected=crmCommClearSelected;
+
+  async function crmCopyText(text,successMessage) {
+    try {
+      await navigator.clipboard.writeText(text);
+      crmMsg('crm-comm-msg',successMessage,'success');
+    } catch(e) {
+      crmMsg('crm-comm-msg','Could not copy automatically. Select the text manually and copy it.','error');
+    }
+  }
+
+  function copyCrmCommunicationEmails() {
+    const emails=[...new Set(crmCommunicationAudience.map(p=>String(p.email || '').trim()).filter(Boolean))];
+    if(!emails.length) return crmMsg('crm-comm-msg','This audience has no email addresses.','error');
+    crmCopyText(emails.join('; '),`Copied ${emails.length} email address${emails.length===1?'':'es'}.`);
+  }
+  window.copyCrmCommunicationEmails=copyCrmCommunicationEmails;
+
+  function copyCrmCommunicationPhones() {
+    const phones=[...new Set(crmCommunicationAudience.map(p=>String(p.phone || '').trim()).filter(Boolean))];
+    if(!phones.length) return crmMsg('crm-comm-msg','This audience has no phone numbers.','error');
+    crmCopyText(phones.join('\n'),`Copied ${phones.length} phone number${phones.length===1?'':'s'}.`);
+  }
+  window.copyCrmCommunicationPhones=copyCrmCommunicationPhones;
+
+  function exportCrmCommunicationAudience() {
+    const rows=crmCommunicationAudience.map(p=>[
+      p.name || '',
+      p.email || '',
+      p.phone || '',
+      p.household || '',
+      p.status || '',
+      p.detail || '',
+      p.source || ''
+    ]);
+    crmDownloadCsv(
+      `bethel-communications-audience-${crmDateStamp()}.csv`,
+      ['Name','Email','Phone','Household','Status','Audience Detail','Record Type'],
+      rows
+    );
+  }
+  window.exportCrmCommunicationAudience=exportCrmCommunicationAudience;
+
+  function generateCrmCommunicationDraft() {
+    const type=document.getElementById('crm-comm-draft-type')?.value || 'general';
+    const audienceType=document.getElementById('crm-comm-audience-type')?.value || 'active_members';
+    const groupId=document.getElementById('crm-comm-group')?.value || '';
+    const groupName=crmGroups.find(g=>g.id===groupId)?.name || 'Ministry';
+
+    let subject='';
+    let message='';
+
+    if(type==='event') {
+      subject='Bethel AME Lancaster — Upcoming Event Reminder';
+      message=`Hello,\n\nThis is a reminder about an upcoming event at Bethel AME Lancaster.\n\n[Add event name, date, time, location, and any details here.]\n\nWe hope to see you there!\n\nBethel AME Lancaster`;
+    } else if(type==='followup') {
+      subject='Checking In from Bethel AME Lancaster';
+      message=`Hello,\n\nWe wanted to check in and let you know that we are thinking of you. Please feel free to reach out if there is anything we can help with or if you would like someone from Bethel to contact you.\n\nWarmly,\nBethel AME Lancaster`;
+    } else if(type==='ministry') {
+      subject=`${groupName} Update — Bethel AME Lancaster`;
+      message=`Hello ${groupName} family,\n\n[Add your ministry update, reminder, or announcement here.]\n\nThank you,\nBethel AME Lancaster`;
+    } else {
+      subject='Update from Bethel AME Lancaster';
+      message=`Hello,\n\n[Add your church update or announcement here.]\n\nThank you,\nBethel AME Lancaster`;
+    }
+
+    if(audienceType==='visitor_followup' && type==='general') {
+      subject='Thank You for Visiting Bethel AME Lancaster';
+      message=`Hello,\n\nThank you for connecting with Bethel AME Lancaster. We are glad you joined us and wanted to follow up to see if you have any questions or if there is anything we can help with.\n\nWe hope to see you again soon.\n\nWarmly,\nBethel AME Lancaster`;
+    }
+
+    document.getElementById('crm-comm-subject').value=subject;
+    document.getElementById('crm-comm-message').value=message;
+    crmMsg('crm-comm-msg','Starter draft created. Review and edit it before using it.','success');
+  }
+  window.generateCrmCommunicationDraft=generateCrmCommunicationDraft;
+
+  function copyCrmCommunicationDraft() {
+    const subject=document.getElementById('crm-comm-subject')?.value.trim() || '';
+    const message=document.getElementById('crm-comm-message')?.value.trim() || '';
+    if(!subject && !message) return crmMsg('crm-comm-msg','Create or enter a draft first.','error');
+
+    const text=[subject ? `Subject: ${subject}` : '',message].filter(Boolean).join('\n\n');
+    crmCopyText(text,'Communication draft copied.');
+  }
+  window.copyCrmCommunicationDraft=copyCrmCommunicationDraft;
 
   async function loadCrmGroups() {
     const list=document.getElementById('crm-group-list');
